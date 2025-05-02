@@ -34,5 +34,5 @@
 # VSCode
 .vscode/
 .qodo/
-.DS_Store/
+.DS_Store
 
