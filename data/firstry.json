@@ -1,0 +1,6 @@
+{
+  "mesh": {
+    "space_length": 100,
+    "velocity_interval": 0.1
+  }
+}

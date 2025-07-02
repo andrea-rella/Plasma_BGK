@@ -1,0 +1,91 @@
+---- Idas ----
+- Make the solver class a abstract class (for future extensions)
+- wrap all in the namespace Bgk
+- do the debug and not debug version
+- .sh files to plot everything using gnuplot
+- matlab function that reads the exported files export in matlab matrices
+- docker (?)
+- parallelization (?) 
+
+
+----------------------
+---- Solver Class ----
+----------------------
+
+Members: 
+    - Data (class)
+    - Space Mesh FV (class)
+    - Velocity Mesh (class)
+    - Solutions (Eigen Matrices)
+    - Boundary conditions (functionals)
+    - Initial condition (functionals)
+
+Functionalities
+    - Constructors
+    - Initialize Meshes
+    - get solution in one point
+    - Solve
+    - export solutions in various format (.vtk, .txt)
+    - norms (?)
+
+
+--------------
+---- Data ----
+--------------
+
+Members: 
+    - T_w, \rho_2 etc...
+    - T_\infty, \rho_\infty etc...
+    - Mesh dimensions
+    - Mesh Refinements (power laws)
+    - Save only last time step or all timesteps
+    - max time or till convergence
+    - Time refinement
+    - export Data
+    - data export format
+    - How many timesteps to export
+
+
+
+Functionalities: 
+    - Constructors
+    - Getters and setters
+
+
+
+--------------------
+---- Space Mesh ----
+--------------------
+
+Members: 
+    - Cell centers (computational points)
+    - Middle points
+    - \Delta x^{(i)}
+
+
+Functionalities: 
+    - Constructors
+    - Getters
+    - Export (.txt, .vtk)
+
+
+-----------------------
+---- Velocity Mesh ----
+-----------------------
+
+Members: 
+    - points
+
+Functionalities: 
+    - Constructors
+    - Getters
+    - Export (.txt, .vtk)
+
+
+
+
+-------------------
+---- Utilities ----
+-------------------
+- Trapezoidal integration
+- Quick coefficient computation
