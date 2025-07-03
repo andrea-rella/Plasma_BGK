@@ -14,7 +14,7 @@ LIBS     = -lmuparser
 
 
 # Targets
-EXEC = main
+EXEC = main.exe
 SRC  = main.cpp
 OBJ  = $(SRC:.cpp=.o)
 

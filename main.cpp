@@ -13,7 +13,7 @@ int main(int argc, char *argv[])
     // This is a simple C++ program that prints "Hello, World!" to the console.
     std::cout << "Eigen, json and muparser work!!!!!!" << std::endl;
 
-    // Example usage of ConfigData
+    //---- Example usage of ConfigData ----
 
     std::string configPath = "data/"; // default path
 
