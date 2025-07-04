@@ -36,3 +36,6 @@
 .qodo/
 .DS_Store
 
+# Outputs
+*.vtk
+

@@ -6,6 +6,7 @@
 - matlab function that reads the exported files export in matlab matrices
 - docker (?)
 - parallelization (?) 
+- python wrapper for plotting using matplotlib
 
 
 ----------------------

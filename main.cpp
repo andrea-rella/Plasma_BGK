@@ -6,6 +6,7 @@
 #include <muParser.h>
 
 #include "ConfigData.hpp"
+#include "SpaceMesh.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -23,6 +24,13 @@ int main(int argc, char *argv[])
         throw std::runtime_error("No config file specified. Please provide a config file name as a command line argument.");
 
     Bgk::ConfigData<double> Data(configPath);
+
+    //---- Example usage of SpaceMesh ----
+
+    Bgk::SpaceMesh<double> mesh(Data);
+    mesh.initialize_mesh();
+
+    mesh.write_mesh_vtk("prova");
 
     return 0;
 }

@@ -1,9 +1,12 @@
-//__________.__                                   __________  ________ ____  __.
-//\______   \  | _____    ______ _____ _____      \______   \/  _____/|    |/ _|
-// |     ___/  | \__  \  /  ___//     \\__  \      |    |  _/   \  ___|      <
-// |    |   |  |__/ __ \_\___ \|  Y Y  \/ __ \_    |    |   \    \_\  \    |  \
-// |____|   |____(____  /____  >__|_|  (____  /____|______  /\______  /____|__\
-//                    \/     \/      \/     \/_____/      \/        \/        \/
+// ██▓███   ██▓    ▄▄▄        ██████  ███▄ ▄███▓ ▄▄▄          ▄▄▄▄     ▄████  ██ ▄█▀
+// ▓██░  ██▒▓██▒   ▒████▄    ▒██    ▒ ▓██▒▀█▀ ██▒▒████▄       ▓█████▄  ██▒ ▀█▒ ██▄█▒
+// ▓██░ ██▓▒▒██░   ▒██  ▀█▄  ░ ▓██▄   ▓██    ▓██░▒██  ▀█▄     ▒██▒ ▄██▒██░▄▄▄░▓███▄░
+// ▒██▄█▓▒ ▒▒██░   ░██▄▄▄▄██   ▒   ██▒▒██    ▒██ ░██▄▄▄▄██    ▒██░█▀  ░▓█  ██▓▓██ █▄
+// ▒██▒ ░  ░░██████▒▓█   ▓██▒▒██████▒▒▒██▒   ░██▒ ▓█   ▓██▒   ░▓█  ▀█▓░▒▓███▀▒▒██▒ █▄
+// ▒▓▒░ ░  ░░ ▒░▓  ░▒▒   ▓▒█░▒ ▒▓▒ ▒ ░░ ▒░   ░  ░ ▒▒   ▓▒█░   ░▒▓███▀▒ ░▒   ▒ ▒ ▒▒ ▓▒
+// ░▒ ░     ░ ░ ▒  ░ ▒   ▒▒ ░░ ░▒  ░ ░░  ░      ░  ▒   ▒▒ ░   ▒░▒   ░   ░   ░ ░ ░▒ ▒░
+// ░░         ░ ░    ░   ▒   ░  ░  ░  ░      ░     ░   ▒       ░    ░ ░ ░   ░ ░ ░░ ░
+//              ░  ░     ░  ░      ░         ░         ░  ░    ░            ░ ░  ░
 //
 // Andrea Rella
 // Politecnico di Milano
@@ -21,9 +24,7 @@ namespace Bgk
     class SpaceMesh
     {
     private:
-        bool is_initialized = false;
-        bool is_constructed = false;
-
+        T D;
         int N;
         int N0;
         T d1;
@@ -31,11 +32,20 @@ namespace Bgk
         std::vector<T> x_comp;
         std::vector<T> x_vol;
 
+        bool is_initialized = false;
+        bool is_constructed = false;
+
     public:
         // Constructors and destructors
         SpaceMesh() = default;
         SpaceMesh(const ConfigData<T> &);
         ~SpaceMesh() = default;
+
+        // mesh initialization
+        void initialize_mesh();
+
+        // output mesh
+        void write_mesh_vtk(const std::string &) const;
     };
 }
 
