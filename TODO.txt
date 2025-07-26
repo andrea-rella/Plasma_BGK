@@ -1,3 +1,2 @@
-1. Develop Data structure
-2. Develop mesh
-
+• fix / re-design the path thing in the visualize_mesh.vtk
+• checkkare la presenza di tutti i constructor, copy and movable in tutte le classi

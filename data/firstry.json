@@ -2,8 +2,8 @@
   "mesh": {
     "space_length": 5,
     "velocity_interval": 10,
-    "space_points": 100,
-    "N0": 90,
+    "space_points": 16,
+    "N0": 10,
     "velocity_points": 10,
     "d1": 0.1,
     "d2": 1,
@@ -11,7 +11,7 @@
     "a2": 0.1
   },
 
-  "physical_parameters": {
+  "physical": {
     "v_infty": 5.0
   }
 }

@@ -45,7 +45,7 @@ namespace Bgk
 
         // ---- Physical parameters ----
 
-        v_infty = data["physical_parameters"].value("v_infty", static_cast<T>(1.0));
+        v_infty = data["physical"].value("v_infty", static_cast<T>(1.0));
     };
 
 }
