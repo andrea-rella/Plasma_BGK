@@ -1,3 +1,17 @@
+// ██▓███   ██▓    ▄▄▄        ██████  ███▄ ▄███▓ ▄▄▄          ▄▄▄▄     ▄████  ██ ▄█▀
+// ▓██░  ██▒▓██▒   ▒████▄    ▒██    ▒ ▓██▒▀█▀ ██▒▒████▄       ▓█████▄  ██▒ ▀█▒ ██▄█▒
+// ▓██░ ██▓▒▒██░   ▒██  ▀█▄  ░ ▓██▄   ▓██    ▓██░▒██  ▀█▄     ▒██▒ ▄██▒██░▄▄▄░▓███▄░
+// ▒██▄█▓▒ ▒▒██░   ░██▄▄▄▄██   ▒   ██▒▒██    ▒██ ░██▄▄▄▄██    ▒██░█▀  ░▓█  ██▓▓██ █▄
+// ▒██▒ ░  ░░██████▒▓█   ▓██▒▒██████▒▒▒██▒   ░██▒ ▓█   ▓██▒   ░▓█  ▀█▓░▒▓███▀▒▒██▒ █▄
+// ▒▓▒░ ░  ░░ ▒░▓  ░▒▒   ▓▒█░▒ ▒▓▒ ▒ ░░ ▒░   ░  ░ ▒▒   ▓▒█░   ░▒▓███▀▒ ░▒   ▒ ▒ ▒▒ ▓▒
+// ░▒ ░     ░ ░ ▒  ░ ▒   ▒▒ ░░ ░▒  ░ ░░  ░      ░  ▒   ▒▒ ░   ▒░▒   ░   ░   ░ ░ ░▒ ▒░
+// ░░         ░ ░    ░   ▒   ░  ░  ░  ░      ░     ░   ▒       ░    ░ ░ ░   ░ ░ ░░ ░
+//              ░  ░     ░  ░      ░         ░         ░  ░    ░            ░ ░  ░
+//
+// Andrea Rella
+// Politecnico di Milano
+// https://github.com/andrea-rella/Plasma_BGK
+
 #ifndef UTILITIES_B121BCD3_6455_43E7_9630_E0343B18BD8C
 #define UTILITIES_B121BCD3_6455_43E7_9630_E0343B18BD8C
 
@@ -31,7 +45,8 @@ namespace Bgk
     /**
      * @brief Concept for a spacing function.
      *
-     * This concept checks if a callable type can be invoked with an integer index and returns a value convertible to T.
+     * This concept checks if a callable type can be invoked with an integer index and returns a value
+     * convertible to T.
      *
      * @tparam SpacingFunc callable type that defines the spacing.
      * @tparam T precision type of the mesh components.
@@ -39,6 +54,22 @@ namespace Bgk
     template <typename SpacingFunc, typename T>
     concept SpacingFunction = requires(SpacingFunc func, int index) {
         { func(index) } -> std::convertible_to<T>;
+    };
+
+    /**
+     * @brief Possible nature of a mesh.
+     *
+     * This enum class defines the nature of a mesh, which can either be in space or in velocity.
+     * It's used to define the context in which the mesh is being used to then apply the appropriate
+     * versions of the methods.
+     *
+     */
+    enum class MeshNature
+    {
+        /// Space mesh identifier.
+        SPACE,
+        /// Velocity mesh identifier.
+        VELOCITY
     };
 
 }

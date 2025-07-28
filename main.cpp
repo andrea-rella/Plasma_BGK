@@ -7,6 +7,7 @@
 
 #include "ConfigData.hpp"
 #include "SpaceMeshFV.hpp"
+#include "VelocityMesh.hpp"
 
 int main(int argc, char *argv[])
 {
@@ -27,8 +28,8 @@ int main(int argc, char *argv[])
 
     //---- Example usage of SpaceMesh ----
 
-    Bgk::SpaceMeshFV<double> mesh(Data);
-    mesh.initialize_mesh();
+    Bgk::SpaceMeshFV<double> space_mesh(Data);
+    space_mesh.initialize_mesh();
 
     // Define uniform spacing
     // double x_start = 0.0;
@@ -40,10 +41,17 @@ int main(int argc, char *argv[])
     // };
 
     //// Initialize with uniform spacing
-    // mesh.initialize_with_custom_spacing(uniform_spacing);
+    // space_mesh.initialize_with_custom_spacing(uniform_spacing);
 
-    mesh.write_mesh_vtk("prova");
-    mesh.write_mesh_txt("prova");
+    space_mesh.write_mesh_vtk("prova");
+    space_mesh.write_mesh_txt("prova");
+
+    //---- Example usage of VelocityMesh ----
+
+    Bgk::VelocityMesh<double> velocity_mesh(Data);
+    velocity_mesh.initialize_mesh();
+
+    velocity_mesh.write_mesh_txt("prova");
 
     return 0;
 }

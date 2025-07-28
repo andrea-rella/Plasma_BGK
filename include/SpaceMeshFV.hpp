@@ -17,7 +17,7 @@
 
 #include <vector>
 #include "ConfigData.hpp"
-#include "BaseMesh.hpp"
+#include "BaseMesh1D.hpp"
 #include "utilities.hpp"
 
 namespace Bgk
@@ -39,7 +39,7 @@ namespace Bgk
      *
      */
     template <typename T>
-    class SpaceMeshFV : public BaseMesh<T, std::vector<T>>
+    class SpaceMeshFV : public BaseMesh1D<T, std::vector<T>, MeshNature::SPACE>
     {
     private:
         int N0;
@@ -61,7 +61,7 @@ namespace Bgk
          * @brief Initializes the mesh with custom spacing.
          *
          * This method allows the user to define a custom spacing function for the mesh then the computational
-         * points and volume boundaries based on the configuration data.
+         * points and volume boundaries are computed based on the configuration data.
          *
          * @tparam SpacingFunc A callable type that takes an integer index and returns a T value
          *         representing the spacing at that index.
@@ -75,7 +75,7 @@ namespace Bgk
         void initialize_with_custom_spacing(Spacing &&spacing_func);
 
         /**
-         * @brief Initializes the mesh the mesh by filling x_comp and x_vol vectors.
+         * @brief Initializes the mesh the mesh by filling x_comp and x_vol vectors with the default spacing (see note).
          *
          * This method computes the computational points and volume boundaries based on the configuration data
          * calling initialize_with_custom_spacing. It uses the polynomial spacing for the first N0 points and
@@ -99,6 +99,20 @@ namespace Bgk
         // -----------------------------------------------------------------------------------------------
 
         /**
+         * @brief Writes the mesh to a text file.
+         *
+         * It creates a .txt file containing the computational points and volume boundaries of the mesh.
+         * The file will be saved as output/<folder_name>/space_mesh.txt
+         *
+         * @param folder_name The name of the directory.
+         *
+         * @throws std::runtime_error if the mesh is not initialized.
+         *
+         * @note If not already present, the output directory will be created.
+         */
+        void write_mesh_txt(const std::string &folder_name) const override;
+
+        /**
          * @brief Writes the mesh to a VTK file.
          *
          * It creates a .vtk file for visualization in VTK-compatible software such as ParaView or VisIt.
@@ -113,20 +127,6 @@ namespace Bgk
          * @note If not already present, the output directory will be created.
          */
         void write_mesh_vtk(const std::string &folder_name) const;
-
-        /**
-         * @brief Writes the mesh to a text file.
-         *
-         * It creates a .txt file containing the computational points and volume boundaries of the mesh.
-         * The file will be saved as output/<folder_name>/space_mesh.txt
-         *
-         * @param folder_name The name of the directory.
-         *
-         * @throws std::runtime_error if the mesh is not initialized.
-         *
-         * @note If not already present, the output directory will be created.
-         */
-        void write_mesh_txt(const std::string &folder_name) const;
     };
 }
 
