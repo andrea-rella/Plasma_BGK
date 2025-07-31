@@ -4,7 +4,7 @@
 • riformulare i constructor
 • gnuplot / script python per visualizzare la visualize_mesh
 • see if its possible on paraview to show the computational points
-
+• correct !is_inititialized with !validate_mesh quando opportuno
 
 FUTURE
 • create callable concept for boundary conditions

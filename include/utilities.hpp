@@ -12,6 +12,22 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
+/**
+ * @brief Storage of utility functions and concepts for the Plasma_BGK project.
+ *
+ * In this file, we define various utility functions and concepts that are used throughout the Plasma_BGK project.
+ * These utilities include
+ *
+ * - @see MeshContainer concept to check if a type is a range and holds mesh components.
+ * - @see FloatingPoint concept to check if a type is a floating point type.
+ * - @see SpacingFunction concept to define a callable type for mesh spacing.
+ * - @see MeshNature enum class to define the nature of a mesh (space or velocity).
+ * - @see QUICK_coefficients_p Function to compute QUICK coefficients for finite volume meshes.
+ * - @see QUICK_coefficients_n Function to compute QUICK coefficients for finite volume meshes.
+ *
+ * These utilities are essential for ensuring type safety and providing common functionality across different mesh implementations.
+ */
+
 #ifndef UTILITIES_B121BCD3_6455_43E7_9630_E0343B18BD8C
 #define UTILITIES_B121BCD3_6455_43E7_9630_E0343B18BD8C
 
@@ -21,6 +37,10 @@
 
 namespace Bgk
 {
+
+    // Forward declaration of SpaceMeshFV to avoid circular dependencies.
+    template <typename T>
+    class SpaceMeshFV;
 
     /**
      * @brief Concept for a mesh container.
@@ -72,6 +92,64 @@ namespace Bgk
         VELOCITY
     };
 
+    /**
+     * @brief Computes QUICK coefficients for a given SpaceMeshFV and a POSITIVE velocity.
+     *
+     * Computes the QUICK (quadratic upwind interpolation) coefficients @f$ a_1, a_2 @f$ for a given SpaceMeshFV
+     * mesh such that @f$ \phi_e = \phi_U + a_1 (\phi_D-\phi_U) + a_2 (\phi_U-\phi_{UU}) @f$, where:
+     *
+     * - @f$ a_1 = \frac{ (x_e-x_U) (x_e-x_{UU}) }{ (x_D-x_U) (x_D-x_{UU}) } @f$
+     *
+     * - @f$ a_2 = \frac{ (x_e-x_U) (x_D-x_e) }{ (x_U-x_{UU}) (x_D-x_{UU}) } @f$
+     *
+     * with U = Upstream, D = Downstream, UU = Upstream-Upstream, e = Edge.
+     *
+     * @tparam T precision type of the mesh components.
+     * @param mesh Space mesh to compute the coefficients for.
+     * @return std::vector<T>
+     *
+     * @throws std::runtime_error if the mesh is not initialized or constructed.
+     *
+     * @note The first and last elements of the vector are set to (0., 0.) as they are not used in this specific
+     *       finite volume formulation of the problem.
+     *
+     * @see SpaceMeshFV for more details on the mesh structure.
+     *
+     * @cite ferziger2019computational
+     */
+    template <typename T>
+    std::vector<std::pair<T, T>> QUICK_coefficients_p(const SpaceMeshFV<T> &mesh);
+
+    /**
+     * @brief Computes QUICK coefficients for a given SpaceMeshFV and a NEGATIVE velocity.
+     *
+     * Computes the QUICK (quadratic upwind interpolation) coefficients @f$ a_1, a_2 @f$ for a given SpaceMeshFV
+     * mesh such that @f$ \phi_e = \phi_U + a_1 (\phi_D-\phi_U) + a_2 (\phi_U-\phi_{UU}) @f$, where:
+     *
+     * - @f$ a_1 = \frac{ (x_e-x_U) (x_e-x_{UU}) }{ (x_D-x_U) (x_D-x_{UU}) } @f$
+     *
+     * - @f$ a_2 = \frac{ (x_e-x_U) (x_D-x_e) }{ (x_U-x_{UU}) (x_D-x_{UU}) } @f$
+     *
+     * with U = Upstream, D = Downstream, UU = Upstream-Upstream, e = Edge.
+     *
+     * @tparam T precision type of the mesh components.
+     * @param mesh Space mesh to compute the coefficients for.
+     * @return std::vector<T>
+     *
+     * @throws std::runtime_error if the mesh is not initialized or constructed.
+     *
+     * @note The first and last elements of the vector are set to (0., 0.) as they are not used in this specific
+     *       finite volume formulation of the problem.
+     *
+     * @see SpaceMeshFV for more details on the mesh structure.
+     *
+     * @cite ferziger2019computational
+     */
+    template <typename T>
+    std::vector<std::pair<T, T>> QUICK_coefficients_n(const SpaceMeshFV<T> &mesh);
+
 }
+
+#include "impl/utilities_impl.hpp"
 
 #endif /* UTILITIES_B121BCD3_6455_43E7_9630_E0343B18BD8C */

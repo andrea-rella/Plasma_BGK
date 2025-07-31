@@ -12,8 +12,8 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef SPACEMESHFV_B79617CB_7A6E_46AC_9A8A_2142B11E0C1D
-#define SPACEMESHFV_B79617CB_7A6E_46AC_9A8A_2142B11E0C1D
+#ifndef SPACEMESHFV_ADAC74E0_9DD7_4843_93D3_6435A47FB6E7
+#define SPACEMESHFV_ADAC74E0_9DD7_4843_93D3_6435A47FB6E7
 
 #include <vector>
 #include "ConfigData.hpp"
@@ -49,7 +49,9 @@ namespace Bgk
         std::vector<T> x_vol;
 
     public:
-        // Constructors and destructors
+        // ------ CONSTRUCTORS AND DESTRUCTORS -----------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
+
         SpaceMeshFV() = default;
         SpaceMeshFV(const ConfigData<T> &);
         ~SpaceMeshFV() = default;
@@ -90,10 +92,25 @@ namespace Bgk
          *       x_{i+1/2} = 0.5 (x_i + x_{i+1}), \quad i = 0,\dots,N-1
          *       @f}
          *
-         *
-         *
          */
         void initialize_mesh() override;
+
+        // ---------- GETTERS ----------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
+
+        /// @brief Returns the computational points vector.
+        const std::vector<T> &get_volume_boundaries() const { return x_vol; }
+
+        /**
+         * @brief Get the volume sizes object
+         *
+         * This method computes the sizes of each volume in the mesh x_{i+1/2} - x_{i-1/2} and returns them as a vector.
+         *
+         * @throws std::runtime_error if the mesh is not initialized.
+         *
+         * @return std::vector<T>
+         */
+        std::vector<T> get_volume_sizes() const;
 
         // ---------- OUTPUT METHODS ---------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
@@ -132,4 +149,4 @@ namespace Bgk
 
 #include "impl/SpaceMeshFV_impl.hpp"
 
-#endif /* SPACEMESHFV_B79617CB_7A6E_46AC_9A8A_2142B11E0C1D */
+#endif /* SPACEMESHFV_ADAC74E0_9DD7_4843_93D3_6435A47FB6E7 */

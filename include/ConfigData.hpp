@@ -53,12 +53,14 @@ namespace Bgk
         T v_infty;
 
     public:
-        // Constructors and destructors
+        // ------ CONSTRUCTORS AND DESTRUCTORS -----------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
         ConfigData() = default;
         ConfigData(std::string filename);
         ~ConfigData() = default;
 
-        // Getters
+        // ------ GETTERS --------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
         T get_Z() const { return Z; }
         T get_D() const { return D; }
         int get_N() const { return N; }

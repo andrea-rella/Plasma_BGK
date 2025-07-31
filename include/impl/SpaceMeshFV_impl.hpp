@@ -27,8 +27,8 @@ namespace Bgk
 	SpaceMeshFV<T>::SpaceMeshFV(const ConfigData<T> &config) : BaseMesh1D<T, std::vector<T>>(config), N0(config.get_N0()),
 															   d1(config.get_d1()), d2(config.get_d2()) {}
 
-	// ------------------------------------------------------------------------------
-	// ------------------------------------------------------------------------------
+	// ---------- MESH INITIALIZATION METHODS --------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------
 
 	template <typename T>
 	template <SpacingFunction<T> Spacing>
@@ -54,12 +54,8 @@ namespace Bgk
 		x_vol[this->N + 1] = this->x_comp[this->N];
 
 		this->is_initialized = true;
-		std::cout << "Space Mesh initialized with " << this->x_comp.size() << " computational points and " << this->x_vol.size()
-				  << " volume boundaries." << "\n"
-				  << std::endl;
 	}
 
-	// ------------------------------------------------------------------------------
 	// ------------------------------------------------------------------------------
 
 	template <typename T>
@@ -83,8 +79,24 @@ namespace Bgk
 		initialize_with_custom_spacing(default_spacing);
 	}
 
-	// ------------------------------------------------------------------------------
-	// ------------------------------------------------------------------------------
+	// ---------- GETTERS ----------------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------
+
+	template <typename T>
+	std::vector<T> SpaceMeshFV<T>::get_volume_sizes() const
+	{
+		if (!this->is_initialized)
+			throw std::runtime_error("Mesh not initialized. Call initialize_mesh() first.");
+
+		std::vector<T> volume_sizes(this->N + 1);
+		for (int i = 0; i <= this->N; ++i)
+			volume_sizes[i] = x_vol[i + 1] - x_vol[i];
+
+		return volume_sizes;
+	}
+
+	// ---------- OUTPUT METHODS ---------------------------------------------------------------------
+	// -----------------------------------------------------------------------------------------------
 
 	template <typename T>
 	void SpaceMeshFV<T>::write_mesh_txt(const std::string &folder_name) const
@@ -98,15 +110,11 @@ namespace Bgk
 			std::cerr << "Failed to open file for writing: " << filename << std::endl;
 			return;
 		};
-		txt_file << "\nVolume Boundaries (x_vol):\n";
-		for (const auto &x : x_vol)
-			txt_file << x << "\n";
-
-		std::cout << "Space Mesh Volume Boundaries written to: " << filename << "\n"
-				  << std::endl;
+		txt_file << "Volume Boundaries (index - x_vol):\n";
+		for (std::size_t i = 0; i < x_vol.size(); ++i)
+			txt_file << i << "    " << x_vol[i] << "\n";
 	}
 
-	// ------------------------------------------------------------------------------
 	// ------------------------------------------------------------------------------
 
 	template <typename T>
@@ -175,13 +183,7 @@ namespace Bgk
 
 		for (int i = 0; i < num_cells; ++i)
 			vtk_file << i << "\n";
-
-		std::cout << "2D block space mesh written to: " << filename << "\n"
-				  << std::endl;
 	}
-
-	// ------------------------------------------------------------------------------
-	// ------------------------------------------------------------------------------
 
 }
 

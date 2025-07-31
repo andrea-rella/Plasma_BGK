@@ -42,8 +42,8 @@ namespace Bgk
         bool is_constructed = false;
 
     public:
-        // ----- Constructors and destructors -----------------------------------------------
-        // ----------------------------------------------------------------------------------
+        // ----- CONSTRUCTORS AND DESTRUCTORS ------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
 
         BaseMesh1D() = default;
         BaseMesh1D(ConfigData<T> config) : is_initialized(false), is_constructed(true)
@@ -57,8 +57,8 @@ namespace Bgk
         };
         virtual ~BaseMesh1D() = default;
 
-        // ------ Initialization and validation methods -------------------------------------
-        // ----------------------------------------------------------------------------------
+        // ------ INITIALIZATION -------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
 
         virtual void initialize_mesh() = 0;
 
@@ -87,21 +87,21 @@ namespace Bgk
         /// @brief  Returns boolean indicating whether the mesh is constructed.
         bool isConstructed() const { return is_constructed; }
 
-        // ------ Getters for mesh parameters -----------------------------------------------
-        // ----------------------------------------------------------------------------------
+        // ------ GETTERS FOR MESH PARAMETERS ------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
 
         int get_N() const { return N; }
 
-        // ------ Getters for mesh components -----------------------------------------------
-        // ----------------------------------------------------------------------------------
+        // ------ GETTERS FOR MESH COMPONENTS ------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
         const Container &get_XComp() const { return x_comp; }
 
         auto begin() const { return std::ranges::begin(x_comp); }
         auto end() const { return std::ranges::end(x_comp); }
         auto size() const { return std::ranges::size(x_comp); }
 
-        // ------ OPERATORS -----------------------------------------------------------------
-        // ----------------------------------------------------------------------------------
+        // ------ OPERATORS ------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
 
         /**
          * @brief Access operator to get the computational point at a specific index. Read only.
@@ -141,10 +141,12 @@ namespace Bgk
         /**
          * @brief Writes the mesh to a text file.
          *
-         * It creates a .txt file containing the computational points of the mesh.
-         * The file will be saved as output/<folder_name>/<Nature>_mesh.txt
+         * It creates a .txt file containing the computational points of the mesh. The file will be saved as
+         * output/<folder_name>/<Nature>_mesh.txt and it will contain the index and the corresponding
+         * computational point.
          *
          * @param folder_name The name of the directory.
+         *
          *
          * @throws std::runtime_error if the mesh is not initialized.
          *
@@ -153,7 +155,8 @@ namespace Bgk
         virtual void write_mesh_txt(const std::string &folder_name) const
         {
             if (!this->is_initialized)
-                throw std::runtime_error("Mesh not initialized. Call initialize_mesh() first.");
+                throw std::runtime_error("Trying to write to .txt a mesh wich is not initialized. Call initialize_mesh() first. [" +
+                                         std::string(__FILE__) + ":" + std::to_string(__LINE__) + "]");
 
             std::filesystem::create_directories("output/" + folder_name);
 
@@ -173,16 +176,9 @@ namespace Bgk
                 return;
             }
 
-            txt_file << "Computational Points (x_comp):\n";
-            for (const auto &x : this->x_comp)
-                txt_file << x << "\n";
-
-            if constexpr (Nature == MeshNature::SPACE)
-                std::cout << "Space Mesh written to: " << filename << "\n"
-                          << std::endl;
-            else if constexpr (Nature == MeshNature::VELOCITY)
-                std::cout << "Velocity Mesh written to: " << filename << "\n"
-                          << std::endl;
+            txt_file << "Computational Points (index - x_comp):\n";
+            for (std::size_t i = 0; i < x_comp.size(); ++i)
+                txt_file << i << "    " << this->x_comp[i] << "\n";
         }
     };
 }

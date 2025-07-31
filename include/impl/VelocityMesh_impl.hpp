@@ -54,8 +54,6 @@ namespace Bgk
         }
 
         this->is_initialized = true;
-        std::cout << "Velocity Mesh initialized with " << this->x_comp.size() << " computational points." << "\n"
-                  << std::endl;
     }
 
     // ------------------------------------------------------------------------------

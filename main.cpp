@@ -8,6 +8,24 @@
 #include "ConfigData.hpp"
 #include "SpaceMeshFV.hpp"
 #include "VelocityMesh.hpp"
+#include "utilities.hpp"
+
+void print_vector(const std::vector<std::pair<double, double>> &vec)
+{
+    std::cout << "a_1: " << std::endl;
+    for (const auto &val : vec)
+    {
+        std::cout << val.first << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "a_2: " << std::endl;
+    for (const auto &val : vec)
+    {
+        std::cout << val.second << " ";
+    }
+    std::cout << std::endl;
+};
 
 int main(int argc, char *argv[])
 {
@@ -15,7 +33,8 @@ int main(int argc, char *argv[])
     // This is a simple C++ program that prints "Hello, World!" to the console.
     std::cout << "Eigen, json and muparser work!!!!!!" << std::endl;
 
-    //---- Example usage of ConfigData ----
+    //-------------------------- USAGE OF CONFIG DATA --------------------------
+    // -------------------------------------------------------------------------
 
     std::string configPath = "data/"; // default path
 
@@ -26,7 +45,8 @@ int main(int argc, char *argv[])
 
     Bgk::ConfigData<double> Data(configPath);
 
-    //---- Example usage of SpaceMesh ----
+    //-------------------------- USAGE OF SPACE MESH ---------------------------
+    // -------------------------------------------------------------------------
 
     Bgk::SpaceMeshFV<double> space_mesh(Data);
     space_mesh.initialize_mesh();
@@ -46,12 +66,24 @@ int main(int argc, char *argv[])
     space_mesh.write_mesh_vtk("prova");
     space_mesh.write_mesh_txt("prova");
 
-    //---- Example usage of VelocityMesh ----
+    //------------------------ USAGE OF VELOCITY MESH --------------------------
+    // -------------------------------------------------------------------------
 
     Bgk::VelocityMesh<double> velocity_mesh(Data);
     velocity_mesh.initialize_mesh();
 
     velocity_mesh.write_mesh_txt("prova");
+
+    //-------------------- USAGE OF VELOCITY QUICK COEFF -----------------------
+    // -------------------------------------------------------------------------
+
+    // auto quick_coefficients = Bgk::QUICK_coefficients_p(space_mesh);
+    // std::cout << "QUICK coefficients for Space Mesh (p):" << std::endl;
+    // print_vector(quick_coefficients);
+    //
+    // auto quick_coefficients_n = Bgk::QUICK_coefficients_n(space_mesh);
+    // std::cout << "QUICK coefficients for Space Mesh (n):" << std::endl;
+    // print_vector(quick_coefficients_n);
 
     return 0;
 }
