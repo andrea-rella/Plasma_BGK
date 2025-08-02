@@ -78,6 +78,6 @@ namespace Bgk
     };
 }
 
-#include "impl/VelocityMesh_impl.hpp"
+#include "impl/VelocityMesh.tpp"
 
 #endif /* VELOCITYMESH_FA26FD6E_B376_43B5_B21B_CDE75DDA7C7F */

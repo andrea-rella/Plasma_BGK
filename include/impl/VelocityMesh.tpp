@@ -46,7 +46,7 @@ namespace Bgk
 
         T value;
 
-        for (int i = this->N + 1; i <= 2 * this->N; ++i)
+        for (size_t i = this->N + 1; i <= 2 * this->N; ++i)
         {
             value = spacing_func(i - this->N);
             this->x_comp[i] = value;
@@ -62,7 +62,7 @@ namespace Bgk
     template <typename T>
     void VelocityMesh<T>::initialize_mesh()
     {
-        auto default_spacing = [this](int i) -> T
+        auto default_spacing = [this](size_t i) -> T
         {
             return a1 * i + a2 * std::pow<T>(i, 3);
         };

@@ -5,6 +5,8 @@
 • gnuplot / script python per visualizzare la visualize_mesh
 • see if its possible on paraview to show the computational points
 • correct !is_inititialized with !validate_mesh quando opportuno
+• remove is constructed
+• ask chatGPT the thing about recursive inclusion
 
 FUTURE
-• create callable concept for boundary conditions
+• pch to spedup compiling (see conversation)

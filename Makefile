@@ -6,11 +6,7 @@ CXXFLAGS = -std=c++20 -Wall -Wextra
 CPPFLAGS = -O3 \
     		-I/usr/local/Cellar/nlohmann-json/3.12.0/include \
             -I/usr/local/Cellar/eigen/3.4.0_1/include/eigen3 \
-			-I/usr/local/Cellar/muparser/2.3.5_1/include \
 			-Iinclude
-
-LDFLAGS  = -L/usr/local/Cellar/muparser/2.3.5_1/lib
-LIBS     = -lmuparser
 
 
 # Targets

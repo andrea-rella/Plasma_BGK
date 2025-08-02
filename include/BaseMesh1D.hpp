@@ -35,7 +35,7 @@ namespace Bgk
     class BaseMesh1D
     {
     protected:
-        int N;
+        size_t N;
         Container x_comp;
 
         bool is_initialized = false;
@@ -90,7 +90,7 @@ namespace Bgk
         // ------ GETTERS FOR MESH PARAMETERS ------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        int get_N() const { return N; }
+        size_t get_N() const { return N; }
 
         // ------ GETTERS FOR MESH COMPONENTS ------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------

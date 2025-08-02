@@ -72,7 +72,7 @@ namespace Bgk
      * @tparam T precision type of the mesh components.
      */
     template <typename SpacingFunc, typename T>
-    concept SpacingFunction = requires(SpacingFunc func, int index) {
+    concept SpacingFunction = requires(SpacingFunc func, size_t index) {
         { func(index) } -> std::convertible_to<T>;
     };
 
@@ -90,6 +90,20 @@ namespace Bgk
         SPACE,
         /// Velocity mesh identifier.
         VELOCITY
+    };
+
+    /**
+     * @brief Concept for a function that takes a single argument and returns a value of type T.
+     *
+     * This concept checks if a callable type can be invoked with an argument of type T and returns a value
+     * convertible to T.
+     *
+     * @tparam Func callable type to check.
+     * @tparam T type of the argument and return value.
+     */
+    template <typename Func, typename T>
+    concept SingleArgFunction = requires(Func func, T arg) {
+        { func(arg) } -> std::convertible_to<T>;
     };
 
     /**
@@ -150,6 +164,6 @@ namespace Bgk
 
 }
 
-#include "impl/utilities_impl.hpp"
+#include "impl/utilities.tpp"
 
 #endif /* UTILITIES_B121BCD3_6455_43E7_9630_E0343B18BD8C */

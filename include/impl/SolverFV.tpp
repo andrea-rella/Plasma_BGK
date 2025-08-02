@@ -12,42 +12,40 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef CONFIGDATA_IMPL_EB256154_4013_44BB_AFC8_449639C989E9
-#define CONFIGDATA_IMPL_EB256154_4013_44BB_AFC8_449639C989E9
+#ifndef SOLVERFV_IMPL_CDF025BF_A5BC_40F3_8ED2_AED426E4A6ED
+#define SOLVERFV_IMPL_CDF025BF_A5BC_40F3_8ED2_AED426E4A6ED
 
-#include "../ConfigData.hpp"
-#include <nlohmann/json.hpp>
-#include <fstream>
-
-using json = nlohmann::json;
+#include "../SolverFV.hpp"
 
 namespace Bgk
 {
     template <typename T>
-    ConfigData<T>::ConfigData(std::string filename)
+    SolverFV<T>::SolverFV(const std::string &config_file_path)
+        : Data(config_file_path), Space_mesh(Data), Velocity_mesh(Data)
     {
-        // Parameters will be read from a .json file
+        A = Eigen::SparseMatrix<T>(Space_mesh.get_N() + 1, Space_mesh.get_N() + 1);
+        B = Eigen::SparseMatrix<T>(Space_mesh.get_N() + 1, Space_mesh.get_N() + 1);
+        R = Eigen::SparseMatrix<T>(Space_mesh.get_N() + 1, Space_mesh.get_N() + 1);
 
-        std::ifstream f(filename);
-        json data = json::parse(f);
+        g = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>::Zero(Space_mesh.get_N() + 1, Velocity_mesh.get_N() + 1);
+        h = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>::Zero(Space_mesh.get_N() + 1, Velocity_mesh.get_N() + 1);
 
-        // ---- Mesh parameters ----
+        SolVector = Eigen::Matrix<T, -1, 1>::Zero(Space_mesh.get_N() + 1);
 
-        D = data["mesh"].value("velocity_interval", static_cast<T>(5.0));
-        Z = data["mesh"].value("space_length", static_cast<T>(10.0));
-        N = data["mesh"].value("space_points", 100);
-        N0 = data["mesh"].value("N0", 90);
-        barN = data["mesh"].value("velocity_points", 10);
-        d1 = data["mesh"].value("d1", static_cast<T>(0.1));
-        d2 = data["mesh"].value("d2", static_cast<T>(0.1));
-        a1 = data["mesh"].value("a1", static_cast<T>(0.1));
-        a2 = data["mesh"].value("a2", static_cast<T>(0.1));
+        g0 = [](T)
+        { return T(0); };
+        g_infty = [](T)
+        { return T(0); };
+        h0 = [](T)
+        { return T(0); };
+        h_infty = [](T)
+        { return T(0); };
 
-        // ---- Physical parameters ----
-
-        v_infty = data["physical"].value("v_infty", static_cast<T>(1.0));
-    };
-
+        g_init = [](T)
+        { return T(0); };
+        h_init = [](T)
+        { return T(0); };
+    }
 }
 
-#endif /* CONFIGDATA_IMPL_EB256154_4013_44BB_AFC8_449639C989E9 */
+#endif /* SOLVERFV_IMPL_CDF025BF_A5BC_40F3_8ED2_AED426E4A6ED */

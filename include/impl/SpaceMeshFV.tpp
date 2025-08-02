@@ -43,13 +43,13 @@ namespace Bgk
 		// Computational points x^{(i)}
 		this->x_comp.resize(this->N + 1);
 
-		for (int i = 0; i <= this->N; ++i)
+		for (size_t i = 0; i <= this->N; ++i)
 			this->x_comp[i] = spacing_func(i);
 
 		// ...existing volume boundary code...
 		x_vol.resize(this->N + 2);
 		x_vol[0] = this->x_comp[0];
-		for (int i = 0; i < this->N; ++i)
+		for (size_t i = 0; i < this->N; ++i)
 			x_vol[i + 1] = T{0.5} * (this->x_comp[i] + this->x_comp[i + 1]);
 		x_vol[this->N + 1] = this->x_comp[this->N];
 
@@ -61,7 +61,7 @@ namespace Bgk
 	template <typename T>
 	void SpaceMeshFV<T>::initialize_mesh()
 	{
-		auto default_spacing = [this](int i) -> T
+		auto default_spacing = [this](size_t i) -> T
 		{
 			if (this->N <= N0)
 			{
@@ -137,15 +137,15 @@ namespace Bgk
 		}
 
 		vtk_file << std::fixed << std::setprecision(6);
-		int num_cells = this->N + 1;
-		int num_points = 4 * num_cells;
+		size_t num_cells = this->N + 1;
+		size_t num_points = 4 * num_cells;
 		vtk_file << "# vtk DataFile Version 3.0\n"
 				 << "1D Computational Mesh\n"
 				 << "ASCII\n"
 				 << "DATASET UNSTRUCTURED_GRID\n"
 				 << "POINTS " << num_points << " float\n";
 
-		for (int i = 0; i < num_cells; ++i)
+		for (size_t i = 0; i < num_cells; ++i)
 		{
 			T x_left = x_vol[i];
 			T x_right = x_vol[i + 1];
@@ -160,28 +160,28 @@ namespace Bgk
 
 		vtk_file << "\nCELLS " << num_cells << " " << (5 * num_cells) << "\n";
 
-		for (int i = 0; i < num_cells; ++i)
+		for (size_t i = 0; i < num_cells; ++i)
 		{
-			int idx = i * 4;
+			size_t idx = i * 4;
 			vtk_file << "4 " << idx << " " << idx + 1 << " " << idx + 2 << " " << idx + 3 << "\n";
 		}
 
 		vtk_file << "\nCELL_TYPES " << num_cells << "\n";
 
-		for (int i = 0; i < num_cells; ++i)
+		for (size_t i = 0; i < num_cells; ++i)
 			vtk_file << VTK_QUAD_TYPE << "\n";
 
 		vtk_file << "\nCELL_DATA " << num_cells << "\n"
 				 << "SCALARS cell_width float 1\n"
 				 << "LOOKUP_TABLE default\n";
 
-		for (int i = 0; i < num_cells; ++i)
+		for (size_t i = 0; i < num_cells; ++i)
 			vtk_file << x_vol[i + 1] - x_vol[i] << "\n";
 
 		vtk_file << "SCALARS cell_id int 1\n"
 				 << "LOOKUP_TABLE default\n";
 
-		for (int i = 0; i < num_cells; ++i)
+		for (size_t i = 0; i < num_cells; ++i)
 			vtk_file << i << "\n";
 	}
 

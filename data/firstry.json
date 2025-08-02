@@ -1,7 +1,5 @@
 {
   "mesh": {
-    "space_length": 5,
-    "velocity_interval": 10,
     "space_points": 16,
     "N0": 10,
     "velocity_points": 10,
@@ -12,6 +10,15 @@
   },
 
   "physical": {
-    "v_infty": 5.0
+    "v_infty": 5.0,
+    "T_w_infty": 4.0,
+    "p_w_infty": 3.0,
+    "M_infty": 1.0
+  },
+
+  "simulation": {
+    "time_step": 0.1,
+    "tolerance": 1e-6,
+    "max_iterations": 1000
   }
 }

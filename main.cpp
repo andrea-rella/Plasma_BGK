@@ -3,29 +3,14 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include <nlohmann/json.hpp>
-#include <muParser.h>
 
 #include "ConfigData.hpp"
 #include "SpaceMeshFV.hpp"
 #include "VelocityMesh.hpp"
 #include "utilities.hpp"
+#include "SolverFV.hpp"
 
-void print_vector(const std::vector<std::pair<double, double>> &vec)
-{
-    std::cout << "a_1: " << std::endl;
-    for (const auto &val : vec)
-    {
-        std::cout << val.first << " ";
-    }
-    std::cout << std::endl;
-
-    std::cout << "a_2: " << std::endl;
-    for (const auto &val : vec)
-    {
-        std::cout << val.second << " ";
-    }
-    std::cout << std::endl;
-};
+void print_vector(const std::vector<std::pair<double, double>> &vec);
 
 int main(int argc, char *argv[])
 {
@@ -85,5 +70,27 @@ int main(int argc, char *argv[])
     // std::cout << "QUICK coefficients for Space Mesh (n):" << std::endl;
     // print_vector(quick_coefficients_n);
 
+    //--------------------------- USAGE OF SOLVER ------------------------------
+    // -------------------------------------------------------------------------
+    Bgk::SolverFV<double> solver(configPath);
+    std::cout << "Solver initialized with config: " << configPath << std::endl;
+
     return 0;
 }
+
+void print_vector(const std::vector<std::pair<double, double>> &vec)
+{
+    std::cout << "a_1: " << std::endl;
+    for (const auto &val : vec)
+    {
+        std::cout << val.first << " ";
+    }
+    std::cout << std::endl;
+
+    std::cout << "a_2: " << std::endl;
+    for (const auto &val : vec)
+    {
+        std::cout << val.second << " ";
+    }
+    std::cout << std::endl;
+};

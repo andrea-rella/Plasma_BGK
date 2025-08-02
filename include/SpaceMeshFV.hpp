@@ -42,7 +42,7 @@ namespace Bgk
     class SpaceMeshFV : public BaseMesh1D<T, std::vector<T>, MeshNature::SPACE>
     {
     private:
-        int N0;
+        size_t N0;
         T d1;
         T d2;
 
@@ -147,6 +147,6 @@ namespace Bgk
     };
 }
 
-#include "impl/SpaceMeshFV_impl.hpp"
+#include "impl/SpaceMeshFV.tpp"
 
 #endif /* SPACEMESHFV_ADAC74E0_9DD7_4843_93D3_6435A47FB6E7 */
