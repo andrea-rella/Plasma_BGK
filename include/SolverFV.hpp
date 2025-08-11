@@ -26,6 +26,19 @@
 
 namespace Bgk
 {
+    /**
+     * @brief Finite Volume Solver For the BGK Boltzmann Equation
+     *
+     * @tparam T precision of the computations
+     * @param Data configuration data @see ConfigData
+     * @param Space_mesh spatial finite volume mesh @see SpaceMeshFV
+     * @param Velocity_mesh velocity mesh @see VelocityMesh
+     * @param g, h solution matrices in the phase space @f$ (x,z) @f$ (space, velocity)
+     * @param A, B, R numerical Eigen matrices used to solve the system
+     * @param SolVector vector used to store the solution of the numerical systems
+     * @param g0, g_infty, h0, h_infty boundary conditions
+     * @param g_init, h_init initial conditions
+     */
     template <typename T>
     class SolverFV
     {
@@ -56,22 +69,30 @@ namespace Bgk
         // -----------------------------------------------------------------------------------------------
 
         SolverFV() = default;
+        SolverFV(const ConfigData<T> &InputData);
         SolverFV(const std::string &config_file_path);
         ~SolverFV() = default;
 
         // ------ BUILD MATRICES / SETUP -----------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        void build_A();
-        void build_B();
-        void build_R();
-        void setup();
+        void initializeMeshes();
+        void setInitialState();
+        void assemble_A();
+        void assemble_B();
+        void assemble_R();
+        void initialize();
         void reset();
 
         // solve
         // getters in general
         // setters in general
         // compute Tinf and all the other needed quantities
+
+        // ------ OUTPUT ---------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
+
+        void write_sol_txt(const std::string &folder_name) const;
     };
 }
 

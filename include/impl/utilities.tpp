@@ -21,6 +21,15 @@
 namespace Bgk
 {
 
+     std::string error_message(const std::string &message, const std::source_location &loc)
+     {
+          std::string error_msg;
+          error_msg += "Error at " + std::string(loc.file_name()) + ":" + std::to_string(loc.line()) +
+                       " in " + loc.function_name() + ": " + message + "\n";
+
+          return error_msg;
+     };
+
      template <typename T>
      std::vector<std::pair<T, T>> QUICK_coefficients_p(const SpaceMeshFV<T> &mesh)
      {

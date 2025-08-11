@@ -34,6 +34,7 @@
 #include <concepts>
 #include <ranges>
 #include <string>
+#include <source_location>
 
 namespace Bgk
 {
@@ -91,6 +92,15 @@ namespace Bgk
         /// Velocity mesh identifier.
         VELOCITY
     };
+
+    /**
+     * @brief Wrapper for more informative error messages
+     *
+     * @param message error message
+     * @param loc source code location of the error. Defaulted to std::source_location::current()
+     * @return std::string with the complete error message
+     */
+    std::string error_message(const std::string &message, const std::source_location &loc = std::source_location::current());
 
     /**
      * @brief Concept for a function that takes a single argument and returns a value of type T.

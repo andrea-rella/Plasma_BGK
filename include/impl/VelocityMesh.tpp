@@ -26,8 +26,41 @@ namespace Bgk
     VelocityMesh<T>::VelocityMesh(const ConfigData<T> &config) : BaseMesh1D<T, std::vector<T>, MeshNature::VELOCITY>(config),
                                                                  a1(config.get_a1()), a2(config.get_a2()){};
 
-    // ------------------------------------------------------------------------------
-    // ------------------------------------------------------------------------------
+    // ------ OPERATORS ------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------
+
+    template <typename T>
+    T VelocityMesh<T>::operator[](size_t index) const
+    {
+        assert(index <= 2 * this->N && "Index out of range in VelocityMesh::operator[]");
+        return this->x_comp[index];
+    }
+
+    template <typename T>
+    T &VelocityMesh<T>::operator[](size_t index)
+    {
+        assert(index <= 2 * this->N && "Index out of range in VelocityMesh::operator[]");
+        return this->x_comp[index];
+    }
+
+    template <typename T>
+    T VelocityMesh<T>::at(size_t index) const
+    {
+        if (index > 2 * this->N)
+            throw std::out_of_range("Index out of range in VelocityMesh::at");
+        return this->x_comp[index];
+    }
+
+    template <typename T>
+    T &VelocityMesh<T>::at(size_t index)
+    {
+        if (index > 2 * this->N)
+            throw std::out_of_range("Index out of range in VelocityMesh::at");
+        return this->x_comp[index];
+    }
+
+    // ------ INITIALIZATION -------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------
 
     template <typename T>
     template <SpacingFunction<T> Spacing>
@@ -56,7 +89,6 @@ namespace Bgk
         this->is_initialized = true;
     }
 
-    // ------------------------------------------------------------------------------
     // ------------------------------------------------------------------------------
 
     template <typename T>

@@ -37,6 +37,57 @@ namespace Bgk
         VelocityMesh(const ConfigData<T> &config);
         ~VelocityMesh() = default;
 
+        // ------ OPERATORS ------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
+
+        /**
+         * @brief Access operator to get the computational point at a specific index. Read only.
+         *
+         * @param index The index of the computational point to access.
+         * @return The computational point at the specified index.
+         *
+         * @pre index must be within the dimension of the mesh (<= 2 * N + 1).
+         */
+        T operator[](size_t index) const override;
+
+        /**
+         * @brief Access operator to get the computational point at a specific index.
+         *
+         * @param index The index of the computational point to access.
+         * @return The computational point at the specified index.
+         *
+         * @pre index must be within the dimension of the mesh (<= 2 * N + 1).
+         *
+         * @overload
+         */
+        T &operator[](size_t index) override;
+
+        /**
+         * @brief Bounds-checked access to the computational point at a specific index. Read only.
+         *
+         * @param index The index of the computational point to access.
+         * @return The computational point at the specified index.
+         *
+         * @throws std::out_of_range if index is greater than 2 * N + 1.
+         *
+         * @note This method provides safe access with bounds checking, unlike operator[].
+         */
+        T at(size_t index) const override;
+
+        /**
+         * @brief Bounds-checked access to the computational point at a specific index.
+         *
+         * @param index The index of the computational point to access.
+         * @return Reference to the computational point at the specified index.
+         *
+         * @throws std::out_of_range if index is greater than 2 * N + 1.
+         *
+         * @note This method provides safe access with bounds checking, unlike operator[].
+         *
+         * @overload
+         */
+        T &at(size_t index) override;
+
         // ------ INITIALIZATION -------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 

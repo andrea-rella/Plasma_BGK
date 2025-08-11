@@ -1,5 +1,4 @@
 • checkkare la presenza di tutti i constructor, copy and movable in tutte le classi
-• modify callable concept to take multiple int
 • ask if the std::range concept is useful e quindi nel caso modificare i for loop
 • riformulare i constructor
 • gnuplot / script python per visualizzare la visualize_mesh

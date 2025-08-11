@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 {
     std::string s;
     // This is a simple C++ program that prints "Hello, World!" to the console.
-    std::cout << "Eigen, json and muparser work!!!!!!" << std::endl;
+    std::cout << "Eigen and json work!!!!!!" << std::endl;
 
     //-------------------------- USAGE OF CONFIG DATA --------------------------
     // -------------------------------------------------------------------------
@@ -33,8 +33,8 @@ int main(int argc, char *argv[])
     //-------------------------- USAGE OF SPACE MESH ---------------------------
     // -------------------------------------------------------------------------
 
-    Bgk::SpaceMeshFV<double> space_mesh(Data);
-    space_mesh.initialize_mesh();
+    // Bgk::SpaceMeshFV<double> space_mesh(Data);
+    // space_mesh.initialize_mesh();
 
     // Define uniform spacing
     // double x_start = 0.0;
@@ -48,16 +48,16 @@ int main(int argc, char *argv[])
     //// Initialize with uniform spacing
     // space_mesh.initialize_with_custom_spacing(uniform_spacing);
 
-    space_mesh.write_mesh_vtk("prova");
-    space_mesh.write_mesh_txt("prova");
+    // space_mesh.write_mesh_vtk("prova");
+    //  space_mesh.write_mesh_txt("prova");
 
     //------------------------ USAGE OF VELOCITY MESH --------------------------
     // -------------------------------------------------------------------------
 
-    Bgk::VelocityMesh<double> velocity_mesh(Data);
-    velocity_mesh.initialize_mesh();
+    // Bgk::VelocityMesh<double> velocity_mesh(Data);
+    // velocity_mesh.initialize_mesh();
 
-    velocity_mesh.write_mesh_txt("prova");
+    // velocity_mesh.write_mesh_txt("prova");
 
     //-------------------- USAGE OF VELOCITY QUICK COEFF -----------------------
     // -------------------------------------------------------------------------
@@ -74,6 +74,10 @@ int main(int argc, char *argv[])
     // -------------------------------------------------------------------------
     Bgk::SolverFV<double> solver(configPath);
     std::cout << "Solver initialized with config: " << configPath << std::endl;
+
+    solver.initializeMeshes();
+    solver.setInitialState();
+    solver.write_sol_txt("prova");
 
     return 0;
 }

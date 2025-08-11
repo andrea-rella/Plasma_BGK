@@ -11,8 +11,8 @@
 
   "physical": {
     "v_infty": 5.0,
-    "T_w_infty": 4.0,
-    "p_w_infty": 3.0,
+    "T_infty_w": 4.0,
+    "p_infty_w": 3.0,
     "M_infty": 1.0
   },
 

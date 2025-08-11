@@ -20,6 +20,7 @@
 #include <string>
 #include "ConfigData.hpp"
 #include "utilities.hpp"
+#include <cassert>
 
 namespace Bgk
 {
@@ -109,12 +110,11 @@ namespace Bgk
          * @param index The index of the computational point to access.
          * @return The computational point at the specified index.
          *
-         * @throws std::out_of_range if the index is out of bounds.
+         * @pre index must be within the dimension of the mesh (<= N).
          */
-        T operator[](int index) const
+        virtual T operator[](size_t index) const
         {
-            if (index < 0 || index >= N)
-                throw std::out_of_range("Index out of range in BaseMesh1D::operator[]");
+            assert(index <= N && "Index out of range in BaseMesh1D::operator[]");
             return x_comp[index];
         }
 
@@ -124,14 +124,51 @@ namespace Bgk
          * @param index The index of the computational point to access.
          * @return The computational point at the specified index.
          *
-         * @throws std::out_of_range if the index is out of bounds.
+         * @pre index must be within the dimension of the mesh (<= N).
          *
          * @overload
          */
-        T &operator[](int index)
+        virtual T &operator[](size_t index)
         {
-            if (index < 0 || index >= N)
-                throw std::out_of_range("Index out of range in BaseMesh1D::operator[]");
+            assert(index <= N && "Index out of range in BaseMesh1D::operator[]");
+            return x_comp[index];
+        }
+
+        /**
+         * @brief Bounds-checked access to the computational point at a specific index. Read only.
+         *
+         * @param index The index of the computational point to access.
+         * @return The computational point at the specified index.
+         *
+         * @throws std::out_of_range if index is greater than N.
+         *
+         * @note This method provides safe access with bounds checking, unlike operator[].
+         */
+        virtual T at(size_t index) const
+        {
+            if (index > N)
+                throw std::out_of_range("Index out of range in BaseMesh1D::at()");
+
+            return x_comp[index];
+        }
+
+        /**
+         * @brief Bounds-checked access to the computational point at a specific index.
+         *
+         * @param index The index of the computational point to access.
+         * @return Reference to the computational point at the specified index.
+         *
+         * @throws std::out_of_range if index is greater than N.
+         *
+         * @note This method provides safe access with bounds checking, unlike operator[].
+         *
+         * @overload
+         */
+        virtual T &at(size_t index)
+        {
+            if (index > N)
+                throw std::out_of_range("Index out of range in BaseMesh1D::at()");
+
             return x_comp[index];
         }
 

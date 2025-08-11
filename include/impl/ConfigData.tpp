@@ -44,8 +44,8 @@ namespace Bgk
         // ---- Physical parameters ----
 
         v_infty = data["physical"].value("v_infty", static_cast<T>(5.0));
-        T_w_infty = data["physical"].value("T_w_infty", static_cast<T>(1));
-        p_w_infty = data["physical"].value("p_w_infty", static_cast<T>(3));
+        T_infty_w = data["physical"].value("T_infty_w", static_cast<T>(1));
+        p_infty_w = data["physical"].value("p_infty_w", static_cast<T>(3));
         M_infty = data["physical"].value("M_infty", static_cast<T>(4.0));
 
         // ---- Simulation parameters ----
