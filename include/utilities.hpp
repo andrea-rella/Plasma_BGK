@@ -28,13 +28,58 @@
  * These utilities are essential for ensuring type safety and providing common functionality across different mesh implementations.
  */
 
-#ifndef UTILITIES_B121BCD3_6455_43E7_9630_E0343B18BD8C
-#define UTILITIES_B121BCD3_6455_43E7_9630_E0343B18BD8C
+#ifndef UTILITIES_F9FED3EC_E850_404A_8753_23CF1EDC3674
+#define UTILITIES_F9FED3EC_E850_404A_8753_23CF1EDC3674
 
 #include <concepts>
 #include <ranges>
 #include <string>
 #include <source_location>
+#include <Eigen/Sparse>
+
+/**
+ * @brief Throws a std::runtime_error in debug builds if the condition is false.
+ *        In release builds, logs a warning message instead.
+ *
+ * This macro checks the expression `expr`.
+ * - If `expr` evaluates to false in debug mode (`NDEBUG` **not** defined), it throws an exception with the provided message `msg`.
+ * - If in release mode (`NDEBUG` defined), it prints a warning to `std::cerr` but does not throw.
+ *
+ * @param expr The condition to evaluate.
+ * @param msg  The error message used for the exception or warning.
+ *
+ * @note Use this macro to enforce debug-only sanity checks without crashing release builds.
+ *
+ * @example
+ * DEBUG_THROW_MSG(x >= 0, "x must be non-negative");
+ */
+#ifndef NDEBUG
+#define DEBUG_THROW_MSG(expr, msg)         \
+    do                                     \
+    {                                      \
+        if (!(expr))                       \
+            throw std::runtime_error(msg); \
+    } while (0)
+#else
+#define DEBUG_THROW_MSG(expr, msg)                                                    \
+    do                                                                                \
+    {                                                                                 \
+        if (!(expr))                                                                  \
+        {                                                                             \
+            std::cerr << "Warning: skipped debug check failed: " << msg << std::endl; \
+            /* optionally: log error, notify, etc. */                                 \
+        }                                                                             \
+    } while (0)
+#endif
+
+/**
+ * @brief Wrapper for more informative error messages
+ *
+ * @param message error message
+ * @param loc source code location of the error. Defaulted to std::source_location::current()
+ * @return std::string with the complete error message
+ */
+std::string error_message(const std::string &message, const std::source_location &loc = std::source_location::current());
 
 namespace Bgk
 {
@@ -94,15 +139,6 @@ namespace Bgk
     };
 
     /**
-     * @brief Wrapper for more informative error messages
-     *
-     * @param message error message
-     * @param loc source code location of the error. Defaulted to std::source_location::current()
-     * @return std::string with the complete error message
-     */
-    std::string error_message(const std::string &message, const std::source_location &loc = std::source_location::current());
-
-    /**
      * @brief Concept for a function that takes a single argument and returns a value of type T.
      *
      * This concept checks if a callable type can be invoked with an argument of type T and returns a value
@@ -130,14 +166,14 @@ namespace Bgk
      *
      * @tparam T precision type of the mesh components.
      * @param mesh Space mesh to compute the coefficients for.
-     * @return std::vector<T>
+     * @return std::vector<std::pair<T, T>>
      *
      * @throws std::runtime_error if the mesh is not initialized or constructed.
      *
      * @note The first and last elements of the vector are set to (0., 0.) as they are not used in this specific
      *       finite volume formulation of the problem.
      *
-     * @see SpaceMeshFV for more details on the mesh structure.
+     * @relatesalso SpaceMeshFV.
      *
      * @cite ferziger2019computational
      */
@@ -158,14 +194,14 @@ namespace Bgk
      *
      * @tparam T precision type of the mesh components.
      * @param mesh Space mesh to compute the coefficients for.
-     * @return std::vector<T>
+     * @return std::vector<std::pair<T, T>>
      *
      * @throws std::runtime_error if the mesh is not initialized or constructed.
      *
      * @note The first and last elements of the vector are set to (0., 0.) as they are not used in this specific
      *       finite volume formulation of the problem.
      *
-     * @see SpaceMeshFV for more details on the mesh structure.
+     * @relatesalso SpaceMeshFV
      *
      * @cite ferziger2019computational
      */
@@ -176,4 +212,4 @@ namespace Bgk
 
 #include "impl/utilities.tpp"
 
-#endif /* UTILITIES_B121BCD3_6455_43E7_9630_E0343B18BD8C */
+#endif /* UTILITIES_F9FED3EC_E850_404A_8753_23CF1EDC3674 */

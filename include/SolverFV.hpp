@@ -73,12 +73,40 @@ namespace Bgk
         SolverFV(const std::string &config_file_path);
         ~SolverFV() = default;
 
-        // ------ BUILD MATRICES / SETUP -----------------------------------------------------------------
+        // ------ BUILD NUMERICAL MATRICES / SETUP -------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
         void initializeMeshes();
         void setInitialState();
+
+        /**
+         * @brief Assemble the numerical advection matrix for the case velocity > 0
+         *
+         * This function assembles the numerical advection matrix A for the case where the velocity is positive.
+         * It computes the QUICK coefficients from Space_mesh and populates the matrix according
+         * to the finite volume discretization. (Refer to the library report for further details).
+         *
+         * Such matrix will be used to solve for the points from 1 to N given that the solution in 0 is given by
+         * the boundary condition.
+         *
+         * @see Bgk::QUICK_coefficients_p
+         *
+         */
         void assemble_A();
+
+        /**
+         * @brief Assemble the numerical advection matrix for the case velocity < 0
+         *
+         * This function assembles the numerical advection matrix A for the case where the velocity is positive.
+         * It computes the QUICK coefficients from Space_mesh and populates the matrix according
+         * to the finite volume discretization. (Refer to the library report for further details).
+         *
+         * Such matrix will be used to solve for the points from 0 to N-1 given that the solution in N is given by
+         * the boundary condition.
+         *
+         * @see Bgk::QUICK_coefficients_p
+         *
+         */
         void assemble_B();
         void assemble_R();
         void initialize();

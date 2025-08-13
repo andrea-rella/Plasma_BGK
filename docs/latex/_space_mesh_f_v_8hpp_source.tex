@@ -1,0 +1,75 @@
+\doxysection{Space\+Mesh\+FV.\+hpp}
+\hypertarget{_space_mesh_f_v_8hpp_source}{}\label{_space_mesh_f_v_8hpp_source}\index{/Users/andrearella/Desktop/Plasma\_BGK/include/SpaceMeshFV.hpp@{/Users/andrearella/Desktop/Plasma\_BGK/include/SpaceMeshFV.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ ██▓███\ \ \ ██▓\ \ \ \ ▄▄▄\ \ \ \ \ \ \ \ ██████\ \ ███▄\ ▄███▓\ ▄▄▄\ \ \ \ \ \ \ \ \ \ ▄▄▄▄\ \ \ \ \ ▄████\ \ ██\ ▄█▀}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ ▓██░\ \ ██▒▓██▒\ \ \ ▒████▄\ \ \ \ ▒██\ \ \ \ ▒\ ▓██▒▀█▀\ ██▒▒████▄\ \ \ \ \ \ \ ▓█████▄\ \ ██▒\ ▀█▒\ ██▄█▒}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ ▓██░\ ██▓▒▒██░\ \ \ ▒██\ \ ▀█▄\ \ ░\ ▓██▄\ \ \ ▓██\ \ \ \ ▓██░▒██\ \ ▀█▄\ \ \ \ \ ▒██▒\ ▄██▒██░▄▄▄░▓███▄░}}
+\DoxyCodeLine{00004\ \textcolor{comment}{//\ ▒██▄█▓▒\ ▒▒██░\ \ \ ░██▄▄▄▄██\ \ \ ▒\ \ \ ██▒▒██\ \ \ \ ▒██\ ░██▄▄▄▄██\ \ \ \ ▒██░█▀\ \ ░▓█\ \ ██▓▓██\ █▄}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//\ ▒██▒\ ░\ \ ░░██████▒▓█\ \ \ ▓██▒▒██████▒▒▒██▒\ \ \ ░██▒\ ▓█\ \ \ ▓██▒\ \ \ ░▓█\ \ ▀█▓░▒▓███▀▒▒██▒\ █▄}}
+\DoxyCodeLine{00006\ \textcolor{comment}{//\ ▒▓▒░\ ░\ \ ░░\ ▒░▓\ \ ░▒▒\ \ \ ▓▒█░▒\ ▒▓▒\ ▒\ ░░\ ▒░\ \ \ ░\ \ ░\ ▒▒\ \ \ ▓▒█░\ \ \ ░▒▓███▀▒\ ░▒\ \ \ ▒\ ▒\ ▒▒\ ▓▒}}
+\DoxyCodeLine{00007\ \textcolor{comment}{//\ ░▒\ ░\ \ \ \ \ ░\ ░\ ▒\ \ ░\ ▒\ \ \ ▒▒\ ░░\ ░▒\ \ ░\ ░░\ \ ░\ \ \ \ \ \ ░\ \ ▒\ \ \ ▒▒\ ░\ \ \ ▒░▒\ \ \ ░\ \ \ ░\ \ \ ░\ ░\ ░▒\ ▒░}}
+\DoxyCodeLine{00008\ \textcolor{comment}{//\ ░░\ \ \ \ \ \ \ \ \ ░\ ░\ \ \ \ ░\ \ \ ▒\ \ \ ░\ \ ░\ \ ░\ \ ░\ \ \ \ \ \ ░\ \ \ \ \ ░\ \ \ ▒\ \ \ \ \ \ \ ░\ \ \ \ ░\ ░\ ░\ \ \ ░\ ░\ ░░\ ░}}
+\DoxyCodeLine{00009\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ ░\ \ ░\ \ \ \ \ ░\ \ ░\ \ \ \ \ \ ░\ \ \ \ \ \ \ \ \ ░\ \ \ \ \ \ \ \ \ ░\ \ ░\ \ \ \ ░\ \ \ \ \ \ \ \ \ \ \ \ ░\ ░\ \ ░}}
+\DoxyCodeLine{00010\ \textcolor{comment}{//}}
+\DoxyCodeLine{00011\ \textcolor{comment}{//\ Andrea\ Rella}}
+\DoxyCodeLine{00012\ \textcolor{comment}{//\ Politecnico\ di\ Milano}}
+\DoxyCodeLine{00013\ \textcolor{comment}{//\ https://github.com/andrea-\/rella/Plasma\_BGK}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00015\ \textcolor{preprocessor}{\#ifndef\ SPACEMESHFV\_ADAC74E0\_9DD7\_4843\_93D3\_6435A47FB6E7}}
+\DoxyCodeLine{00016\ \textcolor{preprocessor}{\#define\ SPACEMESHFV\_ADAC74E0\_9DD7\_4843\_93D3\_6435A47FB6E7}}
+\DoxyCodeLine{00017\ }
+\DoxyCodeLine{00018\ \textcolor{preprocessor}{\#include\ <vector>}}
+\DoxyCodeLine{00019\ \textcolor{preprocessor}{\#include\ "{}ConfigData.hpp"{}}}
+\DoxyCodeLine{00020\ \textcolor{preprocessor}{\#include\ "{}BaseMesh1D.hpp"{}}}
+\DoxyCodeLine{00021\ \textcolor{preprocessor}{\#include\ "{}utilities.hpp"{}}}
+\DoxyCodeLine{00022\ }
+\DoxyCodeLine{00023\ \textcolor{keyword}{namespace\ }Bgk}
+\DoxyCodeLine{00024\ \{}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00042\ \ \ \ \ \textcolor{keyword}{class\ }SpaceMeshFV\ :\ \textcolor{keyword}{public}\ BaseMesh1D<T,\ std::vector<T>,\ MeshNature::SPACE>}
+\DoxyCodeLine{00043\ \ \ \ \ \{}
+\DoxyCodeLine{00044\ \ \ \ \ \textcolor{keyword}{private}:}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{size\_t}\ N0;}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ T\ d1;}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \ \ T\ d2;}
+\DoxyCodeLine{00048\ }
+\DoxyCodeLine{00049\ \ \ \ \ \ \ \ \ std::vector<T>\ x\_vol;}
+\DoxyCodeLine{00050\ }
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keyword}{public}:}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/\ CONSTRUCTORS\ AND\ DESTRUCTORS\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00054\ }
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ SpaceMeshFV()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ SpaceMeshFV(\textcolor{keyword}{const}\ \mbox{\hyperlink{class_bgk_1_1_config_data}{ConfigData<T>}}\ \&);}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \string~SpaceMeshFV()\ =\ \textcolor{keywordflow}{default};}
+\DoxyCodeLine{00058\ }
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ MESH\ INITIALIZATION\ METHODS\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00061\ }
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \textcolor{keyword}{template}\ <SpacingFunction<T>\ Spacing>}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v_aff72b15775ace4b29ace940a02f5e47b}{initialize\_with\_custom\_spacing}}(Spacing\ \&\&spacing\_func);}
+\DoxyCodeLine{00078\ }
+\DoxyCodeLine{00096\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v_aba12d69b6aecea87987d54582b7eafa1}{initialize\_mesh}}()\ \textcolor{keyword}{override};}
+\DoxyCodeLine{00097\ }
+\DoxyCodeLine{00098\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ GETTERS\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00099\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00102\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ std::vector<T>\ \&\mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v_afc09fe3e0de954f173f9006ee02de6f0}{get\_volume\_boundaries}}()\textcolor{keyword}{\ const\ }\{\ \textcolor{keywordflow}{return}\ x\_vol;\ \}}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00113\ \ \ \ \ \ \ \ \ std::vector<T>\ \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v_ac76eec08cfe84b4a7a06408fe01c345f}{get\_volume\_sizes}}()\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00114\ }
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/\ OUTPUT\ METHODS\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \textcolor{comment}{//\ -\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/-\/}}
+\DoxyCodeLine{00117\ }
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v_a23a992bedbc9aa27254a96c35e4ff155}{write\_mesh\_txt}}(\textcolor{keyword}{const}\ std::string\ \&folder\_name)\ \textcolor{keyword}{const\ override};}
+\DoxyCodeLine{00131\ }
+\DoxyCodeLine{00146\ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{void}\ \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v_a4ebd6e4aeced13440641ee60a13b0f08}{write\_mesh\_vtk}}(\textcolor{keyword}{const}\ std::string\ \&folder\_name)\ \textcolor{keyword}{const};}
+\DoxyCodeLine{00147\ \ \ \ \ \};}
+\DoxyCodeLine{00148\ \}}
+\DoxyCodeLine{00149\ }
+\DoxyCodeLine{00150\ \textcolor{preprocessor}{\#include\ "{}impl/SpaceMeshFV.tpp"{}}}
+\DoxyCodeLine{00151\ }
+\DoxyCodeLine{00152\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ SPACEMESHFV\_ADAC74E0\_9DD7\_4843\_93D3\_6435A47FB6E7\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

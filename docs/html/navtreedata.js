@@ -25,14 +25,30 @@
 var NAVTREE =
 [
   [ "Plasma BGK", "index.html", [
-    [ "A BGK kinetic model for the study of plasma boundary conditions at the electrodes of corona discharges", "index.html", "index" ]
+    [ "A BGK kinetic model for the study of plasma boundary conditions at the electrodes of corona discharges", "index.html", "index" ],
+    [ "Bibliography", "citelist.html", null ],
+    [ "Concepts", "concepts.html", "concepts" ],
+    [ "Classes", "annotated.html", [
+      [ "Class List", "annotated.html", "annotated_dup" ],
+      [ "Class Index", "classes.html", null ],
+      [ "Class Hierarchy", "hierarchy.html", "hierarchy" ],
+      [ "Class Members", "functions.html", [
+        [ "All", "functions.html", null ],
+        [ "Functions", "functions_func.html", null ]
+      ] ]
+    ] ],
+    [ "Files", "files.html", [
+      [ "File List", "files.html", "files_dup" ]
+    ] ],
+    [ "Examples", "examples.html", "examples" ]
   ] ]
 ];
 
 var NAVTREEINDEX =
 [
-"index.html"
+"_2_users_2andrearella_2_desktop_2_plasma__b_g_k_2include_2utilities_8hpp-example.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';
 var SYNCOFFMSG = 'click to enable panel synchronization';
+var LISTOFALLMEMBERS = 'List of all members';

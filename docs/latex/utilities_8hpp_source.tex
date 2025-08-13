@@ -1,0 +1,91 @@
+\doxysection{utilities.\+hpp}
+\hypertarget{utilities_8hpp_source}{}\label{utilities_8hpp_source}\index{/Users/andrearella/Desktop/Plasma\_BGK/include/utilities.hpp@{/Users/andrearella/Desktop/Plasma\_BGK/include/utilities.hpp}}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \textcolor{comment}{//\ ██▓███\ \ \ ██▓\ \ \ \ ▄▄▄\ \ \ \ \ \ \ \ ██████\ \ ███▄\ ▄███▓\ ▄▄▄\ \ \ \ \ \ \ \ \ \ ▄▄▄▄\ \ \ \ \ ▄████\ \ ██\ ▄█▀}}
+\DoxyCodeLine{00002\ \textcolor{comment}{//\ ▓██░\ \ ██▒▓██▒\ \ \ ▒████▄\ \ \ \ ▒██\ \ \ \ ▒\ ▓██▒▀█▀\ ██▒▒████▄\ \ \ \ \ \ \ ▓█████▄\ \ ██▒\ ▀█▒\ ██▄█▒}}
+\DoxyCodeLine{00003\ \textcolor{comment}{//\ ▓██░\ ██▓▒▒██░\ \ \ ▒██\ \ ▀█▄\ \ ░\ ▓██▄\ \ \ ▓██\ \ \ \ ▓██░▒██\ \ ▀█▄\ \ \ \ \ ▒██▒\ ▄██▒██░▄▄▄░▓███▄░}}
+\DoxyCodeLine{00004\ \textcolor{comment}{//\ ▒██▄█▓▒\ ▒▒██░\ \ \ ░██▄▄▄▄██\ \ \ ▒\ \ \ ██▒▒██\ \ \ \ ▒██\ ░██▄▄▄▄██\ \ \ \ ▒██░█▀\ \ ░▓█\ \ ██▓▓██\ █▄}}
+\DoxyCodeLine{00005\ \textcolor{comment}{//\ ▒██▒\ ░\ \ ░░██████▒▓█\ \ \ ▓██▒▒██████▒▒▒██▒\ \ \ ░██▒\ ▓█\ \ \ ▓██▒\ \ \ ░▓█\ \ ▀█▓░▒▓███▀▒▒██▒\ █▄}}
+\DoxyCodeLine{00006\ \textcolor{comment}{//\ ▒▓▒░\ ░\ \ ░░\ ▒░▓\ \ ░▒▒\ \ \ ▓▒█░▒\ ▒▓▒\ ▒\ ░░\ ▒░\ \ \ ░\ \ ░\ ▒▒\ \ \ ▓▒█░\ \ \ ░▒▓███▀▒\ ░▒\ \ \ ▒\ ▒\ ▒▒\ ▓▒}}
+\DoxyCodeLine{00007\ \textcolor{comment}{//\ ░▒\ ░\ \ \ \ \ ░\ ░\ ▒\ \ ░\ ▒\ \ \ ▒▒\ ░░\ ░▒\ \ ░\ ░░\ \ ░\ \ \ \ \ \ ░\ \ ▒\ \ \ ▒▒\ ░\ \ \ ▒░▒\ \ \ ░\ \ \ ░\ \ \ ░\ ░\ ░▒\ ▒░}}
+\DoxyCodeLine{00008\ \textcolor{comment}{//\ ░░\ \ \ \ \ \ \ \ \ ░\ ░\ \ \ \ ░\ \ \ ▒\ \ \ ░\ \ ░\ \ ░\ \ ░\ \ \ \ \ \ ░\ \ \ \ \ ░\ \ \ ▒\ \ \ \ \ \ \ ░\ \ \ \ ░\ ░\ ░\ \ \ ░\ ░\ ░░\ ░}}
+\DoxyCodeLine{00009\ \textcolor{comment}{//\ \ \ \ \ \ \ \ \ \ \ \ \ \ ░\ \ ░\ \ \ \ \ ░\ \ ░\ \ \ \ \ \ ░\ \ \ \ \ \ \ \ \ ░\ \ \ \ \ \ \ \ \ ░\ \ ░\ \ \ \ ░\ \ \ \ \ \ \ \ \ \ \ \ ░\ ░\ \ ░}}
+\DoxyCodeLine{00010\ \textcolor{comment}{//}}
+\DoxyCodeLine{00011\ \textcolor{comment}{//\ Andrea\ Rella}}
+\DoxyCodeLine{00012\ \textcolor{comment}{//\ Politecnico\ di\ Milano}}
+\DoxyCodeLine{00013\ \textcolor{comment}{//\ https://github.com/andrea-\/rella/Plasma\_BGK}}
+\DoxyCodeLine{00014\ }
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \textcolor{preprocessor}{\#ifndef\ UTILITIES\_F9FED3EC\_E850\_404A\_8753\_23CF1EDC3674}}
+\DoxyCodeLine{00032\ \textcolor{preprocessor}{\#define\ UTILITIES\_F9FED3EC\_E850\_404A\_8753\_23CF1EDC3674}}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \textcolor{preprocessor}{\#include\ <concepts>}}
+\DoxyCodeLine{00035\ \textcolor{preprocessor}{\#include\ <ranges>}}
+\DoxyCodeLine{00036\ \textcolor{preprocessor}{\#include\ <string>}}
+\DoxyCodeLine{00037\ \textcolor{preprocessor}{\#include\ <source\_location>}}
+\DoxyCodeLine{00038\ }
+\DoxyCodeLine{00055\ \textcolor{preprocessor}{\#ifndef\ NDEBUG}}
+\DoxyCodeLine{00056\ \textcolor{preprocessor}{\#define\ DEBUG\_THROW\_MSG(expr,\ msg)\ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00057\ \textcolor{preprocessor}{\ \ \ \ do\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00058\ \textcolor{preprocessor}{\ \ \ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00059\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ if\ (!(expr))\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00060\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ throw\ std::runtime\_error(msg);\ \(\backslash\)}}
+\DoxyCodeLine{00061\ \textcolor{preprocessor}{\ \ \ \ \}\ while\ (0)}}
+\DoxyCodeLine{00062\ \textcolor{preprocessor}{\#else}}
+\DoxyCodeLine{00063\ \textcolor{preprocessor}{\#define\ DEBUG\_THROW\_MSG(expr,\ msg)\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00064\ \textcolor{preprocessor}{\ \ \ \ do\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00065\ \textcolor{preprocessor}{\ \ \ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00066\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ if\ (!(expr))\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00067\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00068\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ std::cerr\ <<\ "{}Warning:\ skipped\ debug\ check\ failed:\ "{}\ <<\ msg\ <<\ std::endl;\ \(\backslash\)}}
+\DoxyCodeLine{00069\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ }\textcolor{comment}{/*\ optionally:\ log\ error,\ notify,\ etc.\ */}\textcolor{preprocessor}{\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00070\ \textcolor{preprocessor}{\ \ \ \ \ \ \ \ \}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \(\backslash\)}}
+\DoxyCodeLine{00071\ \textcolor{preprocessor}{\ \ \ \ \}\ while\ (0)}}
+\DoxyCodeLine{00072\ \textcolor{preprocessor}{\#endif}}
+\DoxyCodeLine{00073\ }
+\DoxyCodeLine{00081\ std::string\ error\_message(\textcolor{keyword}{const}\ std::string\ \&message,\ \textcolor{keyword}{const}\ std::source\_location\ \&loc\ =\ std::source\_location::current());}
+\DoxyCodeLine{00082\ }
+\DoxyCodeLine{00083\ \textcolor{keyword}{namespace\ }Bgk}
+\DoxyCodeLine{00084\ \{}
+\DoxyCodeLine{00085\ }
+\DoxyCodeLine{00086\ \ \ \ \ \textcolor{comment}{//\ Forward\ declaration\ of\ SpaceMeshFV\ to\ avoid\ circular\ dependencies.}}
+\DoxyCodeLine{00087\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00088\ \ \ \ \ \textcolor{keyword}{class\ }\mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v}{SpaceMeshFV}};}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00098\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Container,\ \textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00099\ \ \ \ \ \textcolor{keyword}{concept\ }\mbox{\hyperlink{concept_bgk_1_1_mesh_container}{MeshContainer}}\ =\ std::ranges::range<Container>\ \&\&}
+\DoxyCodeLine{00100\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ std::same\_as<std::ranges::range\_value\_t<Container>,\ T>;}
+\DoxyCodeLine{00101\ }
+\DoxyCodeLine{00107\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00108\ \ \ \ \ \textcolor{keyword}{concept\ }\mbox{\hyperlink{concept_bgk_1_1_floating_point}{FloatingPoint}}\ =\ std::floating\_point<T>;}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00119\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ SpacingFunc,\ \textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00120\ \ \ \ \ \textcolor{keyword}{concept\ }\mbox{\hyperlink{concept_bgk_1_1_spacing_function}{SpacingFunction}}\ =\ \textcolor{keyword}{requires}(SpacingFunc\ func,\ \textcolor{keywordtype}{size\_t}\ index)\ \{}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \{\ func(index)\ \}\ -\/>\ std::convertible\_to<T>;}
+\DoxyCodeLine{00122\ \ \ \ \ \};}
+\DoxyCodeLine{00123\ }
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{keyword}{enum\ class}\ MeshNature}
+\DoxyCodeLine{00133\ \ \ \ \ \{}
+\DoxyCodeLine{00135\ \ \ \ \ \ \ \ \ SPACE,}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ \ \ VELOCITY}
+\DoxyCodeLine{00138\ \ \ \ \ \};}
+\DoxyCodeLine{00139\ }
+\DoxyCodeLine{00149\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ Func,\ \textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00150\ \ \ \ \ \textcolor{keyword}{concept\ }\mbox{\hyperlink{concept_bgk_1_1_single_arg_function}{SingleArgFunction}}\ =\ \textcolor{keyword}{requires}(Func\ func,\ T\ arg)\ \{}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ \ \ \{\ func(arg)\ \}\ -\/>\ std::convertible\_to<T>;}
+\DoxyCodeLine{00152\ \ \ \ \ \};}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00179\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00180\ \ \ \ \ std::vector<std::pair<T,\ T>>\ \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v_a90357225d1cbb07b5f30ae3b65e5bda7}{QUICK\_coefficients\_p}}(\textcolor{keyword}{const}\ SpaceMeshFV<T>\ \&mesh);}
+\DoxyCodeLine{00181\ }
+\DoxyCodeLine{00207\ \ \ \ \ \textcolor{keyword}{template}\ <\textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{00208\ \ \ \ \ std::vector<std::pair<T,\ T>>\ \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v_a22814c13f7d0f157575d3dbc9d63e45d}{QUICK\_coefficients\_n}}(\textcolor{keyword}{const}\ SpaceMeshFV<T>\ \&mesh);}
+\DoxyCodeLine{00209\ }
+\DoxyCodeLine{00210\ \}}
+\DoxyCodeLine{00211\ }
+\DoxyCodeLine{00212\ \textcolor{preprocessor}{\#include\ "{}impl/utilities.tpp"{}}}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \textcolor{preprocessor}{\#endif\ }\textcolor{comment}{/*\ UTILITIES\_F9FED3EC\_E850\_404A\_8753\_23CF1EDC3674\ */}\textcolor{preprocessor}{}}
+
+\end{DoxyCode}

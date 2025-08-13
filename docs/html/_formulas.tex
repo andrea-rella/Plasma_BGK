@@ -1,0 +1,56 @@
+\documentclass{article}
+\usepackage{iftex}
+\usepackage{ifthen}
+\usepackage{epsfig}
+\usepackage[utf8]{inputenc}
+\usepackage{xcolor}
+\ifPDFTeX
+\usepackage{newunicodechar}
+  \makeatletter
+    \def\doxynewunicodechar#1#2{%
+    \@tempswafalse
+    \edef\nuc@tempa{\detokenize{#1}}%
+    \if\relax\nuc@tempa\relax
+      \nuc@emptyargerr
+    \else
+      \edef\@tempb{\expandafter\@car\nuc@tempa\@nil}%
+      \nuc@check
+      \if@tempswa
+        \@namedef{u8:\nuc@tempa}{#2}%
+      \fi
+    \fi
+  }
+  \makeatother
+  \doxynewunicodechar{⁻}{${}^{-}$}% Superscript minus
+  \doxynewunicodechar{²}{${}^{2}$}% Superscript two
+  \doxynewunicodechar{³}{${}^{3}$}% Superscript three
+
+\fi
+\pagestyle{empty}
+\begin{document}
+$ (x,z) $
+\pagebreak
+
+\begin{align*}      x_i = d_1 i + 0.25 (d_2-d_1)(i^4/N_0^3), \quad i = 0,\dots,N_0 \\
+      x_i = x_{N_0} + (i-N_0) d_2, \quad i = N_0+1,\dots,N \\
+      x_{i+1/2} = 0.5 (x_i + x_{i+1}), \quad i = 0,\dots,N-1
+\end{align*}
+\pagebreak
+
+$ a_1, a_2 $
+\pagebreak
+
+$ \phi_e = \phi_U + a_1 (\phi_D-\phi_U) + a_2 (\phi_U-\phi_{UU}) $
+\pagebreak
+
+$ a_1 = \frac{ (x_e-x_U) (x_e-x_{UU}) }{ (x_D-x_U) (x_D-x_{UU}) } $
+\pagebreak
+
+$ a_2 = \frac{ (x_e-x_U) (x_D-x_e) }{ (x_U-x_{UU}) (x_D-x_{UU}) } $
+\pagebreak
+
+\begin{align*}      zeta_j = a_1 \cdot j + a_2 \cdot j^3, \quad j = -2\overline{N}\dots,2\overline{N} \\
+\end{align*}
+\pagebreak
+
+\end{document}

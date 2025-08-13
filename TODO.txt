@@ -9,3 +9,6 @@
 
 FUTURE
 • pch to spedup compiling (see conversation)
+• logger in NDBUG mode like a class that can do myLogger.logWarning(msg);
+• install bibtex for correct bibliography formatting in the doxy html
+• maybe add some further namespaces for better differentiation like Bgk::physical, Bgk::concepts, 

@@ -77,7 +77,10 @@ int main(int argc, char *argv[])
 
     solver.initializeMeshes();
     solver.setInitialState();
-    solver.write_sol_txt("prova");
+    // solver.write_sol_txt("prova");
+    solver.assemble_A();
+    solver.assemble_B();
+    solver.assemble_R();
 
     return 0;
 }

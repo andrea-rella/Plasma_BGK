@@ -1,0 +1,34 @@
+\doxysection{Bgk\+::Spacing\+Function Concept Reference}
+\hypertarget{concept_bgk_1_1_spacing_function}{}\label{concept_bgk_1_1_spacing_function}\index{Bgk::SpacingFunction@{Bgk::SpacingFunction}}
+
+
+Concept for a spacing function.  
+
+
+
+
+{\ttfamily \#include $<$utilities.\+hpp$>$}
+
+\doxysubsection{Concept definition}
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\textcolor{keyword}{template}<\textcolor{keyword}{typename}\ SpacingFunc,\ \textcolor{keyword}{typename}\ T>}
+\DoxyCodeLine{\textcolor{keyword}{concept\ }\mbox{\hyperlink{concept_bgk_1_1_spacing_function}{Bgk::SpacingFunction}}\ =\ \ \textcolor{keyword}{requires}(SpacingFunc\ func,\ \textcolor{keywordtype}{size\_t}\ index)\ \{}
+\DoxyCodeLine{\ \ \ \ \ \ \ \ \{\ func(index)\ \}\ -\/>\ std::convertible\_to<T>;}
+\DoxyCodeLine{\ \ \ \ \}}
+
+\end{DoxyCode}
+
+
+\doxysubsection{Detailed Description}
+Concept for a spacing function. 
+
+This concept checks if a callable type can be invoked with an integer index and returns a value convertible to T.
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em Spacing\+Func} & callable type that defines the spacing. \\
+\hline
+{\em T} & precision type of the mesh components. \\
+\hline
+\end{DoxyTemplParams}

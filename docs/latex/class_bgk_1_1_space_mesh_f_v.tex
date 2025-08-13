@@ -1,0 +1,363 @@
+\doxysection{Bgk\+::Space\+Mesh\+FV\texorpdfstring{$<$}{<} T \texorpdfstring{$>$}{>} Class Template Reference}
+\hypertarget{class_bgk_1_1_space_mesh_f_v}{}\label{class_bgk_1_1_space_mesh_f_v}\index{Bgk::SpaceMeshFV$<$ T $>$@{Bgk::SpaceMeshFV$<$ T $>$}}
+
+
+1D Finite Volume Spache Mesh Class (extends Base\+Mesh$<$\+T, std\+::vector$<$\+T$>$$>$)  
+
+
+
+
+{\ttfamily \#include $<$Space\+Mesh\+FV.\+hpp$>$}
+
+Inheritance diagram for Bgk\+::Space\+Mesh\+FV\texorpdfstring{$<$}{<} T \texorpdfstring{$>$}{>}\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=1.485411cm]{class_bgk_1_1_space_mesh_f_v}
+\end{center}
+\end{figure}
+\doxysubsubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_bgk_1_1_space_mesh_f_v_adee8b3ed7ca8b899031676caefe10b52}\label{class_bgk_1_1_space_mesh_f_v_adee8b3ed7ca8b899031676caefe10b52} 
+{\bfseries Space\+Mesh\+FV} (const \mbox{\hyperlink{class_bgk_1_1_config_data}{Config\+Data}}$<$ T $>$ \&)
+\item 
+{\footnotesize template$<$Spacing\+Function$<$ T $>$ Spacing$>$ }\\void \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v_aff72b15775ace4b29ace940a02f5e47b}{initialize\+\_\+with\+\_\+custom\+\_\+spacing}} (Spacing \&\&spacing\+\_\+func)
+\begin{DoxyCompactList}\small\item\em Initializes the mesh with custom spacing. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v_aba12d69b6aecea87987d54582b7eafa1}{initialize\+\_\+mesh}} () override
+\begin{DoxyCompactList}\small\item\em Initializes the mesh the mesh by filling x\+\_\+comp and x\+\_\+vol vectors with the default spacing (see note). \end{DoxyCompactList}\item 
+\Hypertarget{class_bgk_1_1_space_mesh_f_v_afc09fe3e0de954f173f9006ee02de6f0}\label{class_bgk_1_1_space_mesh_f_v_afc09fe3e0de954f173f9006ee02de6f0} 
+const std\+::vector$<$ T $>$ \& {\bfseries get\+\_\+volume\+\_\+boundaries} () const
+\begin{DoxyCompactList}\small\item\em Returns the computational points vector. \end{DoxyCompactList}\item 
+std\+::vector$<$ T $>$ \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v_ac76eec08cfe84b4a7a06408fe01c345f}{get\+\_\+volume\+\_\+sizes}} () const
+\begin{DoxyCompactList}\small\item\em Get the volume sizes object. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v_a23a992bedbc9aa27254a96c35e4ff155}{write\+\_\+mesh\+\_\+txt}} (const std\+::string \&folder\+\_\+name) const override
+\begin{DoxyCompactList}\small\item\em Writes the mesh to a text file. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v_a4ebd6e4aeced13440641ee60a13b0f08}{write\+\_\+mesh\+\_\+vtk}} (const std\+::string \&folder\+\_\+name) const
+\begin{DoxyCompactList}\small\item\em Writes the mesh to a VTK file. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Member Functions inherited from \mbox{\hyperlink{class_bgk_1_1_base_mesh1_d}{Bgk\+::\+Base\+Mesh1\+D$<$ T, std\+::vector$<$ T $>$, Mesh\+Nature\+::\+SPACE $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+virtual bool {\bfseries validate\+\_\+mesh} () const
+\item 
+virtual void \mbox{\hyperlink{class_bgk_1_1_base_mesh1_d_a676704748bde668d2e8135499029176b}{reset\+\_\+mesh}} ()
+\begin{DoxyCompactList}\small\item\em Resets the mesh components and initialization status. \end{DoxyCompactList}\item 
+bool {\bfseries is\+Initialized} () const
+\begin{DoxyCompactList}\small\item\em Returns boolean indicating whether the mesh is initialized. \end{DoxyCompactList}\item 
+bool {\bfseries is\+Constructed} () const
+\begin{DoxyCompactList}\small\item\em Returns boolean indicating whether the mesh is constructed. \end{DoxyCompactList}\item 
+size\+\_\+t {\bfseries get\+\_\+N} () const
+\item 
+const Container \& {\bfseries get\+\_\+\+XComp} () const
+\item 
+auto {\bfseries begin} () const
+\item 
+auto {\bfseries end} () const
+\item 
+auto {\bfseries size} () const
+\item 
+virtual T \mbox{\hyperlink{class_bgk_1_1_base_mesh1_d_a456e8e8eb6ff1c9c144b658e8164e19d}{operator\mbox{[}$\,$\mbox{]}}} (size\+\_\+t index) const
+\begin{DoxyCompactList}\small\item\em Access operator to get the computational point at a specific index. Read only. \end{DoxyCompactList}\item 
+virtual T \mbox{\hyperlink{class_bgk_1_1_base_mesh1_d_a7f80cd5f5f7ce728ec2833cb9da055d5}{at}} (size\+\_\+t index) const
+\begin{DoxyCompactList}\small\item\em Bounds-\/checked access to the computational point at a specific index. Read only. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Private Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\Hypertarget{class_bgk_1_1_space_mesh_f_v_a93b832567d7a0f6778290d8b35078117}\label{class_bgk_1_1_space_mesh_f_v_a93b832567d7a0f6778290d8b35078117} 
+size\+\_\+t {\bfseries N0}
+\item 
+\Hypertarget{class_bgk_1_1_space_mesh_f_v_ae40f0e4d4b5efc6eec1b541d52cf32ad}\label{class_bgk_1_1_space_mesh_f_v_ae40f0e4d4b5efc6eec1b541d52cf32ad} 
+T {\bfseries d1}
+\item 
+\Hypertarget{class_bgk_1_1_space_mesh_f_v_a199730f5c6ca999f286632330eeb9ed4}\label{class_bgk_1_1_space_mesh_f_v_a199730f5c6ca999f286632330eeb9ed4} 
+T {\bfseries d2}
+\item 
+\Hypertarget{class_bgk_1_1_space_mesh_f_v_a3dab297e1634c529d94df12586eb8349}\label{class_bgk_1_1_space_mesh_f_v_a3dab297e1634c529d94df12586eb8349} 
+std\+::vector$<$ T $>$ {\bfseries x\+\_\+vol}
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Related Symbols}
+(Note that these are not member symbols.) \begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$typename T$>$ }\\std\+::vector$<$ std\+::pair$<$ T, T $>$ $>$ \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v_a90357225d1cbb07b5f30ae3b65e5bda7}{QUICK\+\_\+coefficients\+\_\+p}} (const \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v}{Space\+Mesh\+FV}}$<$ T $>$ \&mesh)
+\begin{DoxyCompactList}\small\item\em Computes QUICK coefficients for a given \doxylink{class_bgk_1_1_space_mesh_f_v}{Space\+Mesh\+FV} and a POSITIVE velocity. \end{DoxyCompactList}\item 
+{\footnotesize template$<$typename T$>$ }\\std\+::vector$<$ std\+::pair$<$ T, T $>$ $>$ \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v_a22814c13f7d0f157575d3dbc9d63e45d}{QUICK\+\_\+coefficients\+\_\+n}} (const \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v}{Space\+Mesh\+FV}}$<$ T $>$ \&mesh)
+\begin{DoxyCompactList}\small\item\em Computes QUICK coefficients for a given \doxylink{class_bgk_1_1_space_mesh_f_v}{Space\+Mesh\+FV} and a NEGATIVE velocity. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsubsection*{Additional Inherited Members}
+\doxysubsection*{Protected Attributes inherited from \mbox{\hyperlink{class_bgk_1_1_base_mesh1_d}{Bgk\+::\+Base\+Mesh1\+D$<$ T, std\+::vector$<$ T $>$, Mesh\+Nature\+::\+SPACE $>$}}}
+\begin{DoxyCompactItemize}
+\item 
+size\+\_\+t {\bfseries N}
+\item 
+Container {\bfseries x\+\_\+comp}
+\item 
+bool {\bfseries is\+\_\+initialized}
+\item 
+bool {\bfseries is\+\_\+constructed}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+\subsubsection*{template$<$typename T$>$\newline
+class Bgk\+::\+Space\+Mesh\+FV$<$ T $>$}
+1D Finite Volume Spache Mesh Class (extends Base\+Mesh$<$\+T, std\+::vector$<$\+T$>$$>$) 
+
+This class implements a 1D finite volume space mesh for the BGK model. It defines the computational points and volume boundaries based on the configuration data provided.
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & Precision type for the mesh (e.\+g., float, double). \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em N0} & Number of initial polynomial points. \\
+\hline
+{\em d1} & Distance between polynomial points. \\
+\hline
+{\em d2} & Distance between uniform points.\\
+\hline
+\end{DoxyParams}
+\texorpdfstring{$<$}{<}T, std\+::vector$<$\+T$>$\texorpdfstring{$>$}{>} \begin{DoxySeeAlso}{See also}
+Base\+Mesh 
+\end{DoxySeeAlso}
+\begin{Desc}
+\item[Examples]\par
+\mbox{\hyperlink{_2_users_2andrearella_2_desktop_2_plasma__b_g_k_2include_2utilities_8hpp-example}{/\+Users/andrearella/\+Desktop/\+Plasma\+\_\+\+BGK/include/utilities.\+hpp}}.\end{Desc}
+
+
+\label{doc-func-members}
+\Hypertarget{class_bgk_1_1_space_mesh_f_v_doc-func-members}
+\doxysubsection{Member Function Documentation}
+\Hypertarget{class_bgk_1_1_space_mesh_f_v_ac76eec08cfe84b4a7a06408fe01c345f}\index{Bgk::SpaceMeshFV$<$ T $>$@{Bgk::SpaceMeshFV$<$ T $>$}!get\_volume\_sizes@{get\_volume\_sizes}}
+\index{get\_volume\_sizes@{get\_volume\_sizes}!Bgk::SpaceMeshFV$<$ T $>$@{Bgk::SpaceMeshFV$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{get\_volume\_sizes()}{get\_volume\_sizes()}}
+{\footnotesize\ttfamily \label{class_bgk_1_1_space_mesh_f_v_ac76eec08cfe84b4a7a06408fe01c345f} 
+template$<$typename T$>$ \\
+std\+::vector$<$ T $>$ \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v}{Bgk\+::\+Space\+Mesh\+FV}}$<$ T $>$\+::get\+\_\+volume\+\_\+sizes (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption}) const}
+
+
+
+Get the volume sizes object. 
+
+This method computes the sizes of each volume in the mesh x\+\_\+\{i+1/2\} -\/ x\+\_\+\{i-\/1/2\} and returns them as a vector.
+
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::runtime\+\_\+error} & if the mesh is not initialized.\\
+\hline
+\end{DoxyExceptions}
+\begin{DoxyReturn}{Returns}
+std\+::vector$<$\+T$>$ 
+\end{DoxyReturn}
+\Hypertarget{class_bgk_1_1_space_mesh_f_v_aba12d69b6aecea87987d54582b7eafa1}\index{Bgk::SpaceMeshFV$<$ T $>$@{Bgk::SpaceMeshFV$<$ T $>$}!initialize\_mesh@{initialize\_mesh}}
+\index{initialize\_mesh@{initialize\_mesh}!Bgk::SpaceMeshFV$<$ T $>$@{Bgk::SpaceMeshFV$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{initialize\_mesh()}{initialize\_mesh()}}
+{\footnotesize\ttfamily \label{class_bgk_1_1_space_mesh_f_v_aba12d69b6aecea87987d54582b7eafa1} 
+template$<$typename T$>$ \\
+void \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v}{Bgk\+::\+Space\+Mesh\+FV}}$<$ T $>$\+::initialize\+\_\+mesh (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Initializes the mesh the mesh by filling x\+\_\+comp and x\+\_\+vol vectors with the default spacing (see note). 
+
+This method computes the computational points and volume boundaries based on the configuration data calling initialize\+\_\+with\+\_\+custom\+\_\+spacing. It uses the polynomial spacing for the first N0 points and uniform spacing for the remaining points.
+
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::runtime\+\_\+error} & if the \doxylink{class_bgk_1_1_space_mesh_f_v}{Space\+Mesh\+FV} object is not constructed.\\
+\hline
+\end{DoxyExceptions}
+\begin{DoxyNote}{Note}
+The mesh is initialized with the following formula {\bfseries \mbox{[}aoki1990numerical\mbox{]}}     \begin{align*}      x_i = d_1 i + 0.25 (d_2-d_1)(i^4/N_0^3), \quad i = 0,\dots,N_0 \\
+      x_i = x_{N_0} + (i-N_0) d_2, \quad i = N_0+1,\dots,N \\
+      x_{i+1/2} = 0.5 (x_i + x_{i+1}), \quad i = 0,\dots,N-1
+\end{align*} 
+\end{DoxyNote}
+
+
+Implements \mbox{\hyperlink{class_bgk_1_1_base_mesh1_d}{Bgk\+::\+Base\+Mesh1\+D$<$ T, std\+::vector$<$ T $>$, Mesh\+Nature\+::\+SPACE $>$}}.
+
+\Hypertarget{class_bgk_1_1_space_mesh_f_v_aff72b15775ace4b29ace940a02f5e47b}\index{Bgk::SpaceMeshFV$<$ T $>$@{Bgk::SpaceMeshFV$<$ T $>$}!initialize\_with\_custom\_spacing@{initialize\_with\_custom\_spacing}}
+\index{initialize\_with\_custom\_spacing@{initialize\_with\_custom\_spacing}!Bgk::SpaceMeshFV$<$ T $>$@{Bgk::SpaceMeshFV$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{initialize\_with\_custom\_spacing()}{initialize\_with\_custom\_spacing()}}
+{\footnotesize\ttfamily \label{class_bgk_1_1_space_mesh_f_v_aff72b15775ace4b29ace940a02f5e47b} 
+template$<$typename T$>$ \\
+template$<$Spacing\+Function$<$ T $>$ Spacing$>$ \\
+void \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v}{Bgk\+::\+Space\+Mesh\+FV}}$<$ T $>$\+::initialize\+\_\+with\+\_\+custom\+\_\+spacing (\begin{DoxyParamCaption}\item[{Spacing \&\&}]{spacing\+\_\+func}{}\end{DoxyParamCaption})}
+
+
+
+Initializes the mesh with custom spacing. 
+
+This method allows the user to define a custom spacing function for the mesh then the computational points and volume boundaries are computed based on the configuration data.
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em Spacing\+Func} & A callable type that takes an integer index and returns a T value representing the spacing at that index. \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em spacing\+\_\+func} & A callable object that defines the custom spacing.\\
+\hline
+\end{DoxyParams}
+\begin{DoxyNote}{Note}
+This method relies on universal references to allow for flexibility in the type of spacing function provided. 
+\end{DoxyNote}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::runtime\+\_\+error} & if the \doxylink{class_bgk_1_1_space_mesh_f_v}{Space\+Mesh\+FV} object is not constructed. \\
+\hline
+\end{DoxyExceptions}
+\Hypertarget{class_bgk_1_1_space_mesh_f_v_a23a992bedbc9aa27254a96c35e4ff155}\index{Bgk::SpaceMeshFV$<$ T $>$@{Bgk::SpaceMeshFV$<$ T $>$}!write\_mesh\_txt@{write\_mesh\_txt}}
+\index{write\_mesh\_txt@{write\_mesh\_txt}!Bgk::SpaceMeshFV$<$ T $>$@{Bgk::SpaceMeshFV$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{write\_mesh\_txt()}{write\_mesh\_txt()}}
+{\footnotesize\ttfamily \label{class_bgk_1_1_space_mesh_f_v_a23a992bedbc9aa27254a96c35e4ff155} 
+template$<$typename T$>$ \\
+void \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v}{Bgk\+::\+Space\+Mesh\+FV}}$<$ T $>$\+::write\+\_\+mesh\+\_\+txt (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{folder\+\_\+name}{}\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [override]}, {\ttfamily [virtual]}}
+
+
+
+Writes the mesh to a text file. 
+
+It creates a .txt file containing the computational points and volume boundaries of the mesh. The file will be saved as output/$<$folder\+\_\+name$>$/space\+\_\+mesh.txt
+
+
+\begin{DoxyParams}{Parameters}
+{\em folder\+\_\+name} & The name of the directory.\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::runtime\+\_\+error} & if the mesh is not initialized.\\
+\hline
+\end{DoxyExceptions}
+\begin{DoxyNote}{Note}
+If not already present, the output directory will be created. 
+\end{DoxyNote}
+
+
+Reimplemented from \mbox{\hyperlink{class_bgk_1_1_base_mesh1_d_abfe5e5c7ff642803bb41f5a5d0a854a4}{Bgk\+::\+Base\+Mesh1\+D$<$ T, std\+::vector$<$ T $>$, Mesh\+Nature\+::\+SPACE $>$}}.
+
+\Hypertarget{class_bgk_1_1_space_mesh_f_v_a4ebd6e4aeced13440641ee60a13b0f08}\index{Bgk::SpaceMeshFV$<$ T $>$@{Bgk::SpaceMeshFV$<$ T $>$}!write\_mesh\_vtk@{write\_mesh\_vtk}}
+\index{write\_mesh\_vtk@{write\_mesh\_vtk}!Bgk::SpaceMeshFV$<$ T $>$@{Bgk::SpaceMeshFV$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{write\_mesh\_vtk()}{write\_mesh\_vtk()}}
+{\footnotesize\ttfamily \label{class_bgk_1_1_space_mesh_f_v_a4ebd6e4aeced13440641ee60a13b0f08} 
+template$<$typename T$>$ \\
+void \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v}{Bgk\+::\+Space\+Mesh\+FV}}$<$ T $>$\+::write\+\_\+mesh\+\_\+vtk (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{folder\+\_\+name}{}\end{DoxyParamCaption}) const}
+
+
+
+Writes the mesh to a VTK file. 
+
+It creates a .vtk file for visualization in VTK-\/compatible software such as Para\+View or Vis\+It. The file will contain the computational points and volume boundaries of the mesh and it will be saved as output/$<$folder\+\_\+name$>$/space\+\_\+mesh.vtk
+
+
+\begin{DoxyParams}{Parameters}
+{\em folder\+\_\+name} & The name of the directory.\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::runtime\+\_\+error} & if the mesh is not initialized.\\
+\hline
+\end{DoxyExceptions}
+\begin{DoxyNote}{Note}
+The VTK file format is structured to allow visualization of the mesh in 3D space. 
+
+If not already present, the output directory will be created. 
+\end{DoxyNote}
+
+
+\label{doc-related-members}
+\Hypertarget{class_bgk_1_1_space_mesh_f_v_doc-related-members}
+\doxysubsection{Friends And Related Symbol Documentation}
+\Hypertarget{class_bgk_1_1_space_mesh_f_v_a22814c13f7d0f157575d3dbc9d63e45d}\index{Bgk::SpaceMeshFV$<$ T $>$@{Bgk::SpaceMeshFV$<$ T $>$}!QUICK\_coefficients\_n@{QUICK\_coefficients\_n}}
+\index{QUICK\_coefficients\_n@{QUICK\_coefficients\_n}!Bgk::SpaceMeshFV$<$ T $>$@{Bgk::SpaceMeshFV$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{QUICK\_coefficients\_n()}{QUICK\_coefficients\_n()}}
+{\footnotesize\ttfamily \label{class_bgk_1_1_space_mesh_f_v_a22814c13f7d0f157575d3dbc9d63e45d} 
+template$<$typename T$>$ \\
+std\+::vector$<$ std\+::pair$<$ T, T $>$ $>$ QUICK\+\_\+coefficients\+\_\+n (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v}{Space\+Mesh\+FV}}$<$ T $>$ \&}]{mesh}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [related]}}
+
+
+
+Computes QUICK coefficients for a given \doxylink{class_bgk_1_1_space_mesh_f_v}{Space\+Mesh\+FV} and a NEGATIVE velocity. 
+
+Computes the QUICK (quadratic upwind interpolation) coefficients $ a_1, a_2 $ for a given \doxylink{class_bgk_1_1_space_mesh_f_v}{Space\+Mesh\+FV} mesh such that $ \phi_e = \phi_U + a_1 (\phi_D-\phi_U) + a_2 (\phi_U-\phi_{UU}) $, where\+:
+
+
+\begin{DoxyItemize}
+\item $ a_1 = \frac{ (x_e-x_U) (x_e-x_{UU}) }{ (x_D-x_U) (x_D-x_{UU}) } $
+\item $ a_2 = \frac{ (x_e-x_U) (x_D-x_e) }{ (x_U-x_{UU}) (x_D-x_{UU}) } $
+\end{DoxyItemize}
+
+with U = Upstream, D = Downstream, UU = Upstream-\/\+Upstream, e = Edge.
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & precision type of the mesh components. \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em mesh} & Space mesh to compute the coefficients for. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+std\+::vector$<$std\+::pair$<$\+T, T$>$$>$
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::runtime\+\_\+error} & if the mesh is not initialized or constructed.\\
+\hline
+\end{DoxyExceptions}
+\begin{DoxyNote}{Note}
+The first and last elements of the vector are set to (0., 0.) as they are not used in this specific finite volume formulation of the problem.
+\end{DoxyNote}
+{\bfseries \mbox{[}ferziger2019computational\mbox{]}} \Hypertarget{class_bgk_1_1_space_mesh_f_v_a90357225d1cbb07b5f30ae3b65e5bda7}\index{Bgk::SpaceMeshFV$<$ T $>$@{Bgk::SpaceMeshFV$<$ T $>$}!QUICK\_coefficients\_p@{QUICK\_coefficients\_p}}
+\index{QUICK\_coefficients\_p@{QUICK\_coefficients\_p}!Bgk::SpaceMeshFV$<$ T $>$@{Bgk::SpaceMeshFV$<$ T $>$}}
+\doxysubsubsection{\texorpdfstring{QUICK\_coefficients\_p()}{QUICK\_coefficients\_p()}}
+{\footnotesize\ttfamily \label{class_bgk_1_1_space_mesh_f_v_a90357225d1cbb07b5f30ae3b65e5bda7} 
+template$<$typename T$>$ \\
+std\+::vector$<$ std\+::pair$<$ T, T $>$ $>$ QUICK\+\_\+coefficients\+\_\+p (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{class_bgk_1_1_space_mesh_f_v}{Space\+Mesh\+FV}}$<$ T $>$ \&}]{mesh}{}\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [related]}}
+
+
+
+Computes QUICK coefficients for a given \doxylink{class_bgk_1_1_space_mesh_f_v}{Space\+Mesh\+FV} and a POSITIVE velocity. 
+
+Computes the QUICK (quadratic upwind interpolation) coefficients $ a_1, a_2 $ for a given \doxylink{class_bgk_1_1_space_mesh_f_v}{Space\+Mesh\+FV} mesh such that $ \phi_e = \phi_U + a_1 (\phi_D-\phi_U) + a_2 (\phi_U-\phi_{UU}) $, where\+:
+
+
+\begin{DoxyItemize}
+\item $ a_1 = \frac{ (x_e-x_U) (x_e-x_{UU}) }{ (x_D-x_U) (x_D-x_{UU}) } $
+\item $ a_2 = \frac{ (x_e-x_U) (x_D-x_e) }{ (x_U-x_{UU}) (x_D-x_{UU}) } $
+\end{DoxyItemize}
+
+with U = Upstream, D = Downstream, UU = Upstream-\/\+Upstream, e = Edge.
+
+
+\begin{DoxyTemplParams}{Template Parameters}
+{\em T} & precision type of the mesh components. \\
+\hline
+\end{DoxyTemplParams}
+
+\begin{DoxyParams}{Parameters}
+{\em mesh} & Space mesh to compute the coefficients for. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+std\+::vector$<$std\+::pair$<$\+T, T$>$$>$
+\end{DoxyReturn}
+
+\begin{DoxyExceptions}{Exceptions}
+{\em std\+::runtime\+\_\+error} & if the mesh is not initialized or constructed.\\
+\hline
+\end{DoxyExceptions}
+\begin{DoxyNote}{Note}
+The first and last elements of the vector are set to (0., 0.) as they are not used in this specific finite volume formulation of the problem.
+\end{DoxyNote}
+{\bfseries \mbox{[}ferziger2019computational\mbox{]}} 
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+/\+Users/andrearella/\+Desktop/\+Plasma\+\_\+\+BGK/include/Space\+Mesh\+FV.\+hpp\item 
+/\+Users/andrearella/\+Desktop/\+Plasma\+\_\+\+BGK/include/utilities.\+hpp\end{DoxyCompactItemize}

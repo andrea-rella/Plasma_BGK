@@ -85,7 +85,7 @@ namespace Bgk
          *
          * @throws std::runtime_error if the SpaceMeshFV object is not constructed.
          *
-         * @note The mesh is initialized with the following formula @cite aoki1990numerical:
+         * @note The mesh is initialized with the following formula @cite aoki1990numerical
          *       @f{align*}
          *       x_i = d_1 i + 0.25 (d_2-d_1)(i^4/N_0^3), \quad i = 0,\dots,N_0 \\
          *       x_i = x_{N_0} + (i-N_0) d_2, \quad i = N_0+1,\dots,N \\

@@ -89,7 +89,7 @@ namespace Bgk
 			throw std::runtime_error("Mesh not initialized. Call initialize_mesh() first.");
 
 		std::vector<T> volume_sizes(this->N + 1);
-		for (int i = 0; i <= this->N; ++i)
+		for (size_t i = 0; i <= this->N; ++i)
 			volume_sizes[i] = x_vol[i + 1] - x_vol[i];
 
 		return volume_sizes;

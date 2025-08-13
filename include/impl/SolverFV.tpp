@@ -12,10 +12,11 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef SOLVERFV_A4D77DB0_B281_477E_A2CA_231E73195044
-#define SOLVERFV_A4D77DB0_B281_477E_A2CA_231E73195044
+#ifndef SOLVERFV_F5CE4BC0_A11B_431A_A0BD_E176318E8B09
+#define SOLVERFV_F5CE4BC0_A11B_431A_A0BD_E176318E8B09
 
 #include "../SolverFV.hpp"
+#include "phys_utils.hpp"
 #include <numbers>
 #include <cmath>
 
@@ -30,8 +31,8 @@ namespace Bgk
     {
 
         // numerical matrices
-        A = Eigen::SparseMatrix<T>(Space_mesh.get_N() + 1, Space_mesh.get_N() + 1);
-        B = Eigen::SparseMatrix<T>(Space_mesh.get_N() + 1, Space_mesh.get_N() + 1);
+        A = Eigen::SparseMatrix<T>(Space_mesh.get_N(), Space_mesh.get_N());
+        B = Eigen::SparseMatrix<T>(Space_mesh.get_N(), Space_mesh.get_N());
         R = Eigen::SparseMatrix<T>(Space_mesh.get_N() + 1, Space_mesh.get_N() + 1);
 
         // solution matrices
@@ -85,7 +86,7 @@ namespace Bgk
     template <typename T>
     SolverFV<T>::SolverFV(const std::string &config_file_path) : SolverFV(ConfigData<T>(config_file_path)){};
 
-    // ------ BUILD MATRICES / SETUP -----------------------------------------------------------------
+    // ------ BUILD NUMERICAL MATRICES / SETUP -------------------------------------------------------
     // -----------------------------------------------------------------------------------------------
 
     template <typename T>
@@ -154,6 +155,217 @@ namespace Bgk
         }
     }
 
+    template <typename T>
+    void SolverFV<T>::assemble_A()
+    {
+        const Eigen::Index N = A.rows();
+        const std::vector<std::pair<T, T>> QUICK_a = QUICK_coefficients_p(Space_mesh);
+        const std::vector<T> vol_sizes = Space_mesh.get_volume_sizes();
+
+        // Reserve space efficiently
+        const Eigen::Index nnz = N + 2 * std::max(Eigen::Index{0}, N - 1) + std::max(Eigen::Index{0}, N - 2);
+        std::vector<Eigen::Triplet<T>> triplets;
+        triplets.reserve(nnz);
+
+        // Helper lambdas
+        auto main_coeff = [&](Eigen::Index i) -> T
+        {
+            return (T{1} - QUICK_a[i + 2].first + QUICK_a[i + 2].second - QUICK_a[i + 1].first) / vol_sizes[i + 1];
+        };
+
+        auto sub1_coeff = [&](Eigen::Index i) -> T
+        {
+            return (QUICK_a[i + 2].second - T{1} + QUICK_a[i + 1].first - QUICK_a[i + 1].second) / vol_sizes[i + 1];
+        };
+
+        auto super1_coeff = [&](Eigen::Index i) -> T
+        {
+            return QUICK_a[i + 2].first / vol_sizes[i + 1];
+        };
+
+        auto sub2_coeff = [&](Eigen::Index i) -> T
+        {
+            return (-QUICK_a[i + 1].second) / vol_sizes[i + 1];
+        };
+
+        // First row (i = 0)
+        triplets.emplace_back(0, 0, main_coeff(0));
+        if (N > 1)
+        {
+            triplets.emplace_back(0, 1, super1_coeff(0));
+        }
+
+        // Second row (i = 1)
+        if (N > 1)
+        {
+            triplets.emplace_back(1, 0, sub1_coeff(1));
+            triplets.emplace_back(1, 1, main_coeff(1));
+            if (N > 2)
+            {
+                triplets.emplace_back(1, 2, super1_coeff(1));
+            }
+        }
+
+        // Interior rows (no conditionals in loop - maximum performance)
+        // Loop from 2 to N-3 (inclusive)
+        const Eigen::Index loop_end = std::max(Eigen::Index{2}, N - 2);
+        for (Eigen::Index i = 2; i < loop_end; ++i)
+        {
+            triplets.emplace_back(i, i - 2, sub2_coeff(i));
+            triplets.emplace_back(i, i - 1, sub1_coeff(i));
+            triplets.emplace_back(i, i, main_coeff(i));
+            triplets.emplace_back(i, i + 1, super1_coeff(i));
+        }
+
+        // Second-to-last row (i = N-2)
+        if (N > 2)
+        {
+            const Eigen::Index i = N - 2;
+            triplets.emplace_back(i, i - 2, sub2_coeff(i));
+            triplets.emplace_back(i, i - 1, sub1_coeff(i));
+            triplets.emplace_back(i, i, main_coeff(i));
+            if (N > 3)
+            {
+                triplets.emplace_back(i, i + 1, super1_coeff(i));
+            }
+        }
+
+        // Last row (i = N-1) (Custum handling)
+        if (N > 1)
+        {
+            const Eigen::Index i = N - 1;
+            if (N > 2)
+            {
+                triplets.emplace_back(i, i - 2, -QUICK_a[i + 1].second / vol_sizes[i + 1]);
+            }
+            triplets.emplace_back(i, i - 1, (QUICK_a[i + 1].first - T{1} - QUICK_a[i + 1].second) / vol_sizes[i + 1]);
+            triplets.emplace_back(i, i, (T{1} - QUICK_a[i + 1].first) / vol_sizes[i + 1]);
+        }
+
+        A.setFromTriplets(triplets.begin(), triplets.end());
+
+        std::cout << "Matrix A:\n"
+                  << Eigen::MatrixXd(A) << "\n";
+
+        std::cout << "Determinant: " << Eigen::MatrixXd(A).determinant() << "\n";
+    }
+
+    template <typename T>
+    void SolverFV<T>::assemble_B()
+    {
+        const Eigen::Index N = B.rows();
+        const std::vector<std::pair<T, T>> QUICK_b = QUICK_coefficients_n(Space_mesh);
+        const std::vector<T> vol_sizes = Space_mesh.get_volume_sizes();
+
+        const Eigen::Index nnz = N + 2 * std::max(Eigen::Index{0}, N - 1) + std::max(Eigen::Index{0}, N - 2);
+        std::vector<Eigen::Triplet<T>> triplets;
+        triplets.reserve(nnz);
+
+        auto main_coeff = [&](Eigen::Index i) -> T
+        {
+            return (QUICK_b[i + 1].first - T{1} + QUICK_b[i].first - QUICK_b[i].second) / vol_sizes[i];
+        };
+
+        auto sub1_coeff = [&](Eigen::Index i) -> T
+        {
+            return -QUICK_b[i].first / vol_sizes[i];
+        };
+
+        auto super1_coeff = [&](Eigen::Index i) -> T
+        {
+            return (T{1} - QUICK_b[i + 1].first + QUICK_b[i + 1].second + QUICK_b[i].second) / vol_sizes[i];
+        };
+
+        auto super2_coeff = [&](Eigen::Index i) -> T
+        {
+            return -QUICK_b[i].second / vol_sizes[i];
+        };
+
+        // First row (i = 0)
+        const Eigen::Index i = 0;
+        triplets.emplace_back(0, 0, (QUICK_b[i + 1].first - T{1}) / vol_sizes[i]);
+        if (N > 1)
+        {
+            triplets.emplace_back(0, 1, (T{1} - QUICK_b[i + 1].first + QUICK_b[i + 1].second) / vol_sizes[i]);
+            if (N > 2)
+            {
+                triplets.emplace_back(0, 2, -QUICK_b[i + 1].second / vol_sizes[i]);
+            }
+        }
+
+        // Second row (i = 1)
+        if (N > 1)
+        {
+            triplets.emplace_back(1, 0, sub1_coeff(1));
+            triplets.emplace_back(1, 1, main_coeff(1));
+            if (N > 2)
+            {
+                triplets.emplace_back(1, 2, super1_coeff(1));
+                if (N > 3)
+                {
+                    triplets.emplace_back(1, 3, super2_coeff(1));
+                }
+            }
+        }
+
+        // Interior rows. Loop from 2 to N-3 (inclusive)
+        const Eigen::Index loop_end = std::max(Eigen::Index{2}, N - 2);
+        for (Eigen::Index i = 2; i < loop_end; ++i)
+        {
+            triplets.emplace_back(i, i - 1, sub1_coeff(i));
+            triplets.emplace_back(i, i, main_coeff(i));
+            triplets.emplace_back(i, i + 1, super1_coeff(i));
+            triplets.emplace_back(i, i + 2, super2_coeff(i));
+        }
+
+        // Second-to-last row (i = N-2)
+        if (N > 2)
+        {
+            const Eigen::Index i = N - 2;
+            triplets.emplace_back(i, i - 1, sub1_coeff(i));
+            triplets.emplace_back(i, i, main_coeff(i));
+            if (N > 3)
+            {
+                triplets.emplace_back(i, i + 1, super1_coeff(i));
+            }
+        }
+
+        // Last row (i = N-1) (Custom handling)
+        if (N > 1)
+        {
+            const Eigen::Index i = N - 1;
+            triplets.emplace_back(i, i - 1, sub1_coeff(i));
+            triplets.emplace_back(i, i, main_coeff(i));
+        }
+
+        B.setFromTriplets(triplets.begin(), triplets.end());
+
+        std::cout << "Matrix B:\n"
+                  << Eigen::MatrixXd(B) << "\n";
+
+        std::cout << "Determinant: " << Eigen::MatrixXd(B).determinant() << "\n";
+    }
+
+    template <typename T>
+    void SolverFV<T>::assemble_R()
+    {
+        const Eigen::Vector<T, Eigen::Dynamic> rho = phys::compute_density(g, Velocity_mesh);
+        const std::vector<T> vol_sizes = Space_mesh.get_volume_sizes();
+        std::vector<Eigen::Triplet<T>> triplets;
+
+        for (Eigen::Index i = 0; i < rho.size(); ++i)
+        {
+            triplets.emplace_back(i, i, T{2} / std::numbers::pi_v<T> * rho[i] / vol_sizes[i]);
+        }
+
+        R.setFromTriplets(triplets.begin(), triplets.end());
+
+        std::cout << "Matrix R:\n"
+                  << Eigen::MatrixXd(R) << "\n";
+
+        std::cout << "Determinant: " << Eigen::MatrixXd(R).determinant() << "\n";
+    }
+
     // ------ OUTPUT ---------------------------------------------------------------------------------
     // -----------------------------------------------------------------------------------------------
 
@@ -210,4 +422,4 @@ namespace Bgk
     }
 }
 
-#endif /* SOLVERFV_A4D77DB0_B281_477E_A2CA_231E73195044 */
+#endif /* SOLVERFV_F5CE4BC0_A11B_431A_A0BD_E176318E8B09 */

@@ -15,6 +15,12 @@ $(MANUAL_FILE).pdf: clean $(MANUAL_FILE).tex
 	        false; \
 	fi
 	$(MKIDX_CMD) $(MANUAL_FILE).idx
+	$(BIBTEX_CMD) $(MANUAL_FILE)
+	$(LATEX_CMD) $(MANUAL_FILE) || \
+	if [ $$? != 0 ] ; then \
+	        \echo "Please consult $(MANUAL_FILE).log to see the error messages" ; \
+	        false; \
+	fi
 	$(LATEX_CMD) $(MANUAL_FILE) || \
 	if [ $$? != 0 ] ; then \
 	        \echo "Please consult $(MANUAL_FILE).log to see the error messages" ; \
