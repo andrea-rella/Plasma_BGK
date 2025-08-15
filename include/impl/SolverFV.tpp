@@ -12,8 +12,8 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef SOLVERFV_F5CE4BC0_A11B_431A_A0BD_E176318E8B09
-#define SOLVERFV_F5CE4BC0_A11B_431A_A0BD_E176318E8B09
+#ifndef SOLVERFV_C02D40C5_F93A_44D7_A456_18B328D68AE9
+#define SOLVERFV_C02D40C5_F93A_44D7_A456_18B328D68AE9
 
 #include "../SolverFV.hpp"
 #include "phys_utils.hpp"
@@ -38,6 +38,10 @@ namespace Bgk
         // solution matrices
         g = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>::Zero(2 * Velocity_mesh.get_N() + 1, Space_mesh.get_N() + 1);
         h = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>::Zero(2 * Velocity_mesh.get_N() + 1, Space_mesh.get_N() + 1);
+        // density, mean velocity and temperature vectors
+        density = Eigen::Vector<T, Eigen::Dynamic>::Zero(Space_mesh.get_N() + 1);
+        mean_velocity = Eigen::Vector<T, Eigen::Dynamic>::Zero(Space_mesh.get_N() + 1);
+        temperature = Eigen::Vector<T, Eigen::Dynamic>::Zero(Space_mesh.get_N() + 1);
 
         // vector used for the solution of the numerical systems
         SolVector = Eigen::Matrix<T, -1, 1>::Zero(Space_mesh.get_N());
@@ -153,6 +157,10 @@ namespace Bgk
                 h(j, i) = h_val;
             }
         }
+
+        density = phys::compute_density(g, Velocity_mesh);
+        mean_velocity = phys::compute_meanGasVelocity(g, Velocity_mesh, density);
+        temperature = phys::compute_temperature(g, h, Velocity_mesh, density, mean_velocity);
     }
 
     template <typename T>
@@ -349,7 +357,7 @@ namespace Bgk
     template <typename T>
     void SolverFV<T>::assemble_R()
     {
-        const Eigen::Vector<T, Eigen::Dynamic> rho = phys::compute_density(g, Velocity_mesh);
+        const Eigen::Vector<T, Eigen::Dynamic> rho = phys::compute_density_at(g, Velocity_mesh);
         const std::vector<T> vol_sizes = Space_mesh.get_volume_sizes();
         std::vector<Eigen::Triplet<T>> triplets;
 
@@ -422,4 +430,4 @@ namespace Bgk
     }
 }
 
-#endif /* SOLVERFV_F5CE4BC0_A11B_431A_A0BD_E176318E8B09 */
+#endif /* SOLVERFV_C02D40C5_F93A_44D7_A456_18B328D68AE9 */

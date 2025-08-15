@@ -1,3 +1,9 @@
+TOMORROW
+• capire se ha senso nel constructor di solverFV inizializzare a zero
+• sistemare dimensioni della matrice R e scrivere la funzione per inizializzare (eventualmente farne due)
+• capire come gestire i RHS e nel caso fare funzioni per inizializzarli
+
+FUTURE
 • checkkare la presenza di tutti i constructor, copy and movable in tutte le classi
 • ask if the std::range concept is useful e quindi nel caso modificare i for loop
 • riformulare i constructor
@@ -6,9 +12,9 @@
 • correct !is_inititialized with !validate_mesh quando opportuno
 • remove is constructed
 • ask chatGPT the thing about recursive inclusion
-
-FUTURE
+• vedi se ha senso inizializzare con lo zero o fare reserve nel constructor del solver
 • pch to spedup compiling (see conversation)
 • logger in NDBUG mode like a class that can do myLogger.logWarning(msg);
 • install bibtex for correct bibliography formatting in the doxy html
-• maybe add some further namespaces for better differentiation like Bgk::physical, Bgk::concepts, 
+• magari creare funzioni che rappresentano le regole di integrazione e poi fare una "intergal factory" 
+  per far scegliere all'user che tipo di regola di integrazione vuole usare

@@ -16,6 +16,7 @@
 #define SOLVERFV_E5B713FB_A80D_4161_86AB_0F68175D69D1
 
 #include "utilities.hpp"
+#include "phys_utils.hpp"
 #include "ConfigData.hpp"
 #include "SpaceMeshFV.hpp"
 #include "VelocityMesh.hpp"
@@ -45,13 +46,14 @@ namespace Bgk
         bool is_initialized = false;
 
         ConfigData<T> Data;
-
         SpaceMeshFV<T> Space_mesh;
-
         VelocityMesh<T> Velocity_mesh;
 
         Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> g;
         Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> h;
+        Eigen::Vector<T, Eigen::Dynamic> density;
+        Eigen::Vector<T, Eigen::Dynamic> mean_velocity;
+        Eigen::Vector<T, Eigen::Dynamic> temperature;
 
         Eigen::SparseMatrix<T> A;
         Eigen::SparseMatrix<T> B;
