@@ -57,14 +57,24 @@ namespace Bgk
 
         Eigen::SparseMatrix<T> A;
         Eigen::SparseMatrix<T> B;
-        Eigen::SparseMatrix<T> R;
+        Eigen::Vector<T, Eigen::Dynamic> R;
 
         Eigen::Matrix<T, -1, 1> SolVector;
 
-        std::function<T(T)> g0, g_infty;
-        std::function<T(T)> h0, h_infty;
+        std::function<T(T z)> g0, g_infty;
+        std::function<T(T z)> h0, h_infty;
 
-        std::function<T(T)> g_init, h_init;
+        std::function<T(T z)> g_init, h_init;
+
+        std::function<T(T z, T rho, T v, T Temp)> G, H;
+
+        // ------ SOLVE HELPERS --------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
+
+        Eigen::Vector<T, Eigen::Dynamic> assemble_U_p(size_t j, T a1_2m, T a2_2m, T delta1) const;
+        Eigen::Vector<T, Eigen::Dynamic> assemble_W_p(size_t j, T a1_2m, T a2_2m, T delta1) const;
+        Eigen::Vector<T, Eigen::Dynamic> assemble_U_m(size_t j, T bN1_2p, T bN2_2p, T sigmaN1) const;
+        Eigen::Vector<T, Eigen::Dynamic> assemble_W_m(size_t j, T bN1_2p, T bN2_2p, T sigmaN1) const;
 
     public:
         // ------ CONSTRUCTORS AND DESTRUCTORS -----------------------------------------------------------
@@ -82,7 +92,7 @@ namespace Bgk
         void setInitialState();
 
         /**
-         * @brief Assemble the numerical advection matrix for the case velocity > 0
+         * @brief Assemble the numerical advection matrix @f$ A / \zeta^{(j)} @f$ for the case velocity > 0
          *
          * This function assembles the numerical advection matrix A for the case where the velocity is positive.
          * It computes the QUICK coefficients from Space_mesh and populates the matrix according
@@ -97,7 +107,7 @@ namespace Bgk
         void assemble_A();
 
         /**
-         * @brief Assemble the numerical advection matrix for the case velocity < 0
+         * @brief Assemble the numerical advection matrix @f$ B / \zeta^{(j)} @f$ for the case velocity < 0
          *
          * This function assembles the numerical advection matrix A for the case where the velocity is positive.
          * It computes the QUICK coefficients from Space_mesh and populates the matrix according
@@ -113,6 +123,9 @@ namespace Bgk
         void assemble_R();
         void initialize();
         void reset();
+
+        // ------ SOLVE  ---------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
 
         // solve
         // getters in general

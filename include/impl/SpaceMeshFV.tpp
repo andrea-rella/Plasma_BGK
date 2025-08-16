@@ -46,12 +46,17 @@ namespace Bgk
 		for (size_t i = 0; i <= this->N; ++i)
 			this->x_comp[i] = spacing_func(i);
 
-		// ...existing volume boundary code...
+		// volume boundaries
 		x_vol.resize(this->N + 2);
+		vol_sizes.resize(this->N + 1);
+
 		x_vol[0] = this->x_comp[0];
 		for (size_t i = 0; i < this->N; ++i)
 			x_vol[i + 1] = T{0.5} * (this->x_comp[i] + this->x_comp[i + 1]);
 		x_vol[this->N + 1] = this->x_comp[this->N];
+
+		for (size_t i = 0; i < this->N + 1; ++i)
+			vol_sizes[i] = x_vol[i + 1] - x_vol[i];
 
 		this->is_initialized = true;
 	}
@@ -81,19 +86,6 @@ namespace Bgk
 
 	// ---------- GETTERS ----------------------------------------------------------------------------
 	// -----------------------------------------------------------------------------------------------
-
-	template <typename T>
-	std::vector<T> SpaceMeshFV<T>::get_volume_sizes() const
-	{
-		if (!this->is_initialized)
-			throw std::runtime_error("Mesh not initialized. Call initialize_mesh() first.");
-
-		std::vector<T> volume_sizes(this->N + 1);
-		for (size_t i = 0; i <= this->N; ++i)
-			volume_sizes[i] = x_vol[i + 1] - x_vol[i];
-
-		return volume_sizes;
-	}
 
 	// ---------- OUTPUT METHODS ---------------------------------------------------------------------
 	// -----------------------------------------------------------------------------------------------

@@ -12,8 +12,8 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef SOLVERFV_C02D40C5_F93A_44D7_A456_18B328D68AE9
-#define SOLVERFV_C02D40C5_F93A_44D7_A456_18B328D68AE9
+#ifndef SOLVERFV_B9E51DC1_CCDA_4E61_87E6_A9072656362B
+#define SOLVERFV_B9E51DC1_CCDA_4E61_87E6_A9072656362B
 
 #include "../SolverFV.hpp"
 #include "phys_utils.hpp"
@@ -33,11 +33,12 @@ namespace Bgk
         // numerical matrices
         A = Eigen::SparseMatrix<T>(Space_mesh.get_N(), Space_mesh.get_N());
         B = Eigen::SparseMatrix<T>(Space_mesh.get_N(), Space_mesh.get_N());
-        R = Eigen::SparseMatrix<T>(Space_mesh.get_N() + 1, Space_mesh.get_N() + 1);
+        R = Eigen::Vector<T, Eigen::Dynamic>::Zero(Space_mesh.get_N() + 1);
 
         // solution matrices
         g = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>::Zero(2 * Velocity_mesh.get_N() + 1, Space_mesh.get_N() + 1);
         h = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>::Zero(2 * Velocity_mesh.get_N() + 1, Space_mesh.get_N() + 1);
+
         // density, mean velocity and temperature vectors
         density = Eigen::Vector<T, Eigen::Dynamic>::Zero(Space_mesh.get_N() + 1);
         mean_velocity = Eigen::Vector<T, Eigen::Dynamic>::Zero(Space_mesh.get_N() + 1);
@@ -84,6 +85,17 @@ namespace Bgk
         {
             return T{1} / std::sqrt(std::numbers::pi_v<T>) * p_infty_w * std::pow(T_infty_w, T{-0.5}) *
                    std::exp(-std::pow((z + std::sqrt(T{5} / T{6} * T_infty_w) * M_infty), T{2}) * (T{1} / T_infty_w));
+        };
+
+        // RHS
+        G = [](T z, T rho, T v, T Temp) -> T
+        {
+            return T{1} / std::sqrt(std::numbers::pi_v<T>) * rho * std::pow(Temp, T{-0.5}) * std::exp(-(z - v) * (z - v) / Temp);
+        };
+
+        H = [](T z, T rho, T v, T Temp) -> T
+        {
+            return T{1} / std::sqrt(std::numbers::pi_v<T>) * rho * std::sqrt(Temp) * std::exp(-(z - v) * (z - v) / Temp);
         };
     }
 
@@ -168,7 +180,7 @@ namespace Bgk
     {
         const Eigen::Index N = A.rows();
         const std::vector<std::pair<T, T>> QUICK_a = QUICK_coefficients_p(Space_mesh);
-        const std::vector<T> vol_sizes = Space_mesh.get_volume_sizes();
+        const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
 
         // Reserve space efficiently
         const Eigen::Index nnz = N + 2 * std::max(Eigen::Index{0}, N - 1) + std::max(Eigen::Index{0}, N - 2);
@@ -263,7 +275,7 @@ namespace Bgk
     {
         const Eigen::Index N = B.rows();
         const std::vector<std::pair<T, T>> QUICK_b = QUICK_coefficients_n(Space_mesh);
-        const std::vector<T> vol_sizes = Space_mesh.get_volume_sizes();
+        const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
 
         const Eigen::Index nnz = N + 2 * std::max(Eigen::Index{0}, N - 1) + std::max(Eigen::Index{0}, N - 2);
         std::vector<Eigen::Triplet<T>> triplets;
@@ -357,21 +369,92 @@ namespace Bgk
     template <typename T>
     void SolverFV<T>::assemble_R()
     {
-        const Eigen::Vector<T, Eigen::Dynamic> rho = phys::compute_density_at(g, Velocity_mesh);
-        const std::vector<T> vol_sizes = Space_mesh.get_volume_sizes();
-        std::vector<Eigen::Triplet<T>> triplets;
-
-        for (Eigen::Index i = 0; i < rho.size(); ++i)
+        const Eigen::Index NN = R.size();
+        const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
+        for (Eigen::Index i = 0; i < NN; ++i)
         {
-            triplets.emplace_back(i, i, T{2} / std::numbers::pi_v<T> * rho[i] / vol_sizes[i]);
+            R[i] = (T{2} / std::numbers::pi_v<T>)*(density[i] / vol_sizes[i]);
+        }
+        return;
+    }
+
+    // ------ SOLVE  ---------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------
+
+    template <typename T>
+    Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_U_p(size_t j, T a1_2m, T a2_2m, T delta1) const
+    {
+        Eigen::Vector<T, Eigen::Dynamic> U_p(Space_mesh.get_N());
+        const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
+
+        for (Eigen::Index i = 0; i < U_p.size(); ++i)
+        {
+            U_p[i] = T{2} / std::numbers::pi_v<T> * (density[i + 1] / vol_sizes[i + 1]) *
+                     G(Velocity_mesh[j], density[i + 1], mean_velocity[i + 1], temperature[i + 1]);
         }
 
-        R.setFromTriplets(triplets.begin(), triplets.end());
+        // boundary correction for the first two entries
+        U_p[0] += (Velocity_mesh[j] / vol_sizes[1]) * (a1_2m - delta1) * g0(Velocity_mesh[j]);
+        U_p[1] += (Velocity_mesh[j] / vol_sizes[2]) * a2_2m * g0(Velocity_mesh[j]);
 
-        std::cout << "Matrix R:\n"
-                  << Eigen::MatrixXd(R) << "\n";
+        return U_p;
+    }
 
-        std::cout << "Determinant: " << Eigen::MatrixXd(R).determinant() << "\n";
+    template <typename T>
+    Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_W_p(size_t j, T a1_2m, T a2_2m, T delta1) const
+    {
+        Eigen::Vector<T, Eigen::Dynamic> W_p(Space_mesh.get_N());
+        const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
+
+        for (Eigen::Index i = 0; i < W_p.size(); ++i)
+        {
+            W_p[i] = T{2} / std::numbers::pi_v<T> * (density[i + 1] / vol_sizes[i + 1]) *
+                     H(Velocity_mesh[j], density[i + 1], mean_velocity[i + 1], temperature[i + 1]);
+        }
+
+        // boundary correction for the first two entries
+        W_p[0] += (Velocity_mesh[j] / vol_sizes[1]) * (a1_2m - delta1) * h0(Velocity_mesh[j]);
+        W_p[1] += (Velocity_mesh[j] / vol_sizes[2]) * a2_2m * h0(Velocity_mesh[j]);
+
+        return W_p;
+    }
+
+    template <typename T>
+    Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_U_m(size_t j, T bN1_2p, T bN2_2p, T sigmaN1) const
+    {
+        Eigen::Vector<T, Eigen::Dynamic> U_m(Space_mesh.get_N());
+        const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
+
+        for (Eigen::Index i = 0; i < U_m.size(); ++i)
+        {
+            U_m[i] = T{2} / std::numbers::pi_v<T> * (density[i] / vol_sizes[i]) *
+                     G(Velocity_mesh[j], density[i], mean_velocity[i], temperature[i]);
+        }
+
+        // boundary correction for the last two entries
+        U_m[U_m.size() - 1] += (Velocity_mesh[j] / vol_sizes[U_m.size() - 1]) * (bN1_2p - sigmaN1) * g_infty(Velocity_mesh[j]);
+        U_m[U_m.size() - 2] += (Velocity_mesh[j] / vol_sizes[U_m.size() - 2]) * bN2_2p * g_infty(Velocity_mesh[j]);
+
+        return U_m;
+    }
+
+    template <typename T>
+    Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_W_m(size_t j, T bN1_2p, T bN2_2p, T sigmaN1) const
+    {
+        Eigen::Vector<T, Eigen::Dynamic> W_m(Space_mesh.get_N());
+        const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
+
+        for (Eigen::Index i = 0; i < W_m.size(); ++i)
+        {
+            W_m[i] = T{2} / std::numbers::pi_v<T> * (density[i] / vol_sizes[i]) *
+                     H(Velocity_mesh[j], density[i], mean_velocity[i], temperature[i]);
+        }
+
+        // boundary correction for the last two entries
+        W_m[W_m.size() - 1] += (Velocity_mesh[j] / vol_sizes[W_m.size() - 1]) * (bN1_2p - sigmaN1) * h_infty(Velocity_mesh[j]);
+        W_m[W_m.size() - 2] += (Velocity_mesh[j] / vol_sizes[W_m.size() - 2]) * bN2_2p * h_infty(Velocity_mesh[j]);
+
+        return W_m;
     }
 
     // ------ OUTPUT ---------------------------------------------------------------------------------
@@ -430,4 +513,4 @@ namespace Bgk
     }
 }
 
-#endif /* SOLVERFV_C02D40C5_F93A_44D7_A456_18B328D68AE9 */
+#endif /* SOLVERFV_B9E51DC1_CCDA_4E61_87E6_A9072656362B */

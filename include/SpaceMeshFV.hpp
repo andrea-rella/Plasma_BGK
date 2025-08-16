@@ -47,6 +47,7 @@ namespace Bgk
         T d2;
 
         std::vector<T> x_vol;
+        std::vector<T> vol_sizes;
 
     public:
         // ------ CONSTRUCTORS AND DESTRUCTORS -----------------------------------------------------------
@@ -63,7 +64,7 @@ namespace Bgk
          * @brief Initializes the mesh with custom spacing.
          *
          * This method allows the user to define a custom spacing function for the mesh then the computational
-         * points and volume boundaries are computed based on the configuration data.
+         * points, volume boundaries and volume sizesare computed based on the configuration data.
          *
          * @tparam SpacingFunc A callable type that takes an integer index and returns a T value
          *         representing the spacing at that index.
@@ -101,16 +102,8 @@ namespace Bgk
         /// @brief Returns the computational points vector.
         const std::vector<T> &get_volume_boundaries() const { return x_vol; }
 
-        /**
-         * @brief Get the volume sizes object
-         *
-         * This method computes the sizes of each volume in the mesh x_{i+1/2} - x_{i-1/2} and returns them as a vector.
-         *
-         * @throws std::runtime_error if the mesh is not initialized.
-         *
-         * @return std::vector<T>
-         */
-        std::vector<T> get_volume_sizes() const;
+        /// @brief Returns the volume sizes vector.
+        const std::vector<T> &get_volume_sizes() const { return vol_sizes; }
 
         // ---------- OUTPUT METHODS ---------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------

@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
     // solver.write_sol_txt("prova");
     // solver.assemble_A();
     // solver.assemble_B();
-    // solver.assemble_R();
+    solver.assemble_R();
 
     return 0;
 }

@@ -1,6 +1,5 @@
 TOMORROW
 • capire se ha senso nel constructor di solverFV inizializzare a zero
-• sistemare dimensioni della matrice R e scrivere la funzione per inizializzare (eventualmente farne due)
 • capire come gestire i RHS e nel caso fare funzioni per inizializzarli
 
 FUTURE
@@ -18,3 +17,15 @@ FUTURE
 • install bibtex for correct bibliography formatting in the doxy html
 • magari creare funzioni che rappresentano le regole di integrazione e poi fare una "intergal factory" 
   per far scegliere all'user che tipo di regola di integrazione vuole usare
+• in the output functions set high precision digits (see conversation)
+• correct quelle lines che usano funzioni che returnano references a vectors
+
+
+FASI FUTURE
+• theory check
+• loop funzionante
+• post processing in python
+• funzione per funzione ottimizzazione
+• aggiunta di errori / assert etc
+• commenti
+• parallel?
