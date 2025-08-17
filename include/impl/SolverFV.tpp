@@ -12,11 +12,12 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef SOLVERFV_B9E51DC1_CCDA_4E61_87E6_A9072656362B
-#define SOLVERFV_B9E51DC1_CCDA_4E61_87E6_A9072656362B
+#ifndef SOLVERFV_BB8B5AD5_E297_4688_B9C1_0E06CCE9B5CB
+#define SOLVERFV_BB8B5AD5_E297_4688_B9C1_0E06CCE9B5CB
 
 #include "../SolverFV.hpp"
 #include "phys_utils.hpp"
+#include "numerics_utils.hpp"
 #include <numbers>
 #include <cmath>
 
@@ -110,6 +111,18 @@ namespace Bgk
     {
         Space_mesh.initialize_mesh();
         Velocity_mesh.initialize_mesh();
+
+        return;
+    }
+
+    template <typename T>
+    void SolverFV<T>::set_physical_quantities()
+    {
+        density = phys::compute_density(g, Velocity_mesh);
+        mean_velocity = phys::compute_meanGasVelocity(g, Velocity_mesh, density);
+        temperature = phys::compute_temperature(g, h, Velocity_mesh, density, mean_velocity);
+
+        return;
     }
 
     template <typename T>
@@ -170,16 +183,16 @@ namespace Bgk
             }
         }
 
-        density = phys::compute_density(g, Velocity_mesh);
-        mean_velocity = phys::compute_meanGasVelocity(g, Velocity_mesh, density);
-        temperature = phys::compute_temperature(g, h, Velocity_mesh, density, mean_velocity);
+        set_physical_quantities();
+
+        return;
     }
 
     template <typename T>
     void SolverFV<T>::assemble_A()
     {
         const Eigen::Index N = A.rows();
-        const std::vector<std::pair<T, T>> QUICK_a = QUICK_coefficients_p(Space_mesh);
+        const std::vector<std::pair<T, T>> QUICK_a = numerics::QUICKcoefficients_p(Space_mesh);
         const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
 
         // Reserve space efficiently
@@ -264,17 +277,14 @@ namespace Bgk
 
         A.setFromTriplets(triplets.begin(), triplets.end());
 
-        std::cout << "Matrix A:\n"
-                  << Eigen::MatrixXd(A) << "\n";
-
-        std::cout << "Determinant: " << Eigen::MatrixXd(A).determinant() << "\n";
+        return;
     }
 
     template <typename T>
     void SolverFV<T>::assemble_B()
     {
         const Eigen::Index N = B.rows();
-        const std::vector<std::pair<T, T>> QUICK_b = QUICK_coefficients_n(Space_mesh);
+        const std::vector<std::pair<T, T>> QUICK_b = numerics::QUICKcoefficients_n(Space_mesh);
         const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
 
         const Eigen::Index nnz = N + 2 * std::max(Eigen::Index{0}, N - 1) + std::max(Eigen::Index{0}, N - 2);
@@ -360,10 +370,7 @@ namespace Bgk
 
         B.setFromTriplets(triplets.begin(), triplets.end());
 
-        std::cout << "Matrix B:\n"
-                  << Eigen::MatrixXd(B) << "\n";
-
-        std::cout << "Determinant: " << Eigen::MatrixXd(B).determinant() << "\n";
+        return;
     }
 
     template <typename T>
@@ -378,7 +385,24 @@ namespace Bgk
         return;
     }
 
-    // ------ SOLVE  ---------------------------------------------------------------------------------
+    template <typename T>
+    void SolverFV<T>::initialize()
+    {
+        std::cout << "Initializing SolverFV..." << std::endl;
+        initializeMeshes();
+        std::cout << "Meshes initialized." << std::endl;
+        setInitialState();
+        std::cout << "Initial state set." << std::endl;
+        assemble_A();
+        assemble_B();
+        assemble_R();
+        std::cout << "Numerical matrices assembled." << std::endl;
+        std::cout << "Assembly complete." << std::endl;
+
+        is_initialized = true;
+    }
+
+    // ------ SOLVE HELPERS  -------------------------------------------------------------------------
     // -----------------------------------------------------------------------------------------------
 
     template <typename T>
@@ -457,6 +481,18 @@ namespace Bgk
         return W_m;
     }
 
+    // ------ SOLVE  ---------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------
+
+    template <typename T>
+    void SolverFV<T>::solve()
+    {
+        if (!is_initialized)
+        {
+            initialize();
+        }
+    }
+
     // ------ OUTPUT ---------------------------------------------------------------------------------
     // -----------------------------------------------------------------------------------------------
 
@@ -513,4 +549,4 @@ namespace Bgk
     }
 }
 
-#endif /* SOLVERFV_B9E51DC1_CCDA_4E61_87E6_A9072656362B */
+#endif /* SOLVERFV_BB8B5AD5_E297_4688_B9C1_0E06CCE9B5CB */

@@ -24,8 +24,10 @@ FUTURE
 FASI FUTURE
 • theory check
 • loop funzionante
+• norms and norm factory per completare il loop
 • post processing in python
 • funzione per funzione ottimizzazione
+• object factory per la quadrature?
 • aggiunta di errori / assert etc
 • commenti
 • parallel?

@@ -152,62 +152,6 @@ namespace Bgk
         { func(arg) } -> std::convertible_to<T>;
     };
 
-    /**
-     * @brief Computes QUICK coefficients for a given SpaceMeshFV and a POSITIVE velocity.
-     *
-     * Computes the QUICK (quadratic upwind interpolation) coefficients @f$ a_1, a_2 @f$ for a given SpaceMeshFV
-     * mesh such that @f$ \phi_e = \phi_U + a_1 (\phi_D-\phi_U) + a_2 (\phi_U-\phi_{UU}) @f$, where:
-     *
-     * - @f$ a_1 = \frac{ (x_e-x_U) (x_e-x_{UU}) }{ (x_D-x_U) (x_D-x_{UU}) } @f$
-     *
-     * - @f$ a_2 = \frac{ (x_e-x_U) (x_D-x_e) }{ (x_U-x_{UU}) (x_D-x_{UU}) } @f$
-     *
-     * with U = Upstream, D = Downstream, UU = Upstream-Upstream, e = Edge.
-     *
-     * @tparam T precision type of the mesh components.
-     * @param mesh Space mesh to compute the coefficients for.
-     * @return std::vector<std::pair<T, T>>
-     *
-     * @throws std::runtime_error if the mesh is not initialized or constructed.
-     *
-     * @note The first and last elements of the vector are set to (0., 0.) as they are not used in this specific
-     *       finite volume formulation of the problem.
-     *
-     * @relatesalso SpaceMeshFV.
-     *
-     * @cite ferziger2019computational
-     */
-    template <typename T>
-    std::vector<std::pair<T, T>> QUICK_coefficients_p(const SpaceMeshFV<T> &mesh);
-
-    /**
-     * @brief Computes QUICK coefficients for a given SpaceMeshFV and a NEGATIVE velocity.
-     *
-     * Computes the QUICK (quadratic upwind interpolation) coefficients @f$ a_1, a_2 @f$ for a given SpaceMeshFV
-     * mesh such that @f$ \phi_e = \phi_U + a_1 (\phi_D-\phi_U) + a_2 (\phi_U-\phi_{UU}) @f$, where:
-     *
-     * - @f$ a_1 = \frac{ (x_e-x_U) (x_e-x_{UU}) }{ (x_D-x_U) (x_D-x_{UU}) } @f$
-     *
-     * - @f$ a_2 = \frac{ (x_e-x_U) (x_D-x_e) }{ (x_U-x_{UU}) (x_D-x_{UU}) } @f$
-     *
-     * with U = Upstream, D = Downstream, UU = Upstream-Upstream, e = Edge.
-     *
-     * @tparam T precision type of the mesh components.
-     * @param mesh Space mesh to compute the coefficients for.
-     * @return std::vector<std::pair<T, T>>
-     *
-     * @throws std::runtime_error if the mesh is not initialized or constructed.
-     *
-     * @note The first and last elements of the vector are set to (0., 0.) as they are not used in this specific
-     *       finite volume formulation of the problem.
-     *
-     * @relatesalso SpaceMeshFV
-     *
-     * @cite ferziger2019computational
-     */
-    template <typename T>
-    std::vector<std::pair<T, T>> QUICK_coefficients_n(const SpaceMeshFV<T> &mesh);
-
 }
 
 #include "impl/utilities.tpp"

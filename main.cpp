@@ -14,10 +14,6 @@ void print_vector(const std::vector<std::pair<double, double>> &vec);
 
 int main(int argc, char *argv[])
 {
-    std::string s;
-    // This is a simple C++ program that prints "Hello, World!" to the console.
-    std::cout << "Eigen and json work!!!!!!" << std::endl;
-
     //-------------------------- USAGE OF CONFIG DATA --------------------------
     // -------------------------------------------------------------------------
 
@@ -73,14 +69,10 @@ int main(int argc, char *argv[])
     //--------------------------- USAGE OF SOLVER ------------------------------
     // -------------------------------------------------------------------------
     Bgk::SolverFV<double> solver(configPath);
-    std::cout << "Solver initialized with config: " << configPath << std::endl;
+    std::cout << "Solver initialized with config: " << configPath << "\n"
+              << std::endl;
 
-    solver.initializeMeshes();
-    solver.setInitialState();
-    // solver.write_sol_txt("prova");
-    // solver.assemble_A();
-    // solver.assemble_B();
-    solver.assemble_R();
+    solver.initialize();
 
     return 0;
 }
