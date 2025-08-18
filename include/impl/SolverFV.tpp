@@ -12,14 +12,15 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef SOLVERFV_BB8B5AD5_E297_4688_B9C1_0E06CCE9B5CB
-#define SOLVERFV_BB8B5AD5_E297_4688_B9C1_0E06CCE9B5CB
+#ifndef SOLVERFV_DD3FD087_53DB_4D80_A7B9_144298818F4F
+#define SOLVERFV_DD3FD087_53DB_4D80_A7B9_144298818F4F
 
 #include "../SolverFV.hpp"
 #include "phys_utils.hpp"
 #include "numerics_utils.hpp"
 #include <numbers>
 #include <cmath>
+#include <Eigen/SparseLU>
 
 namespace Bgk
 {
@@ -192,7 +193,7 @@ namespace Bgk
     void SolverFV<T>::assemble_A()
     {
         const Eigen::Index N = A.rows();
-        const std::vector<std::pair<T, T>> QUICK_a = numerics::QUICKcoefficients_p(Space_mesh);
+        const std::vector<std::pair<T, T>> QUICK_a = numerics::QUICKcoefficients_p<T>(Space_mesh);
         const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
 
         // Reserve space efficiently
@@ -284,7 +285,7 @@ namespace Bgk
     void SolverFV<T>::assemble_B()
     {
         const Eigen::Index N = B.rows();
-        const std::vector<std::pair<T, T>> QUICK_b = numerics::QUICKcoefficients_n(Space_mesh);
+        const std::vector<std::pair<T, T>> QUICK_b = numerics::QUICKcoefficients_n<T>(Space_mesh);
         const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
 
         const Eigen::Index nnz = N + 2 * std::max(Eigen::Index{0}, N - 1) + std::max(Eigen::Index{0}, N - 2);
@@ -406,7 +407,7 @@ namespace Bgk
     // -----------------------------------------------------------------------------------------------
 
     template <typename T>
-    Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_U_p(size_t j, T a1_2m, T a2_2m, T delta1) const
+    Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_U_pos(size_t j, T a1_2m, T a2_2m, T delta1) const
     {
         Eigen::Vector<T, Eigen::Dynamic> U_p(Space_mesh.get_N());
         const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
@@ -425,7 +426,7 @@ namespace Bgk
     }
 
     template <typename T>
-    Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_W_p(size_t j, T a1_2m, T a2_2m, T delta1) const
+    Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_W_pos(size_t j, T a1_2m, T a2_2m, T delta1) const
     {
         Eigen::Vector<T, Eigen::Dynamic> W_p(Space_mesh.get_N());
         const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
@@ -444,7 +445,37 @@ namespace Bgk
     }
 
     template <typename T>
-    Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_U_m(size_t j, T bN1_2p, T bN2_2p, T sigmaN1) const
+    Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_U_zero() const
+    {
+        Eigen::Vector<T, Eigen::Dynamic> U_0(Space_mesh.get_N() + 1);
+        const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
+
+        for (Eigen::Index i = 0; i < U_0.size(); ++i)
+        {
+            U_0[i] = T{2} / std::numbers::pi_v<T> * (density[i] / vol_sizes[i]) *
+                     G(T{0}, density[i], mean_velocity[i], temperature[i]);
+        }
+
+        return U_0;
+    }
+
+    template <typename T>
+    Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_W_zero() const
+    {
+        Eigen::Vector<T, Eigen::Dynamic> W_0(Space_mesh.get_N() + 1);
+        const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
+
+        for (Eigen::Index i = 0; i < W_0.size(); ++i)
+        {
+            W_0[i] = T{2} / std::numbers::pi_v<T> * (density[i] / vol_sizes[i]) *
+                     H(T{0}, density[i], mean_velocity[i], temperature[i]);
+        }
+
+        return W_0;
+    }
+
+    template <typename T>
+    Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_U_neg(size_t j, T bN1_2p, T bN2_2p, T sigmaN1) const
     {
         Eigen::Vector<T, Eigen::Dynamic> U_m(Space_mesh.get_N());
         const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
@@ -463,7 +494,7 @@ namespace Bgk
     }
 
     template <typename T>
-    Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_W_m(size_t j, T bN1_2p, T bN2_2p, T sigmaN1) const
+    Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_W_neg(size_t j, T bN1_2p, T bN2_2p, T sigmaN1) const
     {
         Eigen::Vector<T, Eigen::Dynamic> W_m(Space_mesh.get_N());
         const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
@@ -481,6 +512,181 @@ namespace Bgk
         return W_m;
     }
 
+    template <typename T>
+    void SolverFV<T>::solve_timestep_pos()
+    {
+        const size_t Velocity_N = Velocity_mesh.get_N();
+        const size_t Space_N = Space_mesh.get_N();
+        const T dt = Data.get_dt();
+
+        // Positive velocities are indices Velocity_N+1 .. 2*Velocity_N
+        const size_t j_begin = Velocity_N + 1;
+        const size_t j_end = 2 * Velocity_N; // inclusive
+
+        const std::pair<T, T> a1_m = numerics::QUICKcoefficients_p_at<T>(Space_mesh, 1);
+        const std::pair<T, T> a2_m = numerics::QUICKcoefficients_p_at<T>(Space_mesh, 2);
+        const T delta1 = a2_m.second - T{1} + a1_m.first - a1_m.second;
+
+        // Build diagonal (R part) once
+        Eigen::Vector<T, Eigen::Dynamic> R_loc = R.segment(1, Space_N);
+
+        // Ensure every diagonal entry exists (so adding identity is fast & pattern stable)
+        // for (Eigen::Index i = 0; i < C.rows(); ++i)
+        //  C.coeffRef(i, i) += T{0};
+        // C.makeCompressed();
+
+        Eigen::SparseLU<Eigen::SparseMatrix<T>, Eigen::NaturalOrdering<int>> solver;
+        solver.analyzePattern(A);
+
+        // Reusable buffers
+        Eigen::Vector<T, Eigen::Dynamic> U(Space_N);
+        Eigen::Vector<T, Eigen::Dynamic> W(Space_N);
+        Eigen::Vector<T, Eigen::Dynamic> rhs_g(Space_N);
+        Eigen::Vector<T, Eigen::Dynamic> rhs_h(Space_N);
+        Eigen::SparseMatrix<T> M; // will hold I + alpha * C each iteration
+
+        for (size_t j = j_begin; j <= j_end; ++j)
+        {
+            U = assemble_U_pos(j, a1_m.second, a2_m.second, delta1);
+            W = assemble_W_pos(j, a1_m.second, a2_m.second, delta1);
+
+            Eigen::Vector<T, Eigen::Dynamic> g_j = g.row(j).tail(Space_N);
+            Eigen::Vector<T, Eigen::Dynamic> h_j = h.row(j).tail(Space_N);
+
+            // Rebuild numeric values of M: M = v_j*dt*A + dt*diag(R_loc) + I
+            M = A;                        // copy A pattern & values
+            M *= (Velocity_mesh[j] * dt); // scale A
+            // Add dt*R and identity on diagonal
+            for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(Space_N); ++i)
+                M.coeffRef(i, i) += dt * R_loc[i] + T{1}; //  You can avoid a pattern merge and one temporary by doing in‑place operations.
+            // (C already compressed; coeffRef keeps pattern stable)
+            /**
+             * @note Doing this for loop (modifying in place) is more efficient than summing directly the
+             *       identity iff every diagonal entry already exists (which it does by contruction). Infact:
+             *
+             *       - Expression I + alpha*C triggers a sparse addition: it allocates a fresh matrix, merges
+             *         two patterns (even if Identity is trivial), and copies all nnz.
+             *
+             *       - In‑place: copy C -> M (already compressed), scale (single pass over nnz), then increment
+             *         N diagonal scalars. No pattern merge.
+             *
+             *       Caveat: Using coeffRef(i,i) does a (cheap) binary search per column; if the diagonal entry
+             *       does NOT exist it INSERTS (costly, breaks pattern reuse). So ensure diagonal entries exist beforehand
+             *       (e.g. once: C.coeffRef(i,i) += 0; C.makeCompressed()).
+             */
+
+            solver.factorize(M);
+            if (solver.info() != Eigen::Success)
+                throw std::runtime_error("LU factorization failed in solve_timestep_pos");
+
+            rhs_g = g_j + dt * U;
+            rhs_h = h_j + dt * W;
+
+            auto x = solver.solve(rhs_g);
+            if (solver.info() != Eigen::Success)
+                throw std::runtime_error("Solve (g) failed in solve_timestep_pos");
+            auto y = solver.solve(rhs_h);
+            if (solver.info() != Eigen::Success)
+                throw std::runtime_error("Solve (h) failed in solve_timestep_pos");
+
+            g.row(j).tail(Space_N) = x;
+            h.row(j).tail(Space_N) = y;
+        }
+
+        return;
+    }
+
+    template <typename T>
+    void SolverFV<T>::solve_timestep_neg()
+    {
+        // Implementation for negative velocity timestep
+        const size_t Velocity_N = Velocity_mesh.get_N();
+        const size_t Space_N = Space_mesh.get_N();
+        const T dt = Data.get_dt();
+
+        // Positive velocities are indices Velocity_N+1 .. 2*Velocity_N
+        const size_t j_begin = 0;
+        const size_t j_end = Velocity_N - 1; // inclusive
+
+        const std::pair<T, T> bN1_p = numerics::QUICKcoefficients_n_at<T>(Space_mesh, Space_N);
+        const std::pair<T, T> bN2_p = numerics::QUICKcoefficients_n_at<T>(Space_mesh, Space_N - 1);
+        const T sigmaN1 = T{1} - bN1_p.first + bN1_p.second - bN2_p.second;
+
+        // Precompute constant part C = A + R_mat
+        Eigen::Vector<T, Eigen::Dynamic> R_loc = R.segment(0, Space_N);
+
+        Eigen::SparseLU<Eigen::SparseMatrix<T>, Eigen::NaturalOrdering<int>> solver;
+        solver.analyzePattern(B);
+
+        // Reusable buffers
+        Eigen::Vector<T, Eigen::Dynamic> U(Space_N);
+        Eigen::Vector<T, Eigen::Dynamic> W(Space_N);
+        Eigen::Vector<T, Eigen::Dynamic> rhs_g(Space_N);
+        Eigen::Vector<T, Eigen::Dynamic> rhs_h(Space_N);
+        Eigen::SparseMatrix<T> M; // will hold I + alpha * C each iteration
+
+        for (size_t j = j_begin; j <= j_end; ++j)
+        {
+            U = assemble_U_neg(j, bN1_p.second, bN2_p.second, sigmaN1);
+            W = assemble_W_neg(j, bN1_p.second, bN2_p.second, sigmaN1);
+
+            Eigen::Vector<T, Eigen::Dynamic> g_j = g.row(j).head(Space_N);
+            Eigen::Vector<T, Eigen::Dynamic> h_j = h.row(j).head(Space_N);
+
+            M = B;                        // copy B pattern & values
+            M *= (Velocity_mesh[j] * dt); // scale B
+            // Add dt*R and identity on diagonal
+            for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(Space_N); ++i)
+                M.coeffRef(i, i) += dt * R_loc[i] + T{1};
+
+            solver.factorize(M);
+            if (solver.info() != Eigen::Success)
+                throw std::runtime_error("LU factorization failed in solve_timestep_pos");
+
+            rhs_g = g_j + dt * U;
+            rhs_h = h_j + dt * W;
+
+            auto x = solver.solve(rhs_g);
+            if (solver.info() != Eigen::Success)
+                throw std::runtime_error("Solve (g) failed in solve_timestep_pos");
+            auto y = solver.solve(rhs_h);
+            if (solver.info() != Eigen::Success)
+                throw std::runtime_error("Solve (h) failed in solve_timestep_pos");
+
+            g.row(j).head(Space_N) = x;
+            h.row(j).head(Space_N) = y;
+        }
+    }
+
+    template <typename T>
+    void SolverFV<T>::solve_timestep_zero()
+    {
+        const size_t Velocity_N = Velocity_mesh.get_N();
+        const size_t Space_N = Space_mesh.get_N();
+        const T dt = Data.get_dt();
+
+        // Assemble sources
+        Eigen::Vector<T, Eigen::Dynamic> U = assemble_U_zero(); // size = Space_N + 1
+        Eigen::Vector<T, Eigen::Dynamic> W = assemble_W_zero(); // size = Space_N + 1
+
+        Eigen::Vector<T, Eigen::Dynamic> g_j = g.row(Velocity_N); // copy (row vector -> column vector)
+        Eigen::Vector<T, Eigen::Dynamic> h_j = h.row(Velocity_N);
+
+        Eigen::Vector<T, Eigen::Dynamic> rhs_g = g_j + dt * U;
+        Eigen::Vector<T, Eigen::Dynamic> rhs_h = h_j + dt * W;
+
+        // Diagonal solve: (I + dt * R) x = rhs
+        // R has size Space_N + 1 (matches zero-velocity row length)
+        Eigen::Vector<T, Eigen::Dynamic> denom = Eigen::Vector<T, Eigen::Dynamic>::Ones(Space_N + 1);
+        denom.noalias() += dt * R; // element-wise: 1 + dt*R_i
+
+        Eigen::Vector<T, Eigen::Dynamic> x = rhs_g.cwiseQuotient(denom);
+        Eigen::Vector<T, Eigen::Dynamic> y = rhs_h.cwiseQuotient(denom);
+
+        g.row(Velocity_N) = x.transpose();
+        h.row(Velocity_N) = y.transpose();
+    }
+
     // ------ SOLVE  ---------------------------------------------------------------------------------
     // -----------------------------------------------------------------------------------------------
 
@@ -491,6 +697,19 @@ namespace Bgk
         {
             initialize();
         }
+
+        size_t k = 0;
+
+        std::cout << "SolverFV: Starting iterations..." << std::endl;
+        while (k < 5)
+        {
+            solve_timestep_neg();
+            solve_timestep_zero();
+            solve_timestep_pos();
+            set_physical_quantities();
+            k++;
+        }
+        std::cout << "SolverFV: Completed " << k << " iterations." << std::endl;
     }
 
     // ------ OUTPUT ---------------------------------------------------------------------------------
@@ -549,4 +768,4 @@ namespace Bgk
     }
 }
 
-#endif /* SOLVERFV_BB8B5AD5_E297_4688_B9C1_0E06CCE9B5CB */
+#endif /* SOLVERFV_DD3FD087_53DB_4D80_A7B9_144298818F4F */

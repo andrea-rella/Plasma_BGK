@@ -73,6 +73,8 @@ int main(int argc, char *argv[])
               << std::endl;
 
     solver.initialize();
+    solver.solve();
+    solver.write_sol_txt("prova");
 
     return 0;
 }

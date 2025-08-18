@@ -1,6 +1,5 @@
 TOMORROW
-• capire se ha senso nel constructor di solverFV inizializzare a zero
-• capire come gestire i RHS e nel caso fare funzioni per inizializzarli
+
 
 FUTURE
 • checkkare la presenza di tutti i constructor, copy and movable in tutte le classi
@@ -19,6 +18,7 @@ FUTURE
   per far scegliere all'user che tipo di regola di integrazione vuole usare
 • in the output functions set high precision digits (see conversation)
 • correct quelle lines che usano funzioni che returnano references a vectors
+• inizializzare from triplets lascia la matrice in stato compresso?
 
 
 FASI FUTURE

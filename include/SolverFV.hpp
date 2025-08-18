@@ -12,8 +12,8 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef SOLVERFV_E5B713FB_A80D_4161_86AB_0F68175D69D1
-#define SOLVERFV_E5B713FB_A80D_4161_86AB_0F68175D69D1
+#ifndef SOLVERFV_CDA80525_ABE8_449D_B299_ABFEF9284484
+#define SOLVERFV_CDA80525_ABE8_449D_B299_ABFEF9284484
 
 #include "utilities.hpp"
 #include "phys_utils.hpp"
@@ -71,10 +71,19 @@ namespace Bgk
         // ------ SOLVE HELPERS --------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        Eigen::Vector<T, Eigen::Dynamic> assemble_U_p(size_t j, T a1_2m, T a2_2m, T delta1) const;
-        Eigen::Vector<T, Eigen::Dynamic> assemble_W_p(size_t j, T a1_2m, T a2_2m, T delta1) const;
-        Eigen::Vector<T, Eigen::Dynamic> assemble_U_m(size_t j, T bN1_2p, T bN2_2p, T sigmaN1) const;
-        Eigen::Vector<T, Eigen::Dynamic> assemble_W_m(size_t j, T bN1_2p, T bN2_2p, T sigmaN1) const;
+        Eigen::Vector<T, Eigen::Dynamic> assemble_U_pos(size_t j, T a1_2m, T a2_2m, T delta1) const;
+        Eigen::Vector<T, Eigen::Dynamic> assemble_W_pos(size_t j, T a1_2m, T a2_2m, T delta1) const;
+        Eigen::Vector<T, Eigen::Dynamic> assemble_U_zero() const;
+        Eigen::Vector<T, Eigen::Dynamic> assemble_W_zero() const;
+        Eigen::Vector<T, Eigen::Dynamic> assemble_U_neg(size_t j, T bN1_2p, T bN2_2p, T sigmaN1) const;
+        Eigen::Vector<T, Eigen::Dynamic> assemble_W_neg(size_t j, T bN1_2p, T bN2_2p, T sigmaN1) const;
+
+        // ------ SOLVE  ---------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
+
+        void solve_timestep_pos();
+        void solve_timestep_neg();
+        void solve_timestep_zero();
 
     public:
         // ------ CONSTRUCTORS AND DESTRUCTORS -----------------------------------------------------------
@@ -143,4 +152,4 @@ namespace Bgk
 
 #include "impl/SolverFV.tpp"
 
-#endif /* SOLVERFV_E5B713FB_A80D_4161_86AB_0F68175D69D1 */
+#endif /* SOLVERFV_CDA80525_ABE8_449D_B299_ABFEF9284484 */
