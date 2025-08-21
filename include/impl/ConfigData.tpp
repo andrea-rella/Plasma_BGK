@@ -50,9 +50,9 @@ namespace Bgk
 
         // ---- Simulation parameters ----
 
-        dt = data["simulation"].value("dt", static_cast<T>(0.01));
-        tol = data["simulation"].value("tol", static_cast<T>(1e-6));
-        max_iter = data["simulation"].value("max_iter", static_cast<size_t>(1000));
+        dt = data["simulation"].value("time_step", static_cast<T>(0.01));
+        tol = data["simulation"].value("tolerance", static_cast<T>(1e-6));
+        max_iter = data["simulation"].value("max_iterations", static_cast<size_t>(1000));
     };
 
 }

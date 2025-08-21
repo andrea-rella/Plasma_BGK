@@ -12,8 +12,8 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef SOLVERFV_CDA80525_ABE8_449D_B299_ABFEF9284484
-#define SOLVERFV_CDA80525_ABE8_449D_B299_ABFEF9284484
+#ifndef SOLVERFV_B4488264_9DCA_40E8_A197_3227229A592D
+#define SOLVERFV_B4488264_9DCA_40E8_A197_3227229A592D
 
 #include "utilities.hpp"
 #include "phys_utils.hpp"
@@ -71,12 +71,12 @@ namespace Bgk
         // ------ SOLVE HELPERS --------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        Eigen::Vector<T, Eigen::Dynamic> assemble_U_pos(size_t j, T a1_2m, T a2_2m, T delta1) const;
-        Eigen::Vector<T, Eigen::Dynamic> assemble_W_pos(size_t j, T a1_2m, T a2_2m, T delta1) const;
+        Eigen::Vector<T, Eigen::Dynamic> assemble_U_pos(size_t j, T a1_2, T a2_2, T omega1) const;
+        Eigen::Vector<T, Eigen::Dynamic> assemble_W_pos(size_t j, T a1_2, T a2_2, T omega1) const;
         Eigen::Vector<T, Eigen::Dynamic> assemble_U_zero() const;
         Eigen::Vector<T, Eigen::Dynamic> assemble_W_zero() const;
-        Eigen::Vector<T, Eigen::Dynamic> assemble_U_neg(size_t j, T bN1_2p, T bN2_2p, T sigmaN1) const;
-        Eigen::Vector<T, Eigen::Dynamic> assemble_W_neg(size_t j, T bN1_2p, T bN2_2p, T sigmaN1) const;
+        Eigen::Vector<T, Eigen::Dynamic> assemble_U_neg(size_t j, T bN1_2, T bN2_2, T sigmaN1) const;
+        Eigen::Vector<T, Eigen::Dynamic> assemble_W_neg(size_t j, T bN1_2, T bN2_2, T sigmaN1) const;
 
         // ------ SOLVE  ---------------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
@@ -152,4 +152,4 @@ namespace Bgk
 
 #include "impl/SolverFV.tpp"
 
-#endif /* SOLVERFV_CDA80525_ABE8_449D_B299_ABFEF9284484 */
+#endif /* SOLVERFV_B4488264_9DCA_40E8_A197_3227229A592D */

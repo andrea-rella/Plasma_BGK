@@ -1,6 +1,6 @@
 {
   "mesh": {
-    "space_points": 10,
+    "space_points": 20,
     "N0": 5,
     "velocity_points": 10,
     "d1": 0.1,
@@ -17,7 +17,7 @@
   },
 
   "simulation": {
-    "time_step": 0.1,
+    "time_step": 0.005,
     "tolerance": 1e-6,
     "max_iterations": 1000
   }
