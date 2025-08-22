@@ -12,14 +12,15 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef SOLVERFV_B4488264_9DCA_40E8_A197_3227229A592D
-#define SOLVERFV_B4488264_9DCA_40E8_A197_3227229A592D
+#ifndef SOLVERFV_A020EBB4_6BD0_412F_8B28_FB5C8A3B4D66
+#define SOLVERFV_A020EBB4_6BD0_412F_8B28_FB5C8A3B4D66
 
 #include "utilities.hpp"
 #include "phys_utils.hpp"
 #include "ConfigData.hpp"
 #include "SpaceMeshFV.hpp"
 #include "VelocityMesh.hpp"
+#include "metrics_utils.hpp"
 
 #include "Eigen/Sparse"
 #include "math.h"
@@ -137,7 +138,8 @@ namespace Bgk
         // ------ SOLVE  ---------------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        void solve();
+        void solve(const metrics::VectorNormType vec_norm_type,
+                   const metrics::RowAggregateType agg_type);
         // solve
         // getters in general
         // setters in general
@@ -147,9 +149,13 @@ namespace Bgk
         // -----------------------------------------------------------------------------------------------
 
         void write_sol_txt(const std::string &folder_name) const;
+        void write_phys_txt(const std::string &folder_name) const;
+        void write_meshes_txt(const std::string &folder_name) const;
+        void write_space_mesh_vtk(const std::string &folder_name) const;
+        void write_all(const std::string &folder_name) const;
     };
 }
 
 #include "impl/SolverFV.tpp"
 
-#endif /* SOLVERFV_B4488264_9DCA_40E8_A197_3227229A592D */
+#endif /* SOLVERFV_A020EBB4_6BD0_412F_8B28_FB5C8A3B4D66 */

@@ -192,6 +192,24 @@ namespace Bgk
             return {b1, b2};
         }
 
+        template <typename T>
+        T CDScoefficients_at(const SpaceMeshFV<T> &mesh, const size_t i)
+        {
+            if (!mesh.validate_mesh())
+                throw std::invalid_argument(
+                    "Invalid mesh: trying to compute QUICK coefficients for an uninitialized or unconstructed mesh.");
+
+            if (i == 0 || i > mesh.get_N())
+                throw std::out_of_range(error_message(
+                    "Invalid index: trying to compute CDS coefficients for either a boundary CV volume face or \
+                    an out-of-bounds volume face."));
+
+            const std::vector<T> &vol_boundaries = mesh.get_volume_boundaries();
+            const std::vector<T> &x_comp = mesh.get_XComp();
+
+            return (vol_boundaries[i] - x_comp[i - 1]) / (x_comp[i] - x_comp[i - 1]);
+        }
+
     }
 }
 

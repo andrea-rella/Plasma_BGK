@@ -2,7 +2,7 @@
   "mesh": {
     "space_points": 20,
     "N0": 5,
-    "velocity_points": 10,
+    "velocity_points": 30,
     "d1": 0.1,
     "d2": 1,
     "a1": 0.1,

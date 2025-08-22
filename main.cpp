@@ -9,6 +9,7 @@
 #include "VelocityMesh.hpp"
 #include "utilities.hpp"
 #include "SolverFV.hpp"
+#include "metrics_utils.hpp"
 
 void print_vector(const std::vector<std::pair<double, double>> &vec);
 
@@ -73,8 +74,8 @@ int main(int argc, char *argv[])
               << std::endl;
 
     solver.initialize();
-    // solver.solve();
-    // solver.write_sol_txt("prova");
+    solver.solve(Bgk::metrics::VectorNormType::L2, Bgk::metrics::RowAggregateType::Average);
+    solver.write_all("first_test");
 
     return 0;
 }

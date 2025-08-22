@@ -223,6 +223,8 @@ namespace Bgk
         };
 
         // First row (i = 0)
+        // T lambda1 = numerics::CDScoefficients_at<T>(Space_mesh, 1);
+        // triplets.emplace_back(0, 0, (T{1} - QUICK_a[2].first + QUICK_a[2].second - lambda1) / vol_sizes[1]);
         triplets.emplace_back(0, 0, main_coeff(0));
         if (N > 1)
         {
@@ -399,12 +401,6 @@ namespace Bgk
         std::cout << "Numerical matrices assembled." << std::endl;
         std::cout << "Assembly complete." << std::endl;
 
-        Eigen::Vector<T, Eigen::Dynamic> ones = Eigen::Vector<T, Eigen::Dynamic>::Ones(Space_mesh.get_N());
-        std::cout << "A*1=" << (A * ones).transpose() << "\n";
-        std::cout << "Max |A*1|=" << (A * ones).cwiseAbs().maxCoeff() << "\n";
-        std::cout << "B*1=" << (B * ones).transpose() << "\n";
-        std::cout << "Max |B*1|=" << (B * ones).cwiseAbs().maxCoeff() << "\n";
-
         is_initialized = true;
     }
 
@@ -423,7 +419,6 @@ namespace Bgk
                      G(Velocity_mesh[j], density[i + 1], mean_velocity[i + 1], temperature[i + 1]);
         }
 
-        // boundary correction for the first two entries
         U_p[0] -= (Velocity_mesh[j] / vol_sizes[1]) * (a1_2 + omega1) * g0(Velocity_mesh[j]);
         U_p[1] -= (Velocity_mesh[j] / vol_sizes[2]) * a2_2 * g0(Velocity_mesh[j]);
 
@@ -592,8 +587,8 @@ namespace Bgk
             if (solver.info() != Eigen::Success)
                 throw std::runtime_error("Solve (h) failed in solve_timestep_pos");
 
-            g.row(j).tail(Space_N) = x;
-            h.row(j).tail(Space_N) = y;
+            g.row(j).tail(Space_N) = x.transpose();
+            h.row(j).tail(Space_N) = y.transpose();
         }
 
         return;
@@ -656,8 +651,8 @@ namespace Bgk
             if (solver.info() != Eigen::Success)
                 throw std::runtime_error("Solve (h) failed in solve_timestep_pos");
 
-            g.row(j).head(Space_N) = x;
-            h.row(j).head(Space_N) = y;
+            g.row(j).head(Space_N) = x.transpose();
+            h.row(j).head(Space_N) = y.transpose();
         }
     }
 
@@ -693,100 +688,27 @@ namespace Bgk
     // ------ SOLVE  ---------------------------------------------------------------------------------
     // -----------------------------------------------------------------------------------------------
 
-    // ...existing code...
-
-    // template <typename T>
-    // void SolverFV<T>::solve()
-    //{
-    //     if (!is_initialized)
-    //         initialize();
-    //
-    //    const size_t max_iter = 50; // or from Data
-    //    T dt = Data.get_dt();
-    //    const T eps = T{1e-12};
-    //    const T theta = T{1}; // under‑relax (set <1 if needed)
-    //
-    //    auto clamp_positive = [&](auto &v)
-    //    {
-    //        for (Eigen::Index i = 0; i < v.size(); ++i)
-    //            if (!(v[i] > eps))
-    //                v[i] = eps; // also catches NaN/Inf
-    //    };
-    //
-    //    auto finite_or_throw = [&](const char *name, const auto &v)
-    //    {
-    //        for (Eigen::Index i = 0; i < v.size(); ++i)
-    //            if (!std::isfinite(v[i]))
-    //                throw std::runtime_error(std::string("Non-finite ") + name +
-    //                                         " at i=" + std::to_string(i));
-    //    };
-    //
-    //    // Ensure R consistent with initial macros
-    //    assemble_R();
-    //
-    //    for (size_t k = 0; k < max_iter; ++k)
-    //    {
-    //        // (1) R already assembled for current macros
-    //
-    //        // (2) Solve transport/relaxation for all velocity groups
-    //        solve_timestep_neg();
-    //        solve_timestep_zero();
-    //        solve_timestep_pos();
-    //
-    //        // (3) Positivity enforcement on distributions
-    //        for (Eigen::Index j = 0; j < g.rows(); ++j)
-    //            for (Eigen::Index i = 0; i < g.cols(); ++i)
-    //            {
-    //                if (g(j, i) < eps || !std::isfinite(g(j, i)))
-    //                    g(j, i) = eps;
-    //                if (h(j, i) < eps || !std::isfinite(h(j, i)))
-    //                    h(j, i) = eps;
-    //            }
-    //
-    //        // (4) Recompute macroscopic fields
-    //        set_physical_quantities();
-    //
-    //        // (5) Guard / clamp macros
-    //        clamp_positive(density);
-    //        clamp_positive(temperature);
-    //        clamp_positive(mean_velocity); // if needed
-    //        finite_or_throw("density", density);
-    //        finite_or_throw("temperature", temperature);
-    //
-    //        // Optional: detect impending instability
-    //        if (temperature.minCoeff() < T{1e-6})
-    //            std::cout << "[Warn] Low temperature min=" << temperature.minCoeff()
-    //                      << " at iter " << k << "\n";
-    //
-    //        // (6) Rebuild R for next iteration
-    //        assemble_R();
-    //
-    //        // (7) Convergence monitor (simple sup norm on g)
-    //        if ((k % 5) == 0)
-    //        {
-    //            std::cout << "Iter " << k
-    //                      << "  rho[min,max]=(" << density.minCoeff() << "," << density.maxCoeff() << ")"
-    //                      << "  T[min,max]=(" << temperature.minCoeff() << "," << temperature.maxCoeff() << ")\n";
-    //        }
-    //
-    //        // (8) (Optional) break on steady state criterion
-    //        // if ( (g - g_old).cwiseAbs().maxCoeff() < 1e-8 ) break;
-    //    }
-    //
-    //    std::cout << "SolverFV: iterations completed.\n";
-    //}
-
     template <typename T>
-    void SolverFV<T>::solve()
+    void SolverFV<T>::solve(const metrics::VectorNormType vec_norm_type,
+                            const metrics::RowAggregateType agg_type)
     {
 
         if (!is_initialized)
             initialize();
 
-        size_t max_iter = 20;
+        size_t max_iter = Data.get_max_iter();
+        size_t k = 0;
+        T tol = Data.get_tol();
+        T rel_err = std::numeric_limits<T>::max();
+        auto mat_norm = metrics::MatrixNormFactory<T>::create(vec_norm_type, agg_type);
+        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> g_old, h_old;
 
-        for (size_t k = 0; k < max_iter; ++k)
+        std::cout << "Starting solver..." << std::endl;
+        while (k < max_iter && rel_err > tol)
         {
+            g_old = g;
+            h_old = h;
+
             solve_timestep_neg();
             solve_timestep_zero();
             solve_timestep_pos();
@@ -795,17 +717,12 @@ namespace Bgk
 
             assemble_R();
 
-            // (7) Convergence monitor (simple sup norm on g)
-            if ((k % 5) == 0)
-            {
-                std::cout << "Iter " << k
-                          << "  rho[min,max]=(" << density.minCoeff() << "," << density.maxCoeff() << ")"
-                          << "  T[min,max]=(" << temperature.minCoeff() << "," << temperature.maxCoeff() << ")\n";
-            }
+            rel_err = std::sqrt(std::pow(mat_norm->compute(g, g_old, Space_mesh.get_volume_sizes()), 2) +
+                                std::pow(mat_norm->compute(h, h_old, Space_mesh.get_volume_sizes()), 2));
+            ++k;
         }
 
-        std::cout << "SolverFV: iterations completed.\n";
-
+        std::cout << "Solver finished after " << k << " iterations with relative error " << rel_err << std::endl;
         return;
     }
 
@@ -864,6 +781,59 @@ namespace Bgk
             }
             txt_file_h << "\n";
         }
+
+        return;
+    }
+
+    template <typename T>
+    void SolverFV<T>::write_phys_txt(const std::string &folder_name) const
+    {
+        std::filesystem::create_directories("output/" + folder_name);
+
+        // Write physical quantities (four columns: index, density, mean_velocity, temperature)
+        std::string filename_phys = "output/" + folder_name + "/physical_quantities.txt";
+        std::ofstream txt_file_phys(filename_phys);
+        if (!txt_file_phys.is_open())
+        {
+            std::cerr << "Failed to open file for writing: " << filename_phys << std::endl;
+            return;
+        }
+
+        const Eigen::Index n = density.size();
+        txt_file_phys << "Physical quantities at spatial grid points:\n";
+        txt_file_phys << "# index\tDensity\tMean Velocity\tTemperature\n";
+        txt_file_phys << "--------------------------------------------------------\n";
+        for (Eigen::Index i = 0; i < n; ++i)
+        {
+            txt_file_phys << i << '\t' << density[i] << '\t' << mean_velocity[i] << '\t' << temperature[i] << '\n';
+        }
+
+        return;
+    }
+
+    template <typename T>
+    void SolverFV<T>::write_meshes_txt(const std::string &folder_name) const
+    {
+        Space_mesh.write_mesh_txt(folder_name);
+        Velocity_mesh.write_mesh_txt(folder_name);
+        return;
+    }
+
+    template <typename T>
+    void SolverFV<T>::write_space_mesh_vtk(const std::string &folder_name) const
+    {
+        Space_mesh.write_mesh_vtk(folder_name);
+        return;
+    }
+
+    template <typename T>
+    void SolverFV<T>::write_all(const std::string &folder_name) const
+    {
+        write_sol_txt(folder_name);
+        write_phys_txt(folder_name);
+        write_meshes_txt(folder_name);
+        write_space_mesh_vtk(folder_name);
+        return;
     }
 }
 

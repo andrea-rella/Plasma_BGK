@@ -142,6 +142,9 @@ namespace Bgk
         template <typename T>
         std::pair<T, T> QUICKcoefficients_n_at(const SpaceMeshFV<T> &mesh, const size_t i);
 
+        template <typename T>
+        T CDScoefficients_at(const SpaceMeshFV<T> &mesh, const size_t i);
+
     }
 }
 
