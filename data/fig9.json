@@ -1,0 +1,24 @@
+{
+  "mesh": {
+    "space_points": 197,
+    "N0": 100,
+    "velocity_points": 48,
+    "d1": 2e-3,
+    "d2": 0.2,
+    "a1": 2.5e-2,
+    "a2": 2.75e-5
+  },
+
+  "physical": {
+    "v_infty": 5.0,
+    "T_infty_w": 0.5122,
+    "p_infty_w": 3.1858,
+    "M_infty": 0.50757
+  },
+
+  "simulation": {
+    "time_step": 0.05,
+    "tolerance": 1e-5,
+    "max_iterations": 1000
+  }
+}

@@ -38,7 +38,10 @@ namespace Bgk
 			throw std::runtime_error("SpaceMesh object not constructed. Call the constructor with ConfigData first.");
 
 		if (this->is_initialized)
+		{
 			std::cerr << "SpaceMesh already initialized. Skipping initialization." << std::endl;
+			return;
+		}
 
 		// Computational points x^{(i)}
 		this->x_comp.resize(this->N + 1);

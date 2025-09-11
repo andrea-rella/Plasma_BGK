@@ -12,8 +12,8 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef SOLVERFV_A020EBB4_6BD0_412F_8B28_FB5C8A3B4D66
-#define SOLVERFV_A020EBB4_6BD0_412F_8B28_FB5C8A3B4D66
+#ifndef SOLVERFV_A4861E67_B861_40A7_A579_3127DB409535
+#define SOLVERFV_A4861E67_B861_40A7_A579_3127DB409535
 
 #include "utilities.hpp"
 #include "phys_utils.hpp"
@@ -152,10 +152,11 @@ namespace Bgk
         void write_phys_txt(const std::string &folder_name) const;
         void write_meshes_txt(const std::string &folder_name) const;
         void write_space_mesh_vtk(const std::string &folder_name) const;
+        void write_initial_state_txt(const std::string &folder_name) const;
         void write_all(const std::string &folder_name) const;
     };
 }
 
 #include "impl/SolverFV.tpp"
 
-#endif /* SOLVERFV_A020EBB4_6BD0_412F_8B28_FB5C8A3B4D66 */
+#endif /* SOLVERFV_A4861E67_B861_40A7_A579_3127DB409535 */

@@ -12,8 +12,8 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef SOLVERFV_E990BC31_AAFE_4A04_8A56_ADBDA3D93D7F
-#define SOLVERFV_E990BC31_AAFE_4A04_8A56_ADBDA3D93D7F
+#ifndef SOLVERFV_D5765103_3BE7_45C8_A8B9_1958FA21E0F4
+#define SOLVERFV_D5765103_3BE7_45C8_A8B9_1958FA21E0F4
 
 #include "../SolverFV.hpp"
 #include "phys_utils.hpp"
@@ -45,9 +45,6 @@ namespace Bgk
         density = Eigen::Vector<T, Eigen::Dynamic>::Zero(Space_mesh.get_N() + 1);
         mean_velocity = Eigen::Vector<T, Eigen::Dynamic>::Zero(Space_mesh.get_N() + 1);
         temperature = Eigen::Vector<T, Eigen::Dynamic>::Zero(Space_mesh.get_N() + 1);
-
-        // vector used for the solution of the numerical systems
-        SolVector = Eigen::Matrix<T, -1, 1>::Zero(Space_mesh.get_N());
 
         // boundary conditions for g and h
         T T_infty_w = Data.get_T_infty_w();
@@ -92,12 +89,12 @@ namespace Bgk
         // RHS
         G = [](T z, T rho, T v, T Temp) -> T
         {
-            return T{1} / std::sqrt(std::numbers::pi_v<T>) * rho * std::pow(Temp, T{-0.5}) * std::exp(-((z - v) * (z - v)) / Temp);
+            return T{1} / std::sqrt(std::numbers::pi_v<T>) * rho * std::pow(Temp, T{-0.5}) * std::exp(-((z - v) * (z - v)) / Temp) * T{0};
         };
 
         H = [](T z, T rho, T v, T Temp) -> T
         {
-            return T{1} / std::sqrt(std::numbers::pi_v<T>) * rho * std::sqrt(Temp) * std::exp(-((z - v) * (z - v)) / Temp);
+            return T{1} / std::sqrt(std::numbers::pi_v<T>) * rho * std::sqrt(Temp) * std::exp(-((z - v) * (z - v)) / Temp) * T{0};
         };
     }
 
@@ -223,8 +220,6 @@ namespace Bgk
         };
 
         // First row (i = 0)
-        // T lambda1 = numerics::CDScoefficients_at<T>(Space_mesh, 1);
-        // triplets.emplace_back(0, 0, (T{1} - QUICK_a[2].first + QUICK_a[2].second - lambda1) / vol_sizes[1]);
         triplets.emplace_back(0, 0, main_coeff(0));
         if (N > 1)
         {
@@ -401,6 +396,20 @@ namespace Bgk
         std::cout << "Numerical matrices assembled." << std::endl;
         std::cout << "Assembly complete." << std::endl;
 
+        // Eigen::Vector<T, Eigen::Dynamic> Ones = Eigen::Vector<T, Eigen::Dynamic>::Ones(Space_mesh.get_N());
+        //
+        // std::cout << "B*1: \n"
+        //          << (B * Ones).transpose() << std::endl;
+        //
+        // const size_t Space_N = Space_mesh.get_N();
+        // const std::pair<T, T> bN = numerics::QUICKcoefficients_n_at<T>(Space_mesh, Space_N);
+        // const std::pair<T, T> bNm1 = numerics::QUICKcoefficients_n_at<T>(Space_mesh, Space_N - 1);
+        // const T sigmaNm1 = T{1} - bN.first + bN.second + bNm1.second;
+        // const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
+        //
+        // std::cout << "Correction N-1: " << (T{1} / vol_sizes[Space_N - 1]) * (bN.second - sigmaNm1) << std::endl;
+        // std::cout << "Correction N-2: " << (T{1} / vol_sizes[Space_N - 2]) * bNm1.second << std::endl;
+
         is_initialized = true;
     }
 
@@ -447,7 +456,7 @@ namespace Bgk
     template <typename T>
     Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_U_zero() const
     {
-        Eigen::Vector<T, Eigen::Dynamic> U_0(Space_mesh.get_N() + 1);
+        Eigen::Vector<T, Eigen::Dynamic> U_0(Space_mesh.get_N());
 
         for (Eigen::Index i = 0; i < U_0.size(); ++i)
         {
@@ -461,7 +470,7 @@ namespace Bgk
     template <typename T>
     Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_W_zero() const
     {
-        Eigen::Vector<T, Eigen::Dynamic> W_0(Space_mesh.get_N() + 1);
+        Eigen::Vector<T, Eigen::Dynamic> W_0(Space_mesh.get_N());
 
         for (Eigen::Index i = 0; i < W_0.size(); ++i)
         {
@@ -475,7 +484,8 @@ namespace Bgk
     template <typename T>
     Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_U_neg(size_t j, T bN_2, T bNm1_2, T sigmaNm1) const
     {
-        Eigen::Vector<T, Eigen::Dynamic> U_m(Space_mesh.get_N());
+        const size_t Space_N = Space_mesh.get_N();
+        Eigen::Vector<T, Eigen::Dynamic> U_m(Space_N);
         const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
 
         for (Eigen::Index i = 0; i < U_m.size(); ++i)
@@ -485,8 +495,8 @@ namespace Bgk
         }
 
         // boundary correction for the last two entries
-        U_m[U_m.size() - 1] += (Velocity_mesh[j] / vol_sizes[U_m.size() - 1]) * (bN_2 - sigmaNm1) * g_infty(Velocity_mesh[j]);
-        U_m[U_m.size() - 2] += (Velocity_mesh[j] / vol_sizes[U_m.size() - 2]) * bNm1_2 * g_infty(Velocity_mesh[j]);
+        U_m[Space_N - 1] -= (Velocity_mesh[j] / vol_sizes[Space_N - 1]) * (-bN_2 + sigmaNm1) * g_infty(Velocity_mesh[j]);
+        U_m[Space_N - 2] -= (Velocity_mesh[j] / vol_sizes[Space_N - 2]) * (-bNm1_2) * g_infty(Velocity_mesh[j]);
 
         return U_m;
     }
@@ -494,7 +504,8 @@ namespace Bgk
     template <typename T>
     Eigen::Vector<T, Eigen::Dynamic> SolverFV<T>::assemble_W_neg(size_t j, T bN_2, T bNm1_2, T sigmaNm1) const
     {
-        Eigen::Vector<T, Eigen::Dynamic> W_m(Space_mesh.get_N());
+        const size_t Space_N = Space_mesh.get_N();
+        Eigen::Vector<T, Eigen::Dynamic> W_m(Space_N);
         const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
 
         for (Eigen::Index i = 0; i < W_m.size(); ++i)
@@ -504,8 +515,8 @@ namespace Bgk
         }
 
         // boundary correction for the last two entries
-        W_m[W_m.size() - 1] += (Velocity_mesh[j] / vol_sizes[W_m.size() - 1]) * (bN_2 - sigmaNm1) * h_infty(Velocity_mesh[j]);
-        W_m[W_m.size() - 2] += (Velocity_mesh[j] / vol_sizes[W_m.size() - 2]) * bNm1_2 * h_infty(Velocity_mesh[j]);
+        W_m[Space_N - 1] -= (Velocity_mesh[j] / vol_sizes[Space_N - 1]) * (-bN_2 + sigmaNm1) * h_infty(Velocity_mesh[j]);
+        W_m[Space_N - 2] -= (Velocity_mesh[j] / vol_sizes[Space_N - 2]) * (-bNm1_2) * h_infty(Velocity_mesh[j]);
 
         return W_m;
     }
@@ -526,7 +537,7 @@ namespace Bgk
         const T omega1 = -a2.second - T{1} + a1.first - a1.second;
 
         // Build diagonal (R part) once
-        Eigen::Vector<T, Eigen::Dynamic> R_loc = R.segment(1, Space_N);
+        Eigen::Vector<T, Eigen::Dynamic> R_loc = R.tail(Space_N);
 
         // Ensure every diagonal entry exists (so adding identity is fast & pattern stable)
         // for (Eigen::Index i = 0; i < C.rows(); ++i)
@@ -556,7 +567,8 @@ namespace Bgk
             M *= (Velocity_mesh[j] * dt); // scale A
             // Add dt*R and identity on diagonal
             for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(Space_N); ++i)
-                M.coeffRef(i, i) += dt * R_loc[i] + T{1}; //  You can avoid a pattern merge and one temporary by doing in‑place operations.
+                // M.coeffRef(i, i) += dt * R_loc[i] + T{1}; //  You can avoid a pattern merge and one temporary by doing in‑place operations.
+                M.coeffRef(i, i) += T{1};
             // (C already compressed; coeffRef keeps pattern stable)
             /**
              * @note Doing this for loop (modifying in place) is more efficient than summing directly the
@@ -602,7 +614,6 @@ namespace Bgk
         const size_t Space_N = Space_mesh.get_N();
         const T dt = Data.get_dt();
 
-        // Positive velocities are indices Velocity_N+1 .. 2*Velocity_N
         const size_t j_begin = 0;
         const size_t j_end = Velocity_N - 1; // inclusive
 
@@ -611,7 +622,7 @@ namespace Bgk
         const T sigmaNm1 = T{1} - bN.first + bN.second + bNm1.second;
 
         // Precompute constant part C = A + R_mat
-        Eigen::Vector<T, Eigen::Dynamic> R_loc = R.segment(0, Space_N);
+        Eigen::Vector<T, Eigen::Dynamic> R_loc = R.head(Space_N);
 
         Eigen::SparseLU<Eigen::SparseMatrix<T>, Eigen::NaturalOrdering<int>> solver;
         solver.analyzePattern(B);
@@ -635,7 +646,8 @@ namespace Bgk
             M *= (Velocity_mesh[j] * dt); // scale B
             // Add dt*R and identity on diagonal
             for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(Space_N); ++i)
-                M.coeffRef(i, i) += dt * R_loc[i] + T{1};
+                // M.coeffRef(i, i) += dt * R_loc[i] + T{1};
+                M.coeffRef(i, i) += T{1};
 
             solver.factorize(M);
             if (solver.info() != Eigen::Success)
@@ -664,25 +676,25 @@ namespace Bgk
         const T dt = Data.get_dt();
 
         // Assemble sources
-        Eigen::Vector<T, Eigen::Dynamic> U = assemble_U_zero(); // size = Space_N + 1
-        Eigen::Vector<T, Eigen::Dynamic> W = assemble_W_zero(); // size = Space_N + 1
+        Eigen::Vector<T, Eigen::Dynamic> U = assemble_U_zero(); // size = Space_N
+        Eigen::Vector<T, Eigen::Dynamic> W = assemble_W_zero(); // size = Space_N
 
-        Eigen::Vector<T, Eigen::Dynamic> g_j = g.row(Velocity_N); // copy (row vector -> column vector)
-        Eigen::Vector<T, Eigen::Dynamic> h_j = h.row(Velocity_N);
+        Eigen::Vector<T, Eigen::Dynamic> g_j = g.row(Velocity_N).head(Space_N); // copy (row vector -> column vector)
+        Eigen::Vector<T, Eigen::Dynamic> h_j = h.row(Velocity_N).head(Space_N);
 
         Eigen::Vector<T, Eigen::Dynamic> rhs_g = g_j + dt * U;
         Eigen::Vector<T, Eigen::Dynamic> rhs_h = h_j + dt * W;
 
         // Diagonal solve: (I + dt * R) x = rhs
         // R has size Space_N + 1 (matches zero-velocity row length)
-        Eigen::Vector<T, Eigen::Dynamic> denom = Eigen::Vector<T, Eigen::Dynamic>::Ones(Space_N + 1);
-        denom.noalias() += dt * R; // element-wise: 1 + dt*R_i
+        Eigen::Vector<T, Eigen::Dynamic> denom = Eigen::Vector<T, Eigen::Dynamic>::Ones(Space_N);
+        // denom.noalias() += dt * R.head(Space_N); // element-wise: 1 + dt*R_i
 
         Eigen::Vector<T, Eigen::Dynamic> x = rhs_g.cwiseQuotient(denom);
         Eigen::Vector<T, Eigen::Dynamic> y = rhs_h.cwiseQuotient(denom);
 
-        g.row(Velocity_N) = x.transpose();
-        h.row(Velocity_N) = y.transpose();
+        g.row(Velocity_N).head(Space_N) = x.transpose();
+        h.row(Velocity_N).head(Space_N) = y.transpose();
     }
 
     // ------ SOLVE  ---------------------------------------------------------------------------------
@@ -717,16 +729,14 @@ namespace Bgk
 
             assemble_R();
 
-            rel_err = std::sqrt(std::pow(mat_norm->compute(g, g_old, Space_mesh.get_volume_sizes()), 2) +
-                                std::pow(mat_norm->compute(h, h_old, Space_mesh.get_volume_sizes()), 2));
+            rel_err = std::sqrt(std::pow(mat_norm->compute(g, g_old, Space_mesh.get_volume_sizes()), T{2}) +
+                                std::pow(mat_norm->compute(h, h_old, Space_mesh.get_volume_sizes()), T{2}));
             ++k;
         }
 
         std::cout << "Solver finished after " << k << " iterations with relative error " << rel_err << std::endl;
         return;
     }
-
-    // ...existing code...
 
     // ------ OUTPUT ---------------------------------------------------------------------------------
     // -----------------------------------------------------------------------------------------------
@@ -827,6 +837,71 @@ namespace Bgk
     }
 
     template <typename T>
+    void SolverFV<T>::write_initial_state_txt(const std::string &folder_name) const
+    {
+        std::filesystem::create_directories("output/" + folder_name);
+
+        const size_t Space_N = Space_mesh.get_N();
+        const size_t Velocity_N = Velocity_mesh.get_N();
+
+        // Write initial g boundary values
+        std::string filename_g0 = "output/" + folder_name + "/initial_state_g.txt";
+        std::ofstream txt_file_g0(filename_g0);
+        if (!txt_file_g0.is_open())
+        {
+            std::cerr << "Failed to open file for writing: " << filename_g0 << std::endl;
+            return;
+        }
+
+        txt_file_g0 << "Initial g boundary values:\n";
+        txt_file_g0 << "Negative velocities (j = 0 .. " << Velocity_N - 1 << "): g(Space_N, j)\n";
+        txt_file_g0 << "Positive velocities (j = " << Velocity_N + 1 << " .. " << 2 * Velocity_N << "): g(0, j)\n";
+        txt_file_g0 << "--------------------------------------------------------\n";
+
+        // Negative velocities
+        for (size_t j = 0; j < Velocity_N; ++j)
+        {
+            txt_file_g0 << "g(" << Space_N << ", " << j << ") = " << g(j, Space_N) << "\n";
+        }
+        // zero velocity
+        txt_file_g0 << "g(" << Space_N << ", " << Velocity_N << ") = " << g(Velocity_N, Space_N) << "\n";
+        // Positive velocities
+        for (size_t j = Velocity_N + 1; j <= 2 * Velocity_N; ++j)
+        {
+            txt_file_g0 << "g(0, " << j << ") = " << g(j, 0) << "\n";
+        }
+
+        // Write initial h boundary values
+        std::string filename_h0 = "output/" + folder_name + "/initial_state_h.txt";
+        std::ofstream txt_file_h0(filename_h0);
+        if (!txt_file_h0.is_open())
+        {
+            std::cerr << "Failed to open file for writing: " << filename_h0 << std::endl;
+            return;
+        }
+
+        txt_file_h0 << "Initial h boundary values:\n";
+        txt_file_h0 << "Negative velocities (j = 0 .. " << Velocity_N - 1 << "): h(Space_N, j)\n";
+        txt_file_h0 << "Positive velocities (j = " << Velocity_N + 1 << " .. " << 2 * Velocity_N << "): h(0, j)\n";
+        txt_file_h0 << "--------------------------------------------------------\n";
+
+        // Negative velocities
+        for (size_t j = 0; j < Velocity_N; ++j)
+        {
+            txt_file_h0 << "h(" << Space_N << ", " << j << ") = " << h(j, Space_N) << "\n";
+        }
+        // zero velocity
+        txt_file_h0 << "h(" << Space_N << ", " << Velocity_N << ") = " << h(Velocity_N, Space_N) << "\n";
+        // Positive velocities
+        for (size_t j = Velocity_N + 1; j <= 2 * Velocity_N; ++j)
+        {
+            txt_file_h0 << "h(0, " << j << ") = " << h(j, 0) << "\n";
+        }
+
+        return;
+    }
+
+    template <typename T>
     void SolverFV<T>::write_all(const std::string &folder_name) const
     {
         write_sol_txt(folder_name);
@@ -837,4 +912,4 @@ namespace Bgk
     }
 }
 
-#endif /* SOLVERFV_E990BC31_AAFE_4A04_8A56_ADBDA3D93D7F */
+#endif /* SOLVERFV_D5765103_3BE7_45C8_A8B9_1958FA21E0F4 */

@@ -12,6 +12,7 @@
 #include "metrics_utils.hpp"
 
 void print_vector(const std::vector<std::pair<double, double>> &vec);
+void print_vector(const std::vector<double> &vec);
 
 int main(int argc, char *argv[])
 {
@@ -74,7 +75,8 @@ int main(int argc, char *argv[])
               << std::endl;
 
     solver.initialize();
-    solver.solve(Bgk::metrics::VectorNormType::L2, Bgk::metrics::RowAggregateType::Average);
+    solver.write_initial_state_txt("first_test");
+    solver.solve(Bgk::metrics::VectorNormType::L2, Bgk::metrics::RowAggregateType::Max);
     solver.write_all("first_test");
 
     return 0;
@@ -93,6 +95,15 @@ void print_vector(const std::vector<std::pair<double, double>> &vec)
     for (const auto &val : vec)
     {
         std::cout << val.second << " ";
+    }
+    std::cout << std::endl;
+};
+
+void print_vector(const std::vector<double> &vec)
+{
+    for (const auto &val : vec)
+    {
+        std::cout << val << " ";
     }
     std::cout << std::endl;
 };

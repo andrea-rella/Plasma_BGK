@@ -138,11 +138,13 @@ namespace Bgk
             }
 
             // Case i = V - 2: Account for the symmetric ghost node x^{(N+1)} (x_comp[V - 1])
-            b1 = ((vol_boundaries[V - 2] - x_comp[V - 2]) * (vol_boundaries[V - 2] - (2. * x_comp[V - 2] - x_comp[V - 3]))) /
-                 ((x_comp[V - 3] - x_comp[V - 2]) * (x_comp[V - 3] - (2. * x_comp[V - 2] - x_comp[V - 3])));
+
+            const T xghost = (T{2} * x_comp[V - 2] - x_comp[V - 3]);
+            b1 = ((vol_boundaries[V - 2] - x_comp[V - 2]) * (vol_boundaries[V - 2] - xghost)) /
+                 ((x_comp[V - 3] - x_comp[V - 2]) * (x_comp[V - 3] - xghost));
 
             b2 = ((vol_boundaries[V - 2] - x_comp[V - 2]) * (x_comp[V - 3] - vol_boundaries[V - 2])) /
-                 ((x_comp[V - 2] - (2. * x_comp[V - 2] - x_comp[V - 3])) * (x_comp[V - 3] - (2. * x_comp[V - 2] - x_comp[V - 3])));
+                 ((x_comp[V - 2] - xghost) * (x_comp[V - 3] - xghost));
 
             coefficients.emplace_back(b1, b2);
 
