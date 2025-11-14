@@ -4,7 +4,7 @@
     "N0": 397,
     "velocity_points": 36,
     "d1": 5e-4,
-    "d2": 0.25,
+    "d2": 5,
     "a1": 5e-2,
     "a2": 9e-5
   },
@@ -12,8 +12,8 @@
   "physical": {
     "v_infty": 5.0,
     "T_infty_w": 1.0,
-    "p_infty_w": 17.0,
-    "M_infty": 1.03
+    "p_infty_w": 16.0,
+    "M_infty": 0.98
   },
 
   "simulation": {

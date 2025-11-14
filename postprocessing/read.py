@@ -38,6 +38,33 @@ def read_physical_quantities(path):
     temperature = data[:, 2]
     return density, mean_velocity, temperature
 
+# -------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
+
+def read_physical_quantity(path):
+    """
+    Read a 'physical_quantities.txt'-style file and return only density as a NumPy 1D array.
+    """
+    # Determine how many header rows to skip (until the first numeric index line)
+    skip = 0
+    with open(path, 'r') as f:
+        for line in f:
+            stripped = line.strip()
+            if not stripped:
+                skip += 1
+                continue
+            parts = stripped.split()
+            try:
+                int(parts[0])  # first token should be the integer index
+                break
+            except (ValueError, IndexError):
+                skip += 1
+
+    quantity = np.loadtxt(path, usecols=(1,), skiprows=skip)
+    return quantity
+
+# -------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 def read_space_mesh(path):
     """

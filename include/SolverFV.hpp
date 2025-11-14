@@ -153,6 +153,7 @@ namespace Bgk
         void write_meshes_txt(const std::string &folder_name) const;
         void write_space_mesh_vtk(const std::string &folder_name) const;
         void write_initial_state_txt(const std::string &folder_name) const;
+        void write_phys_instant(const std::string &folder_name, size_t iter) const;
         void write_all(const std::string &folder_name) const;
     };
 }

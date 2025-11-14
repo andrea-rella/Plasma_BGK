@@ -39,3 +39,6 @@
 # Outputs
 output/
 
+# PyCache
+__pycache__/
+

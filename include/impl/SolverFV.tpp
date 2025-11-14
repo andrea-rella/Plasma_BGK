@@ -12,8 +12,8 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef SOLVERFV_D5765103_3BE7_45C8_A8B9_1958FA21E0F4
-#define SOLVERFV_D5765103_3BE7_45C8_A8B9_1958FA21E0F4
+#ifndef SOLVERFV_F66A3485_5010_4DE1_B7F3_331C796FA6A0
+#define SOLVERFV_F66A3485_5010_4DE1_B7F3_331C796FA6A0
 
 #include "../SolverFV.hpp"
 #include "phys_utils.hpp"
@@ -89,12 +89,12 @@ namespace Bgk
         // RHS
         G = [](T z, T rho, T v, T Temp) -> T
         {
-            return T{1} / std::sqrt(std::numbers::pi_v<T>) * rho * std::pow(Temp, T{-0.5}) * std::exp(-((z - v) * (z - v)) / Temp) * T{0};
+            return T{1} / std::sqrt(std::numbers::pi_v<T>) * rho * std::pow(Temp, T{-0.5}) * std::exp(-((z - v) * (z - v)) / Temp);
         };
 
         H = [](T z, T rho, T v, T Temp) -> T
         {
-            return T{1} / std::sqrt(std::numbers::pi_v<T>) * rho * std::sqrt(Temp) * std::exp(-((z - v) * (z - v)) / Temp) * T{0};
+            return T{1} / std::sqrt(std::numbers::pi_v<T>) * rho * std::sqrt(Temp) * std::exp(-((z - v) * (z - v)) / Temp);
         };
     }
 
@@ -116,9 +116,16 @@ namespace Bgk
     template <typename T>
     void SolverFV<T>::set_physical_quantities()
     {
-        density = phys::compute_density(g, Velocity_mesh);
-        mean_velocity = phys::compute_meanGasVelocity(g, Velocity_mesh, density);
-        temperature = phys::compute_temperature(g, h, Velocity_mesh, density, mean_velocity);
+        auto get_jacobian = [&](size_t k) -> T
+        {
+            // Cast to signed integer to handle negative relative indices correctly
+            long long j_signed = static_cast<long long>(k) - static_cast<long long>(Velocity_mesh.get_N());
+            return Data.get_a1() + 3.0 * Data.get_a2() * (static_cast<T>(j_signed) * static_cast<T>(j_signed));
+        };
+
+        density = phys::compute_density(g, Velocity_mesh, g0(0), get_jacobian);
+        mean_velocity = phys::compute_meanGasVelocity(g, Velocity_mesh, density, g0(0), get_jacobian);
+        temperature = phys::compute_temperature(g, h, Velocity_mesh, density, mean_velocity, g0(0), h0(0), get_jacobian);
 
         return;
     }
@@ -409,6 +416,16 @@ namespace Bgk
         //
         // std::cout << "Correction N-1: " << (T{1} / vol_sizes[Space_N - 1]) * (bN.second - sigmaNm1) << std::endl;
         // std::cout << "Correction N-2: " << (T{1} / vol_sizes[Space_N - 2]) * bNm1.second << std::endl;
+        //
+        // std::cout << "A*1: \n"
+        //          << (A * Ones).transpose() << std::endl;
+        //
+        // const std::pair<T, T> a1 = numerics::QUICKcoefficients_p_at<T>(Space_mesh, 1);
+        // const std::pair<T, T> a2 = numerics::QUICKcoefficients_p_at<T>(Space_mesh, 2);
+        // const T omega1 = -a2.second - T{1} + a1.first - a1.second;
+        //
+        // std::cout << "Correction 1: " << -(T{1} / vol_sizes[1]) * (a1.second + omega1) << std::endl;
+        // std::cout << "Correction 2: " << -(T{1} / vol_sizes[2]) * a2.second << std::endl;
 
         is_initialized = true;
     }
@@ -559,16 +576,16 @@ namespace Bgk
             U = assemble_U_pos(j, a1.second, a2.second, omega1);
             W = assemble_W_pos(j, a1.second, a2.second, omega1);
 
-            Eigen::Vector<T, Eigen::Dynamic> g_j = g.row(j).tail(Space_N);
-            Eigen::Vector<T, Eigen::Dynamic> h_j = h.row(j).tail(Space_N);
+            Eigen::Vector<T, Eigen::Dynamic> g_j = g.row(j).tail(Space_N).transpose();
+            Eigen::Vector<T, Eigen::Dynamic> h_j = h.row(j).tail(Space_N).transpose();
 
             // Rebuild numeric values of M: M = v_j*dt*A + dt*diag(R_loc) + I
             M = A;                        // copy A pattern & values
             M *= (Velocity_mesh[j] * dt); // scale A
             // Add dt*R and identity on diagonal
             for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(Space_N); ++i)
-                // M.coeffRef(i, i) += dt * R_loc[i] + T{1}; //  You can avoid a pattern merge and one temporary by doing in‑place operations.
-                M.coeffRef(i, i) += T{1};
+                M.coeffRef(i, i) += dt * R_loc[i] + T{1}; //  You can avoid a pattern merge and one temporary by doing in‑place operations.
+            // M.coeffRef(i, i) += T{1};
             // (C already compressed; coeffRef keeps pattern stable)
             /**
              * @note Doing this for loop (modifying in place) is more efficient than summing directly the
@@ -639,15 +656,15 @@ namespace Bgk
             U = assemble_U_neg(j, bN.second, bNm1.second, sigmaNm1);
             W = assemble_W_neg(j, bN.second, bNm1.second, sigmaNm1);
 
-            Eigen::Vector<T, Eigen::Dynamic> g_j = g.row(j).head(Space_N);
-            Eigen::Vector<T, Eigen::Dynamic> h_j = h.row(j).head(Space_N);
+            Eigen::Vector<T, Eigen::Dynamic> g_j = g.row(j).head(Space_N).transpose();
+            Eigen::Vector<T, Eigen::Dynamic> h_j = h.row(j).head(Space_N).transpose();
 
             M = B;                        // copy B pattern & values
             M *= (Velocity_mesh[j] * dt); // scale B
             // Add dt*R and identity on diagonal
             for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(Space_N); ++i)
-                // M.coeffRef(i, i) += dt * R_loc[i] + T{1};
-                M.coeffRef(i, i) += T{1};
+                M.coeffRef(i, i) += dt * R_loc[i] + T{1};
+            // M.coeffRef(i, i) += T{1};
 
             solver.factorize(M);
             if (solver.info() != Eigen::Success)
@@ -679,16 +696,18 @@ namespace Bgk
         Eigen::Vector<T, Eigen::Dynamic> U = assemble_U_zero(); // size = Space_N
         Eigen::Vector<T, Eigen::Dynamic> W = assemble_W_zero(); // size = Space_N
 
-        Eigen::Vector<T, Eigen::Dynamic> g_j = g.row(Velocity_N).head(Space_N); // copy (row vector -> column vector)
-        Eigen::Vector<T, Eigen::Dynamic> h_j = h.row(Velocity_N).head(Space_N);
+        Eigen::Vector<T, Eigen::Dynamic> g_j = g.row(Velocity_N).head(Space_N).transpose();
+        Eigen::Vector<T, Eigen::Dynamic> h_j = h.row(Velocity_N).head(Space_N).transpose();
 
         Eigen::Vector<T, Eigen::Dynamic> rhs_g = g_j + dt * U;
         Eigen::Vector<T, Eigen::Dynamic> rhs_h = h_j + dt * W;
 
+        Eigen::Vector<T, Eigen::Dynamic> R_loc = R.head(Space_N);
+
         // Diagonal solve: (I + dt * R) x = rhs
         // R has size Space_N + 1 (matches zero-velocity row length)
         Eigen::Vector<T, Eigen::Dynamic> denom = Eigen::Vector<T, Eigen::Dynamic>::Ones(Space_N);
-        // denom.noalias() += dt * R.head(Space_N); // element-wise: 1 + dt*R_i
+        denom.noalias() += dt * R_loc; // element-wise: 1 + dt*R_i
 
         Eigen::Vector<T, Eigen::Dynamic> x = rhs_g.cwiseQuotient(denom);
         Eigen::Vector<T, Eigen::Dynamic> y = rhs_h.cwiseQuotient(denom);
@@ -715,6 +734,8 @@ namespace Bgk
         auto mat_norm = metrics::MatrixNormFactory<T>::create(vec_norm_type, agg_type);
         Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> g_old, h_old;
 
+        write_phys_instant("first_test", 0);
+
         std::cout << "Starting solver..." << std::endl;
         while (k < max_iter && rel_err > tol)
         {
@@ -732,6 +753,11 @@ namespace Bgk
             rel_err = std::sqrt(std::pow(mat_norm->compute(g, g_old, Space_mesh.get_volume_sizes()), T{2}) +
                                 std::pow(mat_norm->compute(h, h_old, Space_mesh.get_volume_sizes()), T{2}));
             ++k;
+
+            if (k % 20 == 0 || k == 1)
+            {
+                write_phys_instant("first_test", k);
+            }
         }
 
         std::cout << "Solver finished after " << k << " iterations with relative error " << rel_err << std::endl;
@@ -811,7 +837,7 @@ namespace Bgk
 
         const Eigen::Index n = density.size();
         txt_file_phys << "Physical quantities at spatial grid points:\n";
-        txt_file_phys << "# index\tDensity\tMean Velocity\tTemperature\n";
+        txt_file_phys << "# index -- Density -- Mean Velocity -- Temperature\n";
         txt_file_phys << "--------------------------------------------------------\n";
         for (Eigen::Index i = 0; i < n; ++i)
         {
@@ -902,6 +928,32 @@ namespace Bgk
     }
 
     template <typename T>
+    void SolverFV<T>::write_phys_instant(const std::string &folder_name, size_t iter) const
+    {
+        std::filesystem::create_directories("output/" + folder_name);
+
+        // Write temperature at current instant
+        std::string filename_phys = "output/" + folder_name + "/phys_iter_" + std::to_string(iter) + ".txt";
+        std::ofstream txt_file_phys(filename_phys);
+        if (!txt_file_phys.is_open())
+        {
+            std::cerr << "Failed to open file for writing: " << filename_phys << std::endl;
+            return;
+        }
+
+        const Eigen::Index n = density.size();
+        txt_file_phys << "Physical quantities at spatial grid points:\n";
+        txt_file_phys << "# index -- Density -- Mean Velocity -- Temperature\n";
+        txt_file_phys << "--------------------------------------------------------\n";
+        for (Eigen::Index i = 0; i < n; ++i)
+        {
+            txt_file_phys << i << '\t' << density[i] << '\t' << mean_velocity[i] << '\t' << temperature[i] << '\n';
+        }
+
+        return;
+    }
+
+    template <typename T>
     void SolverFV<T>::write_all(const std::string &folder_name) const
     {
         write_sol_txt(folder_name);
@@ -912,4 +964,4 @@ namespace Bgk
     }
 }
 
-#endif /* SOLVERFV_D5765103_3BE7_45C8_A8B9_1958FA21E0F4 */
+#endif /* SOLVERFV_F66A3485_5010_4DE1_B7F3_331C796FA6A0 */

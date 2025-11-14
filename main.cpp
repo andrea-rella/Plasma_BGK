@@ -75,7 +75,6 @@ int main(int argc, char *argv[])
               << std::endl;
 
     solver.initialize();
-    solver.write_initial_state_txt("first_test");
     solver.solve(Bgk::metrics::VectorNormType::L2, Bgk::metrics::RowAggregateType::Max);
     solver.write_all("first_test");
 
