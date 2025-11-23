@@ -36,7 +36,8 @@
 .qodo/
 .DS_Store
 
-# Outputs
+# Outputs and Data
+data/
 output/
 
 # PyCache

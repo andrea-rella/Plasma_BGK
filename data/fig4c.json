@@ -10,7 +10,6 @@
   },
 
   "physical": {
-    "v_infty": 5.0,
     "T_infty_w": 1.0,
     "p_infty_w": 16.0,
     "M_infty": 0.98
@@ -18,7 +17,12 @@
 
   "simulation": {
     "time_step": 0.05,
-    "tolerance": 1e-4,
-    "max_iterations": 1500
+    "tolerance": 1e-7,
+    "max_iterations": 220000,
+    "plot_every_k_steps": 500
+  },
+
+  "general": {
+    "saving_folder_name": "fig4c_data"
   }
 }

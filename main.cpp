@@ -76,7 +76,7 @@ int main(int argc, char *argv[])
 
     solver.initialize();
     solver.solve(Bgk::metrics::VectorNormType::L2, Bgk::metrics::RowAggregateType::Max);
-    solver.write_all("first_test");
+    solver.write_all(Data.get_saving_folder_name());
 
     return 0;
 }

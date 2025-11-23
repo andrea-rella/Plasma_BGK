@@ -46,7 +46,6 @@ namespace Bgk
         T a2;
 
         // Physical parameters
-        T v_infty;
         T T_infty_w;
         T p_infty_w;
         T M_infty;
@@ -55,6 +54,10 @@ namespace Bgk
         T dt;
         T tol;
         size_t max_iter;
+        size_t plot_every_k_steps;
+
+        // General
+        std::string saving_folder_name;
 
     public:
         // ------ CONSTRUCTORS AND DESTRUCTORS -----------------------------------------------------------
@@ -72,13 +75,14 @@ namespace Bgk
         T get_d2() const { return d2; }
         T get_a1() const { return a1; }
         T get_a2() const { return a2; }
-        T get_v_infty() const { return v_infty; }
         T get_T_infty_w() const { return T_infty_w; }
         T get_p_infty_w() const { return p_infty_w; }
         T get_M_infty() const { return M_infty; }
         T get_dt() const { return dt; }
         T get_tol() const { return tol; }
         size_t get_max_iter() const { return max_iter; }
+        size_t get_plot_every_k_steps() const { return plot_every_k_steps; }
+        std::string get_saving_folder_name() const { return saving_folder_name; }
     };
 
 }

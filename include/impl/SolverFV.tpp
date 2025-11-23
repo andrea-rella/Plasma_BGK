@@ -729,12 +729,17 @@ namespace Bgk
 
         size_t max_iter = Data.get_max_iter();
         size_t k = 0;
+        size_t plot_every_k_steps = Data.get_plot_every_k_steps();
+        std::cout << "Plotting every " << plot_every_k_steps << " steps." << std::endl;
+
         T tol = Data.get_tol();
         T rel_err = std::numeric_limits<T>::max();
+
         auto mat_norm = metrics::MatrixNormFactory<T>::create(vec_norm_type, agg_type);
+
         Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> g_old, h_old;
 
-        write_phys_instant("first_test", 0);
+        write_phys_instant(Data.get_saving_folder_name(), 0);
 
         std::cout << "Starting solver..." << std::endl;
         while (k < max_iter && rel_err > tol)
@@ -754,9 +759,9 @@ namespace Bgk
                                 std::pow(mat_norm->compute(h, h_old, Space_mesh.get_volume_sizes()), T{2}));
             ++k;
 
-            if (k % 20 == 0 || k == 1)
+            if (k % plot_every_k_steps == 0 || k == 1 || k == 20 || k == 40 || k == 60 || k == 80 || k == 100)
             {
-                write_phys_instant("first_test", k);
+                write_phys_instant(Data.get_saving_folder_name(), k);
             }
         }
 

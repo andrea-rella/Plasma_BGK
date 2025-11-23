@@ -43,7 +43,6 @@ namespace Bgk
 
         // ---- Physical parameters ----
 
-        v_infty = data["physical"].value("v_infty", static_cast<T>(5.0));
         T_infty_w = data["physical"].value("T_infty_w", static_cast<T>(1));
         p_infty_w = data["physical"].value("p_infty_w", static_cast<T>(3));
         M_infty = data["physical"].value("M_infty", static_cast<T>(4.0));
@@ -53,6 +52,10 @@ namespace Bgk
         dt = data["simulation"].value("time_step", static_cast<T>(0.01));
         tol = data["simulation"].value("tolerance", static_cast<T>(1e-6));
         max_iter = data["simulation"].value("max_iterations", static_cast<size_t>(1000));
+        plot_every_k_steps = data["simulation"].value("plot_every_k_steps", static_cast<size_t>(10));
+
+        // ---- General ----
+        saving_folder_name = data["general"].value("saving_folder_name", std::string("results"));
     };
 
 }

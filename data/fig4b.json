@@ -18,7 +18,11 @@
 
   "simulation": {
     "time_step": 0.05,
-    "tolerance": 1e-4,
-    "max_iterations": 1500
+    "tolerance": 1e-7,
+    "max_iterations": 5000
+  },
+
+  "general": {
+    "saving_folder_name": "fig4b_data"
   }
 }

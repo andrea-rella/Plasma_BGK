@@ -1,6 +1,7 @@
 import numpy as np
 
 
+
 def read_physical_quantities(path):
     """
     Read a 'physical_quantities.txt'-style file and return
@@ -89,3 +90,7 @@ def read_space_mesh(path):
 
     x_comp = np.loadtxt(path, usecols=(1,), skiprows=skip)
     return x_comp
+
+# -------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
+
