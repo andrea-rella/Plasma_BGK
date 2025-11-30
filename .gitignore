@@ -40,6 +40,10 @@
 data/
 output/
 
+# Personal Files for plotting
+postprocessing/images.py
+postprocessing/images_evap.py
+
 # PyCache
 __pycache__/
 

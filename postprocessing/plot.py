@@ -249,6 +249,37 @@ def draw_velocity_evolution(x, timesteps, T_infty_w, dt, folder, xlims = None, y
         plt.show()
     else:
         plt.close(fig)
+        
+def draw_velocity_evolution2(x, timesteps, T_infty_w, dt, folder, xlims = None, ylims = None, save_path=None, show=False):
+    """
+    Draw the velocity evolution over time using Matplotlib.
+    If save_path is provided, save the figure as a PNG there.
+    """
+    plt.rcParams['axes.prop_cycle'] = cycler(color=plt.cm.tab20.colors)
+    fig, ax = plt.subplots()
+    for i in timesteps:
+        _, vel, _ = read_physical_quantities(
+            folder + "/phys_iter_" + str(i) + ".txt")
+        ax.plot(x, vel, label=rf'$\overline{{t}} = {i * dt:.2f}$')
+    ax.set_xlabel(rf'$ X_1 \ / \ l_w$')
+    ax.set_ylabel(rf'$ - v_1 \ / \ a_\infty$')
+    ax.set_title('Velocity Profile')
+    ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
+    
+    if xlims:
+        ax.set_xlim(xlims)
+    if ylims:
+        ax.set_ylim(ylims)
+
+    if save_path:
+        p = Path(save_path)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(save_path, dpi=300, bbox_inches='tight')
+
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
 
 # -------------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------------
@@ -427,6 +458,9 @@ def draw_Vp_star_evolution(x, timesteps, m, dt, folder, target_Machs=np.linspace
         plt.show()
     else:
         plt.close(fig)
+
+# -------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
 
 if __name__ == "__main__":
     # Example usage
