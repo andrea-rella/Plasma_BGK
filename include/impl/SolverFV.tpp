@@ -59,7 +59,7 @@ namespace Bgk
         g_infty = [T_infty_w, p_infty_w, M_infty](T z) -> T
         {
             return T{1} / std::sqrt(std::numbers::pi_v<T>) * p_infty_w * std::pow(T_infty_w, T{-1.5}) *
-                   std::exp(-std::pow((z + std::sqrt(T{5} / T{6} * T_infty_w) * M_infty), T{2}) * (T{1} / T_infty_w));
+                   std::exp(-std::pow((z - std::sqrt(T{5} / T{6} * T_infty_w) * M_infty), T{2}) * (T{1} / T_infty_w));
         };
 
         h0 = [](T z) -> T
@@ -70,20 +70,20 @@ namespace Bgk
         h_infty = [T_infty_w, p_infty_w, M_infty](T z) -> T
         {
             return T{1} / std::sqrt(std::numbers::pi_v<T>) * p_infty_w * std::pow(T_infty_w, T{-0.5}) *
-                   std::exp(-std::pow((z + std::sqrt(T{5} / T{6} * T_infty_w) * M_infty), T{2}) * (T{1} / T_infty_w));
+                   std::exp(-std::pow((z - std::sqrt(T{5} / T{6} * T_infty_w) * M_infty), T{2}) * (T{1} / T_infty_w));
         };
 
         // initial conditions for g and h
         g_init = [T_infty_w, p_infty_w, M_infty](T z) -> T
         {
             return T{1} / std::sqrt(std::numbers::pi_v<T>) * p_infty_w * std::pow(T_infty_w, T{-1.5}) *
-                   std::exp(-std::pow((z + std::sqrt(T{5} / T{6} * T_infty_w) * M_infty), T{2}) * (T{1} / T_infty_w));
+                   std::exp(-std::pow((z - std::sqrt(T{5} / T{6} * T_infty_w) * M_infty), T{2}) * (T{1} / T_infty_w));
         };
 
         h_init = [T_infty_w, p_infty_w, M_infty](T z) -> T
         {
             return T{1} / std::sqrt(std::numbers::pi_v<T>) * p_infty_w * std::pow(T_infty_w, T{-0.5}) *
-                   std::exp(-std::pow((z + std::sqrt(T{5} / T{6} * T_infty_w) * M_infty), T{2}) * (T{1} / T_infty_w));
+                   std::exp(-std::pow((z - std::sqrt(T{5} / T{6} * T_infty_w) * M_infty), T{2}) * (T{1} / T_infty_w));
         };
 
         // RHS

@@ -106,6 +106,40 @@ def draw_velocity_profile(x, folder, T_infty_w, xlims = None, ylims = None, hori
     else:
         plt.close(fig)
 
+def draw_velocity_profile2(x, folder, T_infty_w, xlims = None, ylims = None, horizontal_line=None, save_path=None, show=False):
+    """
+    Draw the velocity profile using Matplotlib.
+    If save_path is provided, save the figure as a PNG there.
+    """
+    
+    _, velocity, _ = read_physical_quantities(folder + "physical_quantities.txt")
+    
+    fig, ax = plt.subplots()
+    ax.plot(x, velocity, label='Velocity')
+    
+    if horizontal_line is not None:
+        ax.axhline(y=horizontal_line, color='k', linestyle='--', linewidth=1.0, label=f'Reference Line y={horizontal_line:.6f}')
+    
+    ax.set_xlabel(rf'$ X_1 \ / \ l_w$')
+    ax.set_ylabel(rf'$ v_1 \ / \ \sqrt{{2RT_w}}$')
+    ax.set_title('Velocity Profile')
+    ax.legend()
+    
+    if xlims:
+        ax.set_xlim(xlims)
+    if ylims:
+        ax.set_ylim(ylims)
+
+    if save_path:
+        p = Path(save_path)
+        p.parent.mkdir(parents=True, exist_ok=True)
+        fig.savefig(save_path, dpi=300, bbox_inches='tight')
+
+    if show:
+        plt.show()
+    else:
+        plt.close(fig)
+
 # -------------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------------
 
@@ -262,7 +296,7 @@ def draw_velocity_evolution2(x, timesteps, T_infty_w, dt, folder, xlims = None, 
             folder + "/phys_iter_" + str(i) + ".txt")
         ax.plot(x, vel, label=rf'$\overline{{t}} = {i * dt:.2f}$')
     ax.set_xlabel(rf'$ X_1 \ / \ l_w$')
-    ax.set_ylabel(rf'$ - v_1 \ / \ a_\infty$')
+    ax.set_ylabel(rf'$ v_1 \ / \ \sqrt{{2RT_w}}$')
     ax.set_title('Velocity Profile')
     ax.legend(loc="center left", bbox_to_anchor=(1, 0.5))
     
