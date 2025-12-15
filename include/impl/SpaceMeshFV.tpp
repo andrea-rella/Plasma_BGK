@@ -20,6 +20,7 @@
 #include <numeric>
 #include <algorithm>
 #include <iomanip>
+#include "../utilities.hpp"
 
 namespace Bgk
 {
@@ -35,7 +36,8 @@ namespace Bgk
 	void SpaceMeshFV<T>::initialize_with_custom_spacing(Spacing &&spacing_func)
 	{
 		if (!this->is_constructed)
-			throw std::runtime_error("SpaceMesh object not constructed. Call the constructor with ConfigData first.");
+			throw std::runtime_error(error_message(
+				"SpaceMesh object not constructed. Call the constructor with ConfigData first."));
 
 		if (this->is_initialized)
 		{
@@ -53,6 +55,7 @@ namespace Bgk
 		x_vol.resize(this->N + 2);
 		vol_sizes.resize(this->N + 1);
 
+		// The first and last volume boundaries coincide with the first and last computational points
 		x_vol[0] = this->x_comp[0];
 		for (size_t i = 0; i < this->N; ++i)
 			x_vol[i + 1] = T{0.5} * (this->x_comp[i] + this->x_comp[i + 1]);
@@ -94,11 +97,13 @@ namespace Bgk
 	// -----------------------------------------------------------------------------------------------
 
 	template <typename T>
-	void SpaceMeshFV<T>::write_mesh_txt(const std::string &folder_name) const
+	void SpaceMeshFV<T>::write_mesh_txt(const std::string &folder_path) const
 	{
-		BaseMesh1D<T, std::vector<T>, MeshNature::SPACE>::write_mesh_txt(folder_name);
+		// Call base class method to write computational points
+		BaseMesh1D<T, std::vector<T>, MeshNature::SPACE>::write_mesh_txt(folder_path);
 
-		const std::string filename = "output/" + folder_name + "/volume_boundaries_space.txt";
+		// Write volume boundaries
+		const std::string filename = folder_path + "/volume_boundaries_space.txt";
 		std::ofstream txt_file(filename);
 		if (!txt_file.is_open())
 		{
@@ -113,7 +118,7 @@ namespace Bgk
 	// ------------------------------------------------------------------------------
 
 	template <typename T>
-	void SpaceMeshFV<T>::write_mesh_vtk(const std::string &folder) const
+	void SpaceMeshFV<T>::write_mesh_vtk(const std::string &folder_path) const
 	{
 		if (!this->is_initialized)
 			throw std::runtime_error("Mesh not initialized. Call initialize_mesh() first.");
@@ -121,8 +126,8 @@ namespace Bgk
 		constexpr T BLOCK_HEIGHT = 0.3;
 		constexpr int VTK_QUAD_TYPE = 9;
 
-		std::filesystem::create_directories("output/" + folder);
-		const std::string filename = "output/" + folder + "/space_mesh.vtk";
+		std::filesystem::create_directories(folder);
+		const std::string filename = folder + "/space_mesh.vtk";
 		std::ofstream vtk_file(filename);
 
 		if (!vtk_file)

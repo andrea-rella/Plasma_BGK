@@ -19,6 +19,7 @@
 #include <ranges>
 #include <numeric>
 #include <iomanip>
+#include "../utilities.hpp"
 
 namespace Bgk
 {
@@ -67,10 +68,14 @@ namespace Bgk
     void VelocityMesh<T>::initialize_with_custom_spacing(Spacing &&spacing_func)
     {
         if (!this->is_constructed)
-            throw std::runtime_error("Velocity Mesh object not constructed. Call the constructor with ConfigData first.");
+            throw std::runtime_error(error_message(
+                "Velocity Mesh object not constructed. Call the constructor with ConfigData first."));
 
         if (this->is_initialized)
+        {
             std::cerr << "Velocity Mesh already initialized. Skipping initialization." << std::endl;
+            return;
+        }
 
         // Computational points x^{(i)}
         this->x_comp.resize(2 * this->N + 1);
@@ -79,6 +84,7 @@ namespace Bgk
 
         T value;
 
+        // initialize positive side and mirror to negative side
         for (size_t i = this->N + 1; i <= 2 * this->N; ++i)
         {
             value = spacing_func(i - this->N);

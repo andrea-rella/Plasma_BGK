@@ -25,20 +25,41 @@ namespace Bgk
         // ------ GAS DENSITY----------------------------------------------------------------------------
         // ----------------------------------------------------------------------------------------------
 
-        /**
-         * @brief Computes the normalised density for a specific computational point in space
+        /** @brief Computes the normalised density for all computational points in space.
          *
-         * Computes the normalised density @f$ \overline{\rho} = \frac{\rho}{\rho_w} = \int_{-\infty}^\infty g \,d\zeta @f$
-         * for a specific computational point in space using the trapezoidal rule.
+         * Computes the normalised density \f$ \overline{\rho} = \frac{\rho}{\rho_w} = \int_{-\infty}^\infty g \,d\zeta \f$
+         * for all computational points in space. The integral is computed numerically by splitting it into
+         * negative and positive velocity domains:
+         * \f[
+         * \overline{\rho}_i = \int_{-\infty}^{\zeta=0} g(\zeta, x_i) \,d\zeta + \int_{\zeta=0}^{\infty} g(\zeta, x_i) \,d\zeta
+         * \f]
          *
-         * @tparam T floating type precision
-         * @param g Eigen matrix containing the g quantity (rows -> velocity points, cols -> spatial points)
-         * @param velocity_mesh Bgk::VelocityMesh
-         * @param i Index of the space computational point
-         * @return The value of the normalised density at the specified point
+         * The numerical integration is performed over the discrete computational index $j$ using a change of variables:
+         * \f[
+         * \int g(\zeta) \,d\zeta \approx \sum w_j g(\zeta_j) \cdot \left| \frac{d\zeta}{dj} \right|_j \cdot \Delta j
+         * \f]
          *
-         * @throw std::out_of_range if i exceeds the limits
+         * The function is implemented using **Simpson's \f$\frac{1}{3}\f$ Rule** where the computational spacing $\Delta j$ is
+         * constant ($\Delta j=1$) and the sum of weights includes the \f$\frac{1}{3}\f$ factor. The term returned by
+         * `get_jacobian(k)` corresponds to the **Jacobian of the transformation** \f$ \left| \frac{d\zeta}{dj} \right| \cdot \Delta j \f$.
+         * This represents the derivative of the physical velocity $\zeta$ with respect to the computational index $j$ (which is equivalent
+         * to the velocity index $k$ in the loop), scaled by the computational step size.
          *
+         * A special treatment is applied to the **Case i = 0 (Wall Boundary)** where a potential
+         * **discontinuity** in the distribution function is handled at the \f$ \zeta=0 \f$ velocity point.
+         * Specifically, for the positive velocity integral (outgoing), the value \f$ g(k, i) \f$ at \f$ k = \text{zero\_idx} \f$
+         * is replaced by a prescribed **wall value** (`wall_g_val`) to correctly capture the boundary
+         * condition and numerical flux.
+         *
+         * @tparam T floating type precision (e.g., float, double)
+         * @tparam JacobianFunc The type of the callable that computes the Jacobian term for the integral.
+         * @param g Eigen matrix containing the g quantity (rows -> velocity points, cols -> spatial points).
+         * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
+         * @param wall_g_val The prescribed value of the g function at \f$ \zeta=0 \f$ for the wall boundary
+         * condition (used for the outgoing integral at $i=0$).
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @return Eigen::Vector<T, Eigen::Dynamic> The vector of normalised densities for all spatial points.
          */
         template <typename T, typename JacobianFunc>
         Eigen::Vector<T, Eigen::Dynamic> compute_density(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,

@@ -26,8 +26,7 @@ namespace Bgk
 
     namespace numerics
     {
-        /**
-         * @brief Computes QUICK coefficients for a given SpaceMeshFV and a POSITIVE velocity.
+        /** @brief Computes QUICK coefficients for a given SpaceMeshFV and a POSITIVE velocity.
          *
          * Computes the QUICK (quadratic upwind interpolation) coefficients @f$ a_1, a_2 @f$ for a given SpaceMeshFV
          * mesh such that @f$ \phi_e = \phi_U + a_1 (\phi_D-\phi_U) + a_2 (\phi_U-\phi_{UU}) @f$, where:
@@ -45,7 +44,9 @@ namespace Bgk
          * @throws std::runtime_error if the mesh is not initialized or constructed.
          *
          * @note The first and last elements of the vector are set to (0., 0.) as they are not used in this specific
-         *       finite volume formulation of the problem.
+         *       finite volume formulation of the problem. The reason is that for a positive velocity the first boundary
+         *       coincide with the emission boundary condition and the last boundary is not used since the it's identified
+         *       with the last computational cell.
          *
          * @relatesalso SpaceMeshFV.
          *
@@ -54,8 +55,7 @@ namespace Bgk
         template <typename T>
         std::vector<std::pair<T, T>> QUICKcoefficients_p(const SpaceMeshFV<T> &mesh);
 
-        /**
-         * @brief Computes QUICK coefficient for a given volume boundary of a SpaceMeshFV and a POSITIVE velocity.
+        /** @brief Computes QUICK coefficient for a given volume boundary of a SpaceMeshFV and a POSITIVE velocity.
          *
          * Computes the QUICK (quadratic upwind interpolation) coefficient @f$ a_1, a_2 @f$ for a given SpaceMeshFV mesh
          * volume boundary such that @f$ \phi_e = \phi_U + a_1 (\phi_D-\phi_U) + a_2 (\phi_U-\phi_{UU}) @f$, where:
@@ -74,8 +74,10 @@ namespace Bgk
          * @throws std::runtime_error if the mesh is not initialized or constructed.
          * @throws std::out_of_range if the index @p i is out of bounds of the mesh volume boundaries.
          *
-         * @note The first and last elements are set to (0., 0.) as they are not used in this specific
-         *       finite volume formulation of the problem.
+         * @note The first and last elements of the vector are set to (0., 0.) as they are not used in this specific
+         *       finite volume formulation of the problem. The reason is that for a positive velocity the first boundary
+         *       coincide with the emission boundary condition and the last boundary is not used since the it's identified
+         *       with the last computational cell.
          *
          * @relatesalso SpaceMeshFV.
          *
@@ -84,8 +86,7 @@ namespace Bgk
         template <typename T>
         std::pair<T, T> QUICKcoefficients_p_at(const SpaceMeshFV<T> &mesh, const size_t i);
 
-        /**
-         * @brief Computes QUICK coefficients for a given SpaceMeshFV and a NEGATIVE velocity.
+        /** @brief Computes QUICK coefficients for a given SpaceMeshFV and a NEGATIVE velocity.
          *
          * Computes the QUICK (quadratic upwind interpolation) coefficients @f$ a_1, a_2 @f$ for a given SpaceMeshFV
          * mesh such that @f$ \phi_e = \phi_U + a_1 (\phi_D-\phi_U) + a_2 (\phi_U-\phi_{UU}) @f$, where:
@@ -103,7 +104,8 @@ namespace Bgk
          * @throws std::runtime_error if the mesh is not initialized or constructed.
          *
          * @note The first and last elements of the vector are set to (0., 0.) as they are not used in this specific
-         *       finite volume formulation of the problem.
+         *       finite volume formulation of the problem. Since if the velocity is negative the first boundary is identified
+         *       with the first computational cell and the last boundary coincide with the inflow boundary condition.
          *
          * @relatesalso SpaceMeshFV
          *
@@ -112,8 +114,7 @@ namespace Bgk
         template <typename T>
         std::vector<std::pair<T, T>> QUICKcoefficients_n(const SpaceMeshFV<T> &mesh);
 
-        /**
-         * @brief Computes QUICK coefficients for a given SpaceMeshFV and a NEGATIVE velocity.
+        /** @brief Computes QUICK coefficients for a given SpaceMeshFV and a NEGATIVE velocity.
          *
          * Computes the QUICK (quadratic upwind interpolation) coefficients @f$ a_1, a_2 @f$ for a given SpaceMeshFV mesh
          * volume boundary such that @f$ \phi_e = \phi_U + a_1 (\phi_D-\phi_U) + a_2 (\phi_U-\phi_{UU}) @f$, where:
@@ -132,8 +133,9 @@ namespace Bgk
          * @throws std::runtime_error if the mesh is not initialized or constructed.
          * @throws std::out_of_range if the index @p i is out of bounds of the mesh volume boundaries.
          *
-         * @note The first and last elements are set to (0., 0.) as they are not used in this specific
-         *       finite volume formulation of the problem.
+         * @note The first and last elements of the vector are set to (0., 0.) as they are not used in this specific
+         *       finite volume formulation of the problem. Since if the velocity is negative the first boundary is identified
+         *       with the first computational cell and the last boundary coincide with the inflow boundary condition.
          *
          * @relatesalso SpaceMeshFV
          *
@@ -141,9 +143,6 @@ namespace Bgk
          */
         template <typename T>
         std::pair<T, T> QUICKcoefficients_n_at(const SpaceMeshFV<T> &mesh, const size_t i);
-
-        template <typename T>
-        T CDScoefficients_at(const SpaceMeshFV<T> &mesh, const size_t i);
 
     }
 }

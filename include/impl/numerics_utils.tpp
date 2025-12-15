@@ -49,6 +49,7 @@ namespace Bgk
 
             coefficients.emplace_back(a1, a2);
 
+            // General case:
             for (size_t i = 2; i < V - 1; ++i)
             {
                 a1 = ((vol_boundaries[i] - x_comp[i - 1]) * (vol_boundaries[i] - x_comp[i - 2])) /
@@ -81,9 +82,11 @@ namespace Bgk
             const std::vector<T> &vol_boundaries = mesh.get_volume_boundaries();
             const std::vector<T> &x_comp = mesh.get_XComp();
 
+            // Boundary cases
             if (i == 0 || i == vol_boundaries.size() - 1)
                 return {T{0}, T{0}};
 
+            // Case i = 1: Account for the symmetric ghost node x^{(-1)} (x_comp[-1])
             if (i == 1)
             {
                 T a1 = ((vol_boundaries[1] - x_comp[0]) * (vol_boundaries[1] + x_comp[1])) /
@@ -94,6 +97,7 @@ namespace Bgk
                 return {a1, a2};
             }
 
+            // General case:
             T a1 = ((vol_boundaries[i] - x_comp[i - 1]) * (vol_boundaries[i] - x_comp[i - 2])) /
                    ((x_comp[i] - x_comp[i - 1]) * (x_comp[i] - x_comp[i - 2]));
 
@@ -171,9 +175,11 @@ namespace Bgk
             const size_t V = vol_boundaries.size();
             const std::vector<T> &x_comp = mesh.get_XComp();
 
+            // Boundary cases
             if (i == 0 || i == vol_boundaries.size() - 1)
                 return {T{0}, T{0}};
 
+            // Case i = V - 2: Account for the symmetric ghost node x^{(N+1)} (x_comp[V - 1])
             if (i == vol_boundaries.size() - 2)
             {
                 T b1 = ((vol_boundaries[V - 2] - x_comp[V - 2]) * (vol_boundaries[V - 2] - (2. * x_comp[V - 2] - x_comp[V - 3]))) /
@@ -185,6 +191,7 @@ namespace Bgk
                 return {b1, b2};
             }
 
+            // General case:
             T b1 = ((vol_boundaries[i] - x_comp[i]) * (vol_boundaries[i] - x_comp[i + 1])) /
                    ((x_comp[i - 1] - x_comp[i]) * (x_comp[i - 1] - x_comp[i + 1]));
 
@@ -192,24 +199,6 @@ namespace Bgk
                    ((x_comp[i] - x_comp[i + 1]) * (x_comp[i - 1] - x_comp[i + 1]));
 
             return {b1, b2};
-        }
-
-        template <typename T>
-        T CDScoefficients_at(const SpaceMeshFV<T> &mesh, const size_t i)
-        {
-            if (!mesh.validate_mesh())
-                throw std::invalid_argument(
-                    "Invalid mesh: trying to compute QUICK coefficients for an uninitialized or unconstructed mesh.");
-
-            if (i == 0 || i > mesh.get_N())
-                throw std::out_of_range(error_message(
-                    "Invalid index: trying to compute CDS coefficients for either a boundary CV volume face or \
-                    an out-of-bounds volume face."));
-
-            const std::vector<T> &vol_boundaries = mesh.get_volume_boundaries();
-            const std::vector<T> &x_comp = mesh.get_XComp();
-
-            return (vol_boundaries[i] - x_comp[i - 1]) / (x_comp[i] - x_comp[i - 1]);
         }
 
     }

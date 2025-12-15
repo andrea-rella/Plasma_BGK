@@ -22,15 +22,19 @@
 
 namespace Bgk
 {
-    /** * @brief 1D Finite Volume Spache Mesh Class (extends BaseMesh1D<T, std::vector<T>>, MeshNature::SPACE).
+    /** @brief 1D Finite Volume Space Mesh Class (extends BaseMesh1D<T, std::vector<T>>, MeshNature::SPACE).
      *
-     * This class implements a 1D finite volume space mesh for the BGK model. It defines the computational
-     * points and volume boundaries based on the configuration data provided.
+     * This class implements a 1D finite volume face centered space mesh for the BGK model. It defines the
+     * computational points and volume boundaries based on the configuration data provided. It offers methods
+     * for initializing the mesh with custom or default spacing.
      *
      * @tparam T Precision type for the mesh (e.g., float, double).
      *
      * @extends BaseMesh1D<T, std::vector<T>, MeshNature::SPACE>
      * @see BaseMesh1D
+     *
+     * @note In the F.V. mesh that it implements the first and last computational points coincide with the
+     *       first and last volume boundaries respectively. (see report in ./docs for further details).
      *
      */
     template <typename T>
@@ -55,7 +59,7 @@ namespace Bgk
         /// @brief Default constructor.
         SpaceMeshFV() = default;
 
-        /** * @brief Constructor based on configuration data.
+        /** @brief Constructor based on configuration data.
          *
          * @param config Configuration data object containing mesh parameters.
          */
@@ -67,15 +71,13 @@ namespace Bgk
         // ---------- MESH INITIALIZATION METHODS --------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        /**
-         * @brief Initializes the mesh with custom spacing.
+        /** @brief Initializes the mesh with custom spacing.
          *
-         * This method allows the user to define a custom spacing function for the mesh then the computational
-         * points, volume boundaries and volume sizesare computed based on the configuration data.
+         * This method allows the user to provide a custom spacing function (i.e. a function that given the index i
+         * returns x_i computational point) for the mesh then the computational points, volume boundaries and volume
+         * sizes are computed based on the configuration data.
          *
-         * @tparam SpacingFunc A callable type that takes an integer index and returns a T value
-         *         representing the spacing at that index.
-         * @param spacing_func A callable object that defines the custom spacing.
+         * @param spacing_func A callable object that defines the custom spacing (see SpacingFunction<T>).
          *
          * @note This method relies on universal references to allow for flexibility in the type
          *       of spacing function provided.
@@ -84,8 +86,7 @@ namespace Bgk
         template <SpacingFunction<T> Spacing>
         void initialize_with_custom_spacing(Spacing &&spacing_func);
 
-        /**
-         * @brief Initializes the mesh the mesh by filling x_comp and x_vol vectors with the default spacing (see note).
+        /** @brief Initializes the mesh the mesh by filling x_comp and x_vol vectors with the default spacing (see note).
          *
          * This method computes the computational points and volume boundaries based on the configuration data
          * calling initialize_with_custom_spacing. It uses the polynomial spacing for the first N0 points and
@@ -106,44 +107,46 @@ namespace Bgk
         // ---------- GETTERS ----------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        /// @brief Returns the computational points vector.
+        /// @brief Returns a const reference to the computational points vector.
         const std::vector<T> &get_volume_boundaries() const { return x_vol; }
 
-        /// @brief Returns the volume sizes vector.
+        /// @brief Returns a const reference to the volume sizes vector.
         const std::vector<T> &get_volume_sizes() const { return vol_sizes; }
 
         // ---------- OUTPUT METHODS ---------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        /**
-         * @brief Writes the mesh to a text file.
+        /** @brief Writes the mesh to a text file.
          *
          * It creates a .txt file containing the computational points and volume boundaries of the mesh.
          * The file will be saved as output/<folder_name>/space_mesh.txt
          *
-         * @param folder_name The name of the directory.
+         * @param folder_path The path of the directory where the file will be saved.
          *
          * @throws std::runtime_error if the mesh is not initialized.
          *
          * @note If not already present, the output directory will be created.
+         *
+         * @example write_mesh_txt("./test1")
          */
-        void write_mesh_txt(const std::string &folder_name) const override;
+        void write_mesh_txt(const std::string &folder_path) const override;
 
-        /**
-         * @brief Writes the mesh to a VTK file.
+        /** @brief Writes the mesh to a VTK file.
          *
          * It creates a .vtk file for visualization in VTK-compatible software such as ParaView or VisIt.
          * The file will contain the computational points and volume boundaries of the mesh and it will be
          * saved as output/<folder_name>/space_mesh.vtk
          *
-         * @param folder_name The name of the directory.
+         * @param folder_path The path of the directory.
          *
          * @throws std::runtime_error if the mesh is not initialized.
          *
          * @note The VTK file format is structured to allow visualization of the mesh in 3D space.
          * @note If not already present, the output directory will be created.
+         *
+         * @example write_mesh_vtk("./test1")
          */
-        void write_mesh_vtk(const std::string &folder_name) const;
+        void write_mesh_vtk(const std::string &folder_path) const;
     };
 }
 

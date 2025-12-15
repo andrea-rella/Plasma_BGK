@@ -21,27 +21,46 @@
 
 namespace Bgk
 {
-
+    /** @brief Class representing a one-dimensional velocity mesh (extends BaseMesh1D<T, std::vector<T>>, MeshNature::VELOCITY).
+     *
+     * This class implements a 1D velocity mesh for the BGK model. It defines the computational points
+     * based on the configuration data provided in a symmetric way around zero. It offers methods for
+     * initializing the mesh with custom or default spacing.
+     *
+     * @tparam T The data type for the mesh points (e.g., float, double).
+     */
     template <typename T>
     class VelocityMesh : public BaseMesh1D<T, std::vector<T>, MeshNature::VELOCITY>
     {
     private:
+        // Spacing parameter
         T a1;
+        // Spacing parameter
         T a2;
 
     public:
         // ----- CONSTRUCTORS AND DESTRUCTORS ------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
+        /// @brief Default constructor.
         VelocityMesh() = default;
+
+        /** @brief Constructor based on configuration data.
+         *
+         * @param config Configuration data object containing mesh parameters.
+         */
         VelocityMesh(const ConfigData<T> &config);
+
+        /// @brief Virtual destructor.
         ~VelocityMesh() = default;
 
         // ------ OPERATORS ------------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        /**
-         * @brief Access operator to get the computational point at a specific index. Read only.
+        /** @brief Access operator to get the computational point at a specific index. Read only.
+         *
+         * The method is overridden w.r.t. BaseMesh1D to account for the specific size of the velocity mesh
+         * which in this case, given the symmetry around zero, contains 2 * N + 1 points.
          *
          * @param index The index of the computational point to access.
          * @return The computational point at the specified index.
@@ -50,8 +69,10 @@ namespace Bgk
          */
         T operator[](size_t index) const override;
 
-        /**
-         * @brief Access operator to get the computational point at a specific index.
+        /** @brief Access operator to get the computational point at a specific index.
+         *
+         * The method is overridden w.r.t. BaseMesh1D to account for the specific size of the velocity mesh
+         * which in this case, given the symmetry around zero, contains 2 * N + 1 points.
          *
          * @param index The index of the computational point to access.
          * @return The computational point at the specified index.
@@ -62,8 +83,10 @@ namespace Bgk
          */
         T &operator[](size_t index) override;
 
-        /**
-         * @brief Bounds-checked access to the computational point at a specific index. Read only.
+        /** @brief Bounds-checked access to the computational point at a specific index. Read only.
+         *
+         * The method is overridden w.r.t. BaseMesh1D to account for the specific size of the velocity mesh
+         * which in this case, given the symmetry around zero, contains 2 * N + 1 points.
          *
          * @param index The index of the computational point to access.
          * @return The computational point at the specified index.
@@ -74,8 +97,10 @@ namespace Bgk
          */
         T at(size_t index) const override;
 
-        /**
-         * @brief Bounds-checked access to the computational point at a specific index.
+        /** @brief Bounds-checked access to the computational point at a specific index.
+         *
+         * The method is overridden w.r.t. BaseMesh1D to account for the specific size of the velocity mesh
+         * which in this case, given the symmetry around zero, contains 2 * N + 1 points.
          *
          * @param index The index of the computational point to access.
          * @return Reference to the computational point at the specified index.
@@ -91,17 +116,14 @@ namespace Bgk
         // ------ INITIALIZATION -------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        /**
-         * @brief Initializes the mesh with custom spacing.
+        /** @brief Initializes the mesh with custom spacing.
          *
-         * This method allows the user to define a custom spacing function for the mesh then the computational
-         * points are computed based on the configuration data. The mesh is symmetric around zero, with points
-         * at negative indices mirroring those at positive indices; the spacing is supposed to be defined for
-         * the positive indices only.
+         * This method allows the user to define a custom spacing function (i.e. a function that given i return x_i)
+         * for the mesh then the computational points are computed based on the configuration data. The mesh is
+         * symmetric around zero, with points at negative indices mirroring those at positive indices; the spacing
+         * is supposed to be defined for the positive indices only.
          *
-         * @tparam SpacingFunc A callable type that takes an integer index and returns a T value
-         *         representing the spacing at that index.
-         * @param spacing_func A callable object that defines the custom spacing.
+         * @param spacing_func A callable object that defines the custom spacing (see SpacingFunction concept).
          *
          * @note This method relies on universal references to allow for flexibility in the type
          *       of spacing function provided.
@@ -110,8 +132,7 @@ namespace Bgk
         template <SpacingFunction<T> Spacing>
         void initialize_with_custom_spacing(Spacing &&spacing_func);
 
-        /**
-         * @brief Initializes the mesh the mesh by filling x_comp with the default spacing (see note).
+        /** @brief Initializes the mesh the mesh by filling x_comp with the default spacing (see note).
          *
          * This method computes the computational points based on the configuration data calling
          * initialize_with_custom_spacing. It uses the polynomial spacing following the schedule

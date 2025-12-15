@@ -25,7 +25,7 @@
 namespace Bgk
 {
 
-    /** * @brief Pure virtual base class for 1D meshes.
+    /** @brief Pure virtual base class for 1D meshes.
      *
      * This class serves as a base for different types of 1D meshes, providing common functionality such as
      * initialization, validation, and access to mesh parameters and components. As base members it stores the
@@ -74,14 +74,14 @@ namespace Bgk
         // ------ INITIALIZATION -------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        /** * @brief Pure virtual method to initialize the mesh.
+        /** @brief Pure virtual method to initialize the mesh.
          *
          * This method must be implemented by derived classes to set up the mesh points based on specific
          * criteria or algorithms.
          */
         virtual void initialize_mesh() = 0;
 
-        /** * @brief Validates the mesh initialization.
+        /** @brief Validates the mesh initialization.
          *
          * This method checks whether the mesh has been properly initialized by verifying that the
          * initialization flag is set and that the computational points container is not empty.
@@ -93,7 +93,7 @@ namespace Bgk
             return is_initialized && !x_comp.empty();
         }
 
-        /** * @brief Resets the mesh components and initialization status.
+        /** @brief Resets the mesh components and initialization status.
          *
          * This method clears the computational points and sets the initialization flag to false.
          * It can be used to reinitialize the mesh with new parameters or configurations.
@@ -123,7 +123,7 @@ namespace Bgk
         // ------ SETTERS FOR MESH PARAMETERS ------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        /** * @brief Sets the total number of computational points in the mesh.
+        /** @brief Sets the total number of computational points in the mesh.
          *
          * @param n The number of points to set.
          */
@@ -132,25 +132,25 @@ namespace Bgk
         // ------ GETTERS FOR MESH COMPONENTS ------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        /** * @brief Returns a constant reference to the container holding the computational points of the mesh.
+        /** @brief Returns a constant reference to the container holding the computational points of the mesh.
          *
          * @return const Container&
          */
         const Container &get_XComp() const { return x_comp; }
 
-        /** * @brief Returns an iterator to the beginning of the computational points container.
+        /** @brief Returns an iterator to the beginning of the computational points container.
          *
          * @return auto
          */
         auto begin() const { return std::ranges::begin(x_comp); }
 
-        /** * @brief Returns an iterator to the end of the computational points container.
+        /** @brief Returns an iterator to the end of the computational points container.
          *
          * @return auto
          */
         auto end() const { return std::ranges::end(x_comp); }
 
-        /** * @brief Returns the size of the computational points container.
+        /** @brief Returns the size of the computational points container.
          *
          * @return auto
          */
@@ -159,7 +159,7 @@ namespace Bgk
         // ------ OPERATORS ------------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        /** * @brief Access operator to get the computational point at a specific index.
+        /** @brief Access operator to get the computational point at a specific index.
          *
          * This version returns a non-const reference, allowing the point's value to be modified.
          *
@@ -174,7 +174,7 @@ namespace Bgk
             return x_comp[index];
         }
 
-        /** * @brief Access operator to get the computational point at a specific index (Read-Only).
+        /** @brief Access operator to get the computational point at a specific index (Read-Only).
          *
          * This is the const-qualified overload. It returns a copy of the value, preventing modification
          * of the mesh data.
@@ -192,7 +192,7 @@ namespace Bgk
             return x_comp[index];
         }
 
-        /** *  @brief Bounds-checked access to the computational point at a specific index.
+        /** @brief Bounds-checked access to the computational point at a specific index.
          *
          * This version returns a non-const reference, allowing the point's value to be modified.
          *
@@ -212,7 +212,7 @@ namespace Bgk
             return x_comp[index];
         }
 
-        /** * @brief Bounds-checked access to the computational point at a specific index. Read only.
+        /** @brief Bounds-checked access to the computational point at a specific index. Read only.
          *
          * This is the const-qualified overload. It returns a copy of the value, preventing modification.
          *
@@ -236,7 +236,7 @@ namespace Bgk
         // ------ OUTPUT MESH ----------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        /** * @brief Writes the mesh to a text file.
+        /** @brief Writes the mesh to a text file.
          *
          * It creates a .txt file containing the computational points of the mesh. The file will be saved as
          * <folder_path>/<Nature>_mesh.txt and it will contain the index and the corresponding
