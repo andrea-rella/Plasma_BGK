@@ -91,14 +91,50 @@ namespace Bgk
     /**
      * @brief Concept for a mesh container.
      *
-     * This concept checks if a type is a range and if its value type matches the specified type T.
+     * To define a mesh container this concept checks:
+     *
+     * 1. The container must be a standard range (provides begin(), end(), and supports range-for loops)
+     *
+     * 2. The container must specify the exact type of the elements (the value type)
+     *
+     * 3. The container must have a size() member function
+     *
+     * 4. The container must support operator[] for element access
+     *
+     * 5. The container should provide random access iterators: it guarantees operator[] is O(1) and that
+     *   the container is a contiguous block of data or similar
      *
      * @tparam Container container type that should hold mesh components.
      * @tparam T precision type of the mesh components.
      */
     template <typename Container, typename T>
-    concept MeshContainer = std::ranges::range<Container> &&
-                            std::same_as<std::ranges::range_value_t<Container>, T>;
+    concept MeshContainer1D =
+        // 1.
+        std::ranges::range<Container> &&
+
+        // 2.
+        std::same_as<std::ranges::range_value_t<Container>, T> &&
+
+        // 3.
+        requires(const Container &c) {
+            // Calls the size() member function. We don't strictly require
+            // the return type to be size_t, but it should be an integral type.
+            { c.size() } -> std::integral;
+
+            // Ensure size() is non-zero when the container is not empty,
+            // although std::ranges::range_value_t<Container> is sufficient
+            // to prove that the container can hold objects of type T.
+        } &&
+
+        // 4.
+        requires(const Container &c, std::size_t n) {
+            // Calls operator[] with an index.
+            // The return type should be convertible or the same as T (const reference for const container).
+            { c[n] } -> std::convertible_to<const T &>;
+        } &&
+
+        // 5.
+        std::random_access_iterator<std::ranges::iterator_t<Container>>;
 
     /**
      * @brief Concept for floating point types.

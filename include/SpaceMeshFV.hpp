@@ -22,39 +22,46 @@
 
 namespace Bgk
 {
-    /**
-     * @brief 1D Finite Volume Spache Mesh Class (extends BaseMesh<T, std::vector<T>>)
+    /** * @brief 1D Finite Volume Spache Mesh Class (extends BaseMesh1D<T, std::vector<T>>, MeshNature::SPACE).
      *
      * This class implements a 1D finite volume space mesh for the BGK model. It defines the computational
      * points and volume boundaries based on the configuration data provided.
      *
-     *
      * @tparam T Precision type for the mesh (e.g., float, double).
-     * @param N0 Number of initial polynomial points.
-     * @param d1 Distance between polynomial points.
-     * @param d2 Distance between uniform points.
      *
-     * @extends BaseMesh<T, std::vector<T>>
-     * @see BaseMesh
+     * @extends BaseMesh1D<T, std::vector<T>, MeshNature::SPACE>
+     * @see BaseMesh1D
      *
      */
     template <typename T>
     class SpaceMeshFV : public BaseMesh1D<T, std::vector<T>, MeshNature::SPACE>
     {
     private:
+        /// Number of points in the polynomially stretched region.
         size_t N0;
+        /// Spacing parameters.
         T d1;
         T d2;
 
+        /// Volume boundaries
         std::vector<T> x_vol;
+        /// Volume sizes
         std::vector<T> vol_sizes;
 
     public:
         // ------ CONSTRUCTORS AND DESTRUCTORS -----------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
+        /// @brief Default constructor.
         SpaceMeshFV() = default;
+
+        /** * @brief Constructor based on configuration data.
+         *
+         * @param config Configuration data object containing mesh parameters.
+         */
         SpaceMeshFV(const ConfigData<T> &);
+
+        /// @brief Virtual destructor.
         ~SpaceMeshFV() = default;
 
         // ---------- MESH INITIALIZATION METHODS --------------------------------------------------------
