@@ -12,8 +12,8 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef PHYS_UTILS_EDCE3BAA_66FA_48CD_B277_A15BDAD8AFB0
-#define PHYS_UTILS_EDCE3BAA_66FA_48CD_B277_A15BDAD8AFB0
+#ifndef PHYS_UTILS_B3D31D31_524A_4009_AA77_ABC07533CF00
+#define PHYS_UTILS_B3D31D31_524A_4009_AA77_ABC07533CF00
 
 #include <Eigen/Sparse>
 #include <VelocityMesh.hpp>
@@ -25,9 +25,12 @@ namespace Bgk
         // ------ GAS DENSITY----------------------------------------------------------------------------
         // ----------------------------------------------------------------------------------------------
 
-        /** @brief Computes the normalised density for all computational points in space.
+        /** @brief Computes the macroscopic normalised gas density for all computational points in space.
          *
-         * Computes the normalised density \f$ \overline{\rho} = \frac{\rho}{\rho_w} = \int_{-\infty}^\infty g \,d\zeta \f$
+         * Computes the normalised density:
+         * \f[
+         * \overline{\rho} = \frac{\rho}{\rho_w} = \int_{-\infty}^\infty g \,d\zeta
+         * \f]
          * for all computational points in space. The integral is computed numerically by splitting it into
          * negative and positive velocity domains:
          * \f[
@@ -55,8 +58,7 @@ namespace Bgk
          * @tparam JacobianFunc The type of the callable that computes the Jacobian term for the integral.
          * @param g Eigen matrix containing the g quantity (rows -> velocity points, cols -> spatial points).
          * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
-         * @param wall_g_val The prescribed value of the g function at \f$ \zeta=0 \f$ for the wall boundary
-         * condition (used for the outgoing integral at $i=0$).
+         * @param wall_g_val Value of g at wall for zeta=0+ (for density calc)
          * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
          * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
          * @return Eigen::Vector<T, Eigen::Dynamic> The vector of normalised densities for all spatial points.
@@ -67,21 +69,27 @@ namespace Bgk
                                                          T wall_g_val,
                                                          JacobianFunc get_jacobian);
 
-        /**
-         * @brief Computes the macroscopic gas density at a single spatial point.
+        /** @brief Computes the macroscopicnormalized gas density at a single spatial point.
          *
-         * This function implements the density calculation (Eq. 11) by performing
-         * two separate integrations using Simpson's 1/3 rule: one for the
-         * incoming molecules (zeta < 0) and one for the outgoing molecules (zeta > 0).
+         * Computes the normalised density:
+         * \f[
+         * \overline{\rho}_i = \frac{\rho_i}{\rho_w} = \int_{-\infty}^\infty g(\zeta, x_i) \,d\zeta
+         * \f]
+         * at a specific spatial index `i`. The integral is computed numerically by splitting it into
+         * negative and positive velocity domains. The numerical integration is performed using Simpson's 1/3 Rule and a
+         * change of variables. A special treatment is applied for the wall boundary condition at `i = 0` to handle
+         * the discontinuity in the distribution function at \f$ \zeta=0 \f$.
          *
-         * It correctly handles the discontinuity at the wall (i=0) for the
-         * outgoing part of the distribution.
+         * For further details on the implementation and mathematical formulation, please refer to the vectorized version.
          *
-         * @param g The reduced velocity distribution function, g(j, i).
-         * @param velocity_mesh The non-uniform velocity mesh object.
+         * @tparam T floating type precision (e.g., float, double)
+         * @tparam JacobianFunc The type of the callable that computes the Jacobian term for the integral.
+         * @param g Eigen matrix containing the g quantity (rows -> velocity points, cols -> spatial points).
+         * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
          * @param i The spatial index at which to compute the density.
-         * @param wall_maxwellian_val The value of the Maxwellian at the wall (for i=0, k=zero_idx).
-         * @param get_jacobian A function to get the Jacobian for the integration.
+         * @param wall_g_val Value of g at wall for zeta=0+ (for density calc).
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
          * @return T The computed density at the i-th spatial point.
          */
         template <typename T, typename JacobianFunc>
@@ -90,21 +98,33 @@ namespace Bgk
                              const Eigen::Index i,
                              T wall_g_val,
                              JacobianFunc get_jacobian);
+
         // ------ MEAN GAS VELOCITY ---------------------------------------------------------------------
         // ----------------------------------------------------------------------------------------------
 
-        /**
-         * @brief Computes the macroscopic mean gas velocity at each spatial point.
+        /** @brief Computes the macroscopic normalized mean gas velocity at each spatial point.
          *
-         * Implements Eq. 12 by separately integrating for zeta < 0 and zeta > 0
-         * using Simpson's 1/3 rule. Correctly handles the wall discontinuity.
+         * Computes the normalised mean gas velocity:
+         * \f[
+         * \bar{v} = \bar{\rho}^{-1} \int_{-\infty}^{\infty} \zeta g \, d\zeta
+         * \f]
+         * for all computational points in space. The integral is computed numerically by splitting it into
+         * negative and positive velocity domains. The numerical integration is performed using Simpson's 1/3 Rule and a
+         * change of variables. A special treatment is applied for the wall boundary condition at `i = 0` to handle
+         * the discontinuity in the distribution function at \f$ \zeta=0 \f$.
          *
-         * @param g The reduced velocity distribution function, g(j, i).
-         * @param velocity_mesh The non-uniform velocity mesh object.
-         * @param densities A pre-computed vector of densities at each spatial point.
-         * @param wall_g_val Value of g at wall for zeta=0+ (for discontinuity fix).
-         * @param get_jacobian A function to get the Jacobian for the integration.
-         * @return Eigen::Vector<T, Eigen::Dynamic> A vector of mean gas velocities.
+         * For further details on the implementation and mathematical formulation, please refer to the density
+         * vectorized version.
+         *
+         * @tparam T floating type precision (e.g., float, double)
+         * @tparam JacobianFunc The type of the callable that computes the Jacobian term for the integral.
+         * @param g Eigen matrix containing the g quantity (rows -> velocity points, cols -> spatial points).
+         * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
+         * @param densities Pre-computed densities.
+         * @param wall_g_val Value of g at wall for zeta=0+ (for velocity calc)
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @return Eigen::Vector<T, Eigen::Dynamic> The vector of normalised mean velocities for all spatial points.
          */
         template <typename T, typename JacobianFunc>
         Eigen::Vector<T, Eigen::Dynamic> compute_meanGasVelocity(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
@@ -113,19 +133,31 @@ namespace Bgk
                                                                  T wall_g_val, // Value of g at wall for zeta=0+
                                                                  JacobianFunc get_jacobian);
 
-        /**
-         * @brief Computes the macroscopic mean gas velocity at each spatial point.
+        /** @brief Computes the macroscopic normalized mean gas velocity at each spatial point.
          *
-         * This version first calls the vector-based `compute_density` function,
-         * then uses its results to compute the mean velocities. All calculations
-         * use the "new" integration philosophy.
+         * Computes the normalised mean gas velocity:
+         * \f[
+         * \bar{v} = \bar{\rho}^{-1} \int_{-\infty}^{\infty} \zeta g \, d\zeta
+         * \f]
+         * for all computational points in space. The integral is computed numerically by splitting it into
+         * negative and positive velocity domains. The numerical integration is performed using Simpson's 1/3 Rule and a
+         * change of variables. A special treatment is applied for the wall boundary condition at `i = 0` to handle
+         * the discontinuity in the distribution function at \f$ \zeta=0 \f$.
          *
-         * @param g The reduced velocity distribution function, g(j, i).
-         * @param velocity_mesh The non-uniform velocity mesh object.
-         * @param wall_maxwellian_val Value for internal density comp. at wall.
-         * @param wall_g_val Value of g at wall for zeta=0+ (for velocity comp.).
-         * @param get_jacobian A function to get the Jacobian for the integration.
-         * @return Eigen::Vector<T, Eigen::Dynamic> A vector of mean gas velocities.
+         * This version first calls the vector-based `compute_density` function to obtain the densities,
+         * then uses these results to compute the mean velocities.
+         *
+         * For further details on the implementation and mathematical formulation, please refer to the density
+         * vectorized version.
+         *
+         * @tparam T floating type precision (e.g., float, double)
+         * @tparam JacobianFunc The type of the callable that computes the Jacobian term for the integral.
+         * @param g Eigen matrix containing the g quantity (rows -> velocity points, cols -> spatial points).
+         * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
+         * @param wall_g_val Value of g at wall for zeta=0+ (for velocity calc)
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @return Eigen::Vector<T, Eigen::Dynamic> The vector of normalised mean velocities for all spatial points.
          */
         template <typename T, typename JacobianFunc>
         Eigen::Vector<T, Eigen::Dynamic> compute_meanGasVelocity(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
@@ -133,38 +165,35 @@ namespace Bgk
                                                                  T wall_g_val, // For velocity
                                                                  JacobianFunc get_jacobian);
 
-        /**
-         * @brief Computes the macroscopic mean gas velocity at a single spatial point.
+        /** @brief Computes the macroscopic normalized mean gas velocity at a single spatial point.
          *
-         * This version computes the density internally using the "new" philosophy.
+         * Computes the normalised mean gas velocity at a specific spatial index `i`:
+         * \f[
+         * \bar{v}_i = \bar{\rho}_i^{-1} \int_{-\infty}^{\infty} \zeta g(\zeta, x_i) \, d\zeta
+         * \f]
          *
-         * @param g The reduced velocity distribution function, g(j, i).
-         * @param velocity_mesh The non-uniform velocity mesh object.
-         * @param i The spatial index at which to compute the velocity.
-         * @param wall_maxwellian_val Value of Maxwellian for density comp. at wall.
-         * @param wall_g_val Value of g at wall for zeta=0+ (for velocity comp.).
-         * @param get_jacobian A function to get the Jacobian for the integration.
-         * @return T The computed mean gas velocity at the i-th spatial point.
-         */
-        template <typename T, typename JacobianFunc>
-        T compute_meanGasVelocity_at(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
-                                     const VelocityMesh<T> &velocity_mesh,
-                                     const Eigen::Index i,
-                                     T wall_g_val, // For velocity calc
-                                     JacobianFunc get_jacobian);
-
-        /**
-         * @brief Computes the macroscopic mean gas velocity at a single spatial point.
+         * The integral is computed numerically by splitting it into
+         * negative and positive velocity domains. The numerical integration is performed using Simpson's 1/3 Rule and a
+         * change of variables. A special treatment is applied for the wall boundary condition at `i = 0` to handle
+         * the discontinuity in the distribution function at \f$ \zeta=0 \f$.
          *
-         * This overload accepts a pre-computed density for efficiency.
+         * Accepts a pre-computed density for efficiency.
          *
-         * @param g The reduced velocity distribution function, g(j, i).
-         * @param velocity_mesh The non-uniform velocity mesh object.
-         * @param i The spatial index at which to compute the velocity.
+         * For further details on the implementation and mathematical formulation, please refer to the density
+         * vectorized version.
+         *
+         * @tparam T floating type precision (e.g., float, double)
+         * @tparam JacobianFunc The type of the callable that computes the Jacobian term for the integral.
+         * @param g Eigen matrix containing the g quantity (rows -> velocity points, cols ->
+         * spatial points).
+         * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
+         * @param i The spatial index at which to compute the mean gas velocity.
          * @param density_i The pre-computed density at point i.
-         * @param wall_g_val Value of g at wall for zeta=0+ (for velocity comp.).
-         * @param get_jacobian A function to get the Jacobian for the integration.
+         * @param wall_g_val Value of g at wall for zeta=0+ (for velocity calc).
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
          * @return T The computed mean gas velocity at the i-th spatial point.
+         *
          */
         template <typename T, typename JacobianFunc>
         T compute_meanGasVelocity_at(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
@@ -174,23 +203,70 @@ namespace Bgk
                                      T wall_g_val,      // For velocity calc
                                      JacobianFunc get_jacobian);
 
+        /** @brief Computes the macroscopic normalizedmean gas velocity at a single spatial point.
+         *
+         * Computes the normalised mean gas velocity at a specific spatial index `i`:
+         * \f[
+         * \bar{v}_i = \bar{\rho}_i^{-1} \int_{-\infty}^{\infty} \zeta g(\zeta, x_i) \, d\zeta
+         * \f]
+         *
+         * The integral is computed numerically by splitting it into
+         * negative and positive velocity domains. The numerical integration is performed using Simpson's 1/3 Rule and a
+         * change of variables. A special treatment is applied for the wall boundary condition at `i = 0` to handle
+         * the discontinuity in the distribution function at \f$ \zeta=0 \f$.
+         *
+         * This version computes the density internally calling the `compute_density_at` function.
+         *
+         * For further details on the implementation and mathematical formulation, please refer to the density
+         * vectorized version.
+         *
+         * @tparam T floating type precision (e.g., float, double)
+         * @tparam JacobianFunc The type of the callable that computes the Jacobian term for the integral.
+         * @param g Eigen matrix containing the g quantity (rows -> velocity points, cols ->
+         * spatial points).
+         * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
+         * @param i The spatial index at which to compute the mean gas velocity.
+         * @param wall_g_val Value of g at wall for zeta=0+ (for velocity calc).
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @return T The computed mean gas velocity at the i-th spatial point.
+         */
+        template <typename T, typename JacobianFunc>
+        T compute_meanGasVelocity_at(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
+                                     const VelocityMesh<T> &velocity_mesh,
+                                     const Eigen::Index i,
+                                     T wall_g_val, // For velocity calc
+                                     JacobianFunc get_jacobian);
+
         // ------ GAS TEMPERATURE -----------------------------------------------------------------------
         // ----------------------------------------------------------------------------------------------
-        /**
-         * @brief Computes the macroscopic gas temperature (performant overload).
+
+        /** @brief Computes the macroscopic normalized mean gas temperature at each spatial point.
          *
-         * Implements Eq. 13 by separately integrating for zeta < 0 and zeta > 0
-         * using Simpson's 1/3 rule. Correctly handles the wall discontinuity.
+         * Computes the normalised mean gas temperature:
+         * \f[
+         * \bar{T} = \frac{2}{3} \bar{\rho}^{-1} \left( \int_{-\infty}^{\infty} (\zeta - \bar{v})^2 g \, d\zeta + \int_{-\infty}^{\infty} h \, d\zeta \right)
+         * \f]
+         * for all computational points in space. The integral is computed numerically by splitting it into
+         * negative and positive velocity domains. The numerical integration is performed using Simpson's 1/3 Rule and a
+         * change of variables. A special treatment is applied for the wall boundary condition at `i = 0` to handle
+         * the discontinuity in the distribution function at \f$ \zeta=0 \f$.
          *
-         * @param g The reduced velocity distribution function, g(j, i).
-         * @param h The second reduced velocity distribution function, h(j, i).
-         * @param velocity_mesh The non-uniform velocity mesh object.
-         * @param densities Pre-computed densities (must be correct).
-         * @param mean_velocities Pre-computed velocities (must be correct).
-         * @param wall_g_val Value of g at wall for zeta=0+ (for discontinuity fix).
-         * @param wall_h_val Value of h at wall for zeta=0+ (for discontinuity fix).
-         * @param get_jacobian A function to get the Jacobian for the integration.
-         * @return Eigen::Vector<T, Eigen::Dynamic> A vector of temperatures.
+         * For further details on the implementation and mathematical formulation, please refer to the density
+         * vectorized version.
+         *
+         * @tparam T floating type precision (e.g., float, double)
+         * @tparam JacobianFunc The type of the callable that computes the Jacobian term for the integral.
+         * @param g Eigen matrix containing the g quantity (rows -> velocity points, cols -> spatial points).
+         * @param h Eigen matrix containing the h quantity (rows -> velocity points, cols -> spatial points).
+         * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
+         * @param densities Pre-computed densities.
+         * @param mean_velocities Pre-computed mean velocities.
+         * @param wall_g_val Value of g at wall for zeta=0+ (for temperature calc).
+         * @param wall_h_val Value of h at wall for zeta=0+ (for temperature calc)..
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @return Eigen::Vector<T, Eigen::Dynamic> The vector of normalised temperatures for all spatial points.
          */
         template <typename T, typename JacobianFunc>
         Eigen::Vector<T, Eigen::Dynamic> compute_temperature(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
@@ -202,22 +278,33 @@ namespace Bgk
                                                              T wall_h_val, // Value of h at wall for zeta=0+
                                                              JacobianFunc get_jacobian);
 
-        /**
-         * @brief Computes the macroscopic gas temperature at each spatial point.
+        /** @brief Computes the macroscopic normalized mean gas temperature at each spatial point.
          *
-         * This version first calls the vector-based `compute_density` and
-         * `compute_meanGasVelocity` functions, then uses their results to
-         * compute the temperatures. All calculations use the "new"
-         * integration philosophy.
+         * Computes the normalised mean gas temperature:
+         * \f[
+         * \bar{T} = \frac{2}{3} \bar{\rho}^{-1} \left( \int_{-\infty}^{\infty} (\zeta - \bar{v})^2 g \, d\zeta + \int_{-\infty}^{\infty} h \, d\zeta \right)
+         * \f]
+         * for all computational points in space. The integral is computed numerically by splitting it into
+         * negative and positive velocity domains. The numerical integration is performed using Simpson's 1/3 Rule and a
+         * change of variables. A special treatment is applied for the wall boundary condition at `i = 0` to handle
+         * the discontinuity in the distribution function at \f$ \zeta=0 \f$.
          *
-         * @param g The reduced velocity distribution function, g(j, i).
-         * @param h The second reduced velocity distribution function, h(j, i).
-         * @param velocity_mesh The non-uniform velocity mesh object.
-         * @param wall_maxwellian_val Value for internal density comp. at wall.
-         * @param wall_g_val Value of g at wall for zeta=0+ (for internal velocity/temp comp.).
-         * @param wall_h_val Value of h at wall for zeta=0+ (for internal temp comp.).
-         * @param get_jacobian A function to get the Jacobian for the integration.
-         * @return Eigen::Vector<T, Eigen::Dynamic> A vector of temperatures.
+         * This version first calls the vector-based `compute_density` and `compute_meanGasVelocity` functions to obtain the densities,
+         * then uses these results to compute the mean velocities.
+         *
+         * For further details on the implementation and mathematical formulation, please refer to the density
+         * vectorized version.
+         *
+         * @tparam T floating type precision (e.g., float, double)
+         * @tparam JacobianFunc The type of the callable that computes the Jacobian term for the integral.
+         * @param g Eigen matrix containing the g quantity (rows -> velocity points, cols -> spatial points).
+         * @param h Eigen matrix containing the h quantity (rows -> velocity points, cols -> spatial points).
+         * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
+         * @param wall_g_val Value of g at wall for zeta=0+ (for temperature calc).
+         * @param wall_h_val Value of h at wall for zeta=0+ (for temperature calc).
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @return Eigen::Vector<T, Eigen::Dynamic> The vector of normalised temperatures for all spatial points.
          */
         template <typename T, typename JacobianFunc>
         Eigen::Vector<T, Eigen::Dynamic> compute_temperature(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
@@ -227,46 +314,39 @@ namespace Bgk
                                                              T wall_h_val, // For temp
                                                              JacobianFunc get_jacobian);
 
-        /**
-         * @brief Computes the macroscopic gas temperature at a single spatial point.
+        /** @brief Computes the macroscopic mean gas temperature at a single spatial point.
          *
-         * This version computes the density and mean velocity internally
-         * using the "new" philosophy.
+         * Computes the normalised mean gas temperature at a specific spatial index `i`:
+         * \f[
+         * \bar{T} = \frac{2}{3} \bar{\rho}^{-1} \left( \int_{-\infty}^{\infty} (\zeta - \bar{v})^2 g \, d\zeta + \int_{-\infty}^{\infty} h \, d\zeta \right)
+         * \f]
          *
-         * @param g The reduced velocity distribution function, g(j, i).
-         * @param h The second reduced velocity distribution function, h(j, i).
-         * @param velocity_mesh The non-uniform velocity mesh object.
-         * @param i The spatial index at which to compute the temperature.
-         * @param wall_maxwellian_val Value for density comp. at wall.
-         * @param wall_g_val Value of g at wall for zeta=0+ (for velocity/temp comp.).
-         * @param wall_h_val Value of h at wall for zeta=0+ (for temp comp.).
-         * @param get_jacobian A function to get the Jacobian for the integration.
-         * @return T The computed temperature at the i-th spatial point.
-         */
-        template <typename T, typename JacobianFunc>
-        T compute_temperature_at(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
-                                 const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &h,
-                                 const VelocityMesh<T> &velocity_mesh,
-                                 const Eigen::Index i,
-                                 T wall_g_val, // For internal velocity & temp
-                                 T wall_h_val, // For temp
-                                 JacobianFunc get_jacobian);
-
-        /**
-         * @brief Computes the macroscopic gas temperature at a single spatial point.
+         * The integral is computed numerically by splitting it into
+         * negative and positive velocity domains. The numerical integration is performed using Simpson's 1/3 Rule and a
+         * change of variables. A special treatment is applied for the wall boundary condition at `i = 0` to handle
+         * the discontinuity in the distribution function at \f$ \zeta=0 \f$.
          *
-         * This overload accepts pre-computed density and mean velocity for efficiency.
+         * Accepts pre-computed density and mean velocity for efficiency.
          *
-         * @param g The reduced velocity distribution function, g(j, i).
-         * @param h The second reduced velocity distribution function, h(j, i).
-         * @param velocity_mesh The non-uniform velocity mesh object.
-         * @param i The spatial index at which to compute the temperature.
+         * For further details on the implementation and mathematical formulation, please refer to the density
+         * vectorized version.
+         *
+         * @tparam T floating type precision (e.g., float, double)
+         * @tparam JacobianFunc The type of the callable that computes the Jacobian term for the integral.
+         * @param g Eigen matrix containing the g quantity (rows -> velocity points, cols ->
+         * spatial points).
+         * @param h Eigen matrix containing the h quantity (rows -> velocity points, cols ->
+         * spatial points).
+         * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
+         * @param i The spatial index at which to compute the mean gas temperature.
          * @param density_i The pre-computed density at point i.
          * @param mean_velocity_i The pre-computed mean velocity at point i.
-         * @param wall_g_val Value of g at wall for zeta=0+ (for temp comp.).
-         * @param wall_h_val Value of h at wall for zeta=0+ (for temp comp.).
-         * @param get_jacobian A function to get the Jacobian for the integration.
-         * @return T The computed temperature at the i-th spatial point.
+         * @param wall_g_val Value of g at wall for zeta=0+ (for temperature calc).
+         * @param wall_h_val Value of h at wall for zeta=0+ (for temperature calc).
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @return T The computed mean gas temperature at the i-th spatial point.
+         *
          */
         template <typename T, typename JacobianFunc>
         T compute_temperature_at(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
@@ -278,9 +358,49 @@ namespace Bgk
                                  T wall_g_val,            // For temp
                                  T wall_h_val,            // For temp
                                  JacobianFunc get_jacobian);
+
+        /** @brief Computes the macroscopic mean gas temperature at a single spatial point.
+         *
+         * Computes the normalised mean gas temperature at a specific spatial index `i`:
+         * \f[
+         * \bar{T} = \frac{2}{3} \bar{\rho}^{-1} \left( \int_{-\infty}^{\infty} (\zeta - \bar{v})^2 g \, d\zeta + \int_{-\infty}^{\infty} h \, d\zeta \right)
+         * \f]
+         *
+         * The integral is computed numerically by splitting it into
+         * negative and positive velocity domains. The numerical integration is performed using Simpson's 1/3 Rule and a
+         * change of variables. A special treatment is applied for the wall boundary condition at `i = 0` to handle
+         * the discontinuity in the distribution function at \f$ \zeta=0 \f$.
+         *
+         * This version computes the density internally calling the `compute_density_at` and `compute_mean_velocity_at` functions.
+         *
+         * For further details on the implementation and mathematical formulation, please refer to the density
+         * vectorized version.
+         *
+         * @tparam T floating type precision (e.g., float, double)
+         * @tparam JacobianFunc The type of the callable that computes the Jacobian term for the integral.
+         * @param g Eigen matrix containing the g quantity (rows -> velocity points, cols ->
+         * spatial points).
+         * @param h Eigen matrix containing the h quantity (rows -> velocity points, cols ->
+         * spatial points).
+         * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
+         * @param i The spatial index at which to compute the mean gas temperature.
+         * @param wall_g_val Value of g at wall for zeta=0+ (for temperature calc).
+         * @param wall_h_val Value of h at wall for zeta=0+ (for temperature calc).
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @return T The computed mean gas temperature at the i-th spatial point.
+         */
+        template <typename T, typename JacobianFunc>
+        T compute_temperature_at(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
+                                 const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &h,
+                                 const VelocityMesh<T> &velocity_mesh,
+                                 const Eigen::Index i,
+                                 T wall_g_val, // For internal velocity & temp
+                                 T wall_h_val, // For temp
+                                 JacobianFunc get_jacobian);
     }
 }
 
 #include "impl/phys_utils.tpp"
 
-#endif /* PHYS_UTILS_EDCE3BAA_66FA_48CD_B277_A15BDAD8AFB0 */
+#endif /* PHYS_UTILS_B3D31D31_524A_4009_AA77_ABC07533CF00 */

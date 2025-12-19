@@ -19,51 +19,77 @@
 
 namespace Bgk
 {
-    /**
-     * @brief Configuration data for the simulation. It holds all the user defined parameters
-     *       for the simulation, such as mesh parameters and physical parameters.
+    /** @brief Configuration data for the simulation.
+     *
+     * It holds all the user defined parameters for the simulation, such as mesh parameters and
+     * physical parameters. It offers getters to access these parameters and the possibility to
+     * load them from a configuration file (.json)
      *
      * @tparam T Data type for configuration parameters / computational precision.
-     *
-     * @param N Number of spatial points in the simulation.
-     * @param barN Number of velocity points in the simulation.
-     * @param N0 Space mesh discritization parameter
-     * @param d1, d2, a1, a2 Meshes dicretization parameters. (d1, d2 refer to space, a1, a2 refer to velocity).
-     * @param v_infty Asymptotic velocity for the simulation.
      *
      */
     template <typename T>
     class ConfigData
     {
     private:
-        // Mesh parameters
+        // ------ MESH PARAMETERS -----------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------------
+
+        /// Space mesh total number of points
         size_t N;
+        /// Space mesh number of polynomially spaced points
         size_t N0;
+        /// Velocity mesh total number of points
         size_t barN;
+        /// Space mesh spacing parameter
         T d1;
+        /// Space mesh spacing parameter
         T d2;
+        /// Velocity mesh spacing parameter
         T a1;
+        /// Velocity mesh spacing parameter
         T a2;
 
-        // Physical parameters
+        // ------ PHYSICAL PARAMETERS -------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------------
+
+        /// Ratio of infinity to wall temperature
         T T_infty_w;
+        /// Ratio of infinity to wall pressure
         T p_infty_w;
+        /// Mach number at infinity
         T M_infty;
 
-        // Simulation parameters
+        // ------ SIMULATION PARAMETERS -----------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------------
+
+        /// Time stepping size
         T dt;
+        /// Convergence relative tolerance
         T tol;
+        /// Maximum number of iterations
         size_t max_iter;
+        /// Plot every k steps
         size_t plot_every_k_steps;
 
-        // General
+        // ------ SAVING PARAMETERS ---------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------------
+
+        /// Folder name to save results
         std::string saving_folder_name;
 
     public:
         // ------ CONSTRUCTORS AND DESTRUCTORS -----------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
+
+        /// @brief Default constructor
         ConfigData() = default;
+        /** @brief Construct a new Config Data object from a configuration file. .json configuration file
+         *
+         * @param filename path to the configuration file
+         */
         ConfigData(std::string filename);
+        /// @brief Default destructor
         ~ConfigData() = default;
 
         // ------ GETTERS --------------------------------------------------------------------------------
