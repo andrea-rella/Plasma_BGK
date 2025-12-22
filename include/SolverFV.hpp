@@ -12,8 +12,8 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef SOLVERFV_A4861E67_B861_40A7_A579_3127DB409535
-#define SOLVERFV_A4861E67_B861_40A7_A579_3127DB409535
+#ifndef SOLVERFV_CF3739E4_0179_477E_9C04_0D0ED2512066
+#define SOLVERFV_CF3739E4_0179_477E_9C04_0D0ED2512066
 
 #include "utilities.hpp"
 #include "phys_utils.hpp"
@@ -221,12 +221,39 @@ namespace Bgk
         /// @brief Default destructor
         ~SolverFV() = default;
 
-        // ------ BUILD NUMERICAL MATRICES / SETUP -------------------------------------------------------
+        // ------ INITIALIZE METHODS --------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
+        /** @brief Initializes the space and velocity meshes based on configuration data
+         *
+         * This method sets up the spatial and velocity meshes using the parameters specified
+         * in the ConfigData object. It configures the mesh sizes, spacing, and distribution
+         * according to the simulation requirements.
+         *
+         * @note It calls the SpaceMeshFV and VelocityMesh initialization methods.
+         *
+         */
         void initializeMeshes();
+        /** @brief Sets physical quantities and boundary conditions based on configuration data
+         *
+         * This method initializes the physical quantities such as density, mean velocity,
+         * and temperature.
+         *
+         * @note It calls the phys_utils functions
+         *
+         */
         void set_physical_quantities();
+        /** @brief Sets the initial state of the distribution functions g and h
+         *
+         * This method initializes the distribution function grids g and h using the
+         * provided initial and boundary condition functions. It populates the g and h matrices
+         * based on the spatial mesh and the initial conditions.
+         *
+         */
         void setInitialState();
+
+        // ------ BUILD NUMERICAL MATRICES / SETUP -------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
 
         /** @brief Assemble the numerical advection matrix @f$ A / \zeta^{(j)} @f$ for the case velocity > 0
          *
@@ -241,7 +268,6 @@ namespace Bgk
          *
          */
         void assemble_A();
-
         /** @brief Assemble the numerical advection matrix @f$ B / \zeta^{(j)} @f$ for the case velocity < 0
          *
          * This function assembles the numerical advection matrix A for the case where the velocity is positive.
@@ -255,29 +281,115 @@ namespace Bgk
          *
          */
         void assemble_B();
+        /** @brief Assembles the reaction diagonal matrix R
+         *
+         * This function assembles the reaction diagonal matrix R used in the semi-implicit time integration
+         * scheme for solving the BGK Boltzmann equations.
+         *
+         * For more details on the assembly process, refer to the library report.
+         *
+         * @note since the matrix is diagonal, it is stored as a vector for efficiency.
+         *
+         */
         void assemble_R();
+
+        // ------ GLOBAL INITIALIZE AND RESET ------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
+
+        /// @brief Global initialization method that sets up meshes, physical quantities, initial state and numerical matrices.
         void initialize();
+        /// @brief Resets the solver to its initial uninitialized state.
         void reset();
 
         // ------ SOLVE  ---------------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
+        /** @brief Solves the BGK Boltzmann equations over time until convergence or maximum iterations
+         *
+         * This method iteratively solves the discretized BGK Boltzmann equations for the distribution
+         * functions g and h over time. It continues the simulation until either convergence is achieved
+         * based on the specified vector norm and aggregation type, or the maximum number of iterations
+         * is reached.
+         *
+         * @param vec_norm_type Type of vector norm to use for convergence checking (e.g., L2, L∞).
+         * @param agg_type Type of aggregation method to use for convergence checking (e.g., max, average).
+         */
         void solve(const metrics::VectorNormType vec_norm_type,
                    const metrics::RowAggregateType agg_type);
 
         // ------ OUTPUT ---------------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        void write_sol_txt(const std::string &folder_name) const;
-        void write_phys_txt(const std::string &folder_name) const;
-        void write_meshes_txt(const std::string &folder_name) const;
-        void write_space_mesh_vtk(const std::string &folder_name) const;
-        void write_initial_state_txt(const std::string &folder_name) const;
-        void write_phys_instant(const std::string &folder_name, size_t iter) const;
-        void write_all(const std::string &folder_name) const;
+        /** @brief Writes the solution distribution functions g and h to text files
+         *
+         * This method outputs the current state of the distribution functions g and h
+         * to text files in the specified folder path.
+         *
+         * @param folder_path Path to the folder where the text files will be saved. (e.g., "./results")
+         *
+         *
+         */
+        void write_sol_txt(const std::string &folder_path) const;
+        /** @brief Writes the physical quantities to text files
+         *
+         * This method outputs the current state of the physical quantities
+         * to text files in the specified folder path.
+         *
+         * @param folder_path Path to the folder where the text files will be saved. (e.g., "./results")
+         *
+         */
+        void write_phys_txt(const std::string &folder_path) const;
+        /** @brief Writes the space mesh to a text file
+         *
+         * This method outputs the spatial mesh data
+         * to a text file in the specified folder path.
+         *
+         * @param folder_path Path to the folder where the text file will be saved. (e.g., "./results")
+         *
+         * @note calls SpaceMeshFV::write_mesh_txt() and VelocityMesh::write_mesh_txt()
+         */
+        void write_meshes_txt(const std::string &folder_path) const;
+        /** @brief Writes the space mesh to a VTK file
+         *
+         * This method outputs the spatial mesh data
+         * to a VTK file in the specified folder path.
+         *
+         * @param folder_path Path to the folder where the VTK file will be saved. (e.g., "./results")
+         *
+         * @note calls SpaceMeshFV::write_mesh_vtk()
+         */
+        void write_space_mesh_vtk(const std::string &folder_path) const;
+        /** @brief Writes the initial state of the simulation to text files
+         *
+         * This method outputs the initial state of the distribution functions g and h,
+         * as well as the physical quantities, to text files in the specified folder path.
+         *
+         * @param folder_path Path to the folder where the text files will be saved. (e.g., "./results")
+         *
+         */
+        void write_initial_state_txt(const std::string &folder_path) const;
+        /** @brief Writes the instantaneous physical quantities at a specific iteration to text files
+         *
+         * This method outputs the physical quantities at a given iteration
+         * to text files in the specified folder path.
+         *
+         * @param folder_path Path to the folder where the text files will be saved. (e.g., "./results")
+         * @param iter Current iteration number
+         *
+         */
+        void write_phys_instant(const std::string &folder_path, size_t iter) const;
+        /** @brief Writes all relevant simulation data to files
+         *
+         * This method outputs the distribution functions, physical quantities,
+         * and mesh data to files in the specified folder path.
+         *
+         * @param folder_path Path to the folder where the files will be saved. (e.g., "./results")
+         *
+         */
+        void write_all(const std::string &folder_path) const;
     };
 }
 
 #include "impl/SolverFV.tpp"
 
-#endif /* SOLVERFV_A4861E67_B861_40A7_A579_3127DB409535 */
+#endif /* SOLVERFV_CF3739E4_0179_477E_9C04_0D0ED2512066 */

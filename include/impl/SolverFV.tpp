@@ -773,12 +773,12 @@ namespace Bgk
     // -----------------------------------------------------------------------------------------------
 
     template <typename T>
-    void SolverFV<T>::write_sol_txt(const std::string &folder_name) const
+    void SolverFV<T>::write_sol_txt(const std::string &folder_path) const
     {
-        std::filesystem::create_directories("output/" + folder_name);
+        std::filesystem::create_directories(folder_path);
 
         // Write g solution
-        std::string filename_g = "output/" + folder_name + "/solution_g.txt";
+        std::string filename_g = folder_path + "/solution_g.txt";
         std::ofstream txt_file_g(filename_g);
         if (!txt_file_g.is_open())
         {
@@ -801,7 +801,7 @@ namespace Bgk
         }
 
         // Write h solution
-        std::string filename_h = "output/" + folder_name + "/solution_h.txt";
+        std::string filename_h = folder_path + "/solution_h.txt";
         std::ofstream txt_file_h(filename_h);
         if (!txt_file_h.is_open())
         {
@@ -827,12 +827,12 @@ namespace Bgk
     }
 
     template <typename T>
-    void SolverFV<T>::write_phys_txt(const std::string &folder_name) const
+    void SolverFV<T>::write_phys_txt(const std::string &folder_path) const
     {
-        std::filesystem::create_directories("output/" + folder_name);
+        std::filesystem::create_directories(folder_path);
 
         // Write physical quantities (four columns: index, density, mean_velocity, temperature)
-        std::string filename_phys = "output/" + folder_name + "/physical_quantities.txt";
+        std::string filename_phys = folder_path + "/physical_quantities.txt";
         std::ofstream txt_file_phys(filename_phys);
         if (!txt_file_phys.is_open())
         {
@@ -853,30 +853,30 @@ namespace Bgk
     }
 
     template <typename T>
-    void SolverFV<T>::write_meshes_txt(const std::string &folder_name) const
+    void SolverFV<T>::write_meshes_txt(const std::string &folder_path) const
     {
-        Space_mesh.write_mesh_txt(folder_name);
-        Velocity_mesh.write_mesh_txt(folder_name);
+        Space_mesh.write_mesh_txt(folder_path);
+        Velocity_mesh.write_mesh_txt(folder_path);
         return;
     }
 
     template <typename T>
-    void SolverFV<T>::write_space_mesh_vtk(const std::string &folder_name) const
+    void SolverFV<T>::write_space_mesh_vtk(const std::string &folder_path) const
     {
-        Space_mesh.write_mesh_vtk(folder_name);
+        Space_mesh.write_mesh_vtk(folder_path);
         return;
     }
 
     template <typename T>
-    void SolverFV<T>::write_initial_state_txt(const std::string &folder_name) const
+    void SolverFV<T>::write_initial_state_txt(const std::string &folder_path) const
     {
-        std::filesystem::create_directories("output/" + folder_name);
+        std::filesystem::create_directories(folder_path);
 
         const size_t Space_N = Space_mesh.get_N();
         const size_t Velocity_N = Velocity_mesh.get_N();
 
         // Write initial g boundary values
-        std::string filename_g0 = "output/" + folder_name + "/initial_state_g.txt";
+        std::string filename_g0 = folder_path + "/initial_state_g.txt";
         std::ofstream txt_file_g0(filename_g0);
         if (!txt_file_g0.is_open())
         {
@@ -903,7 +903,7 @@ namespace Bgk
         }
 
         // Write initial h boundary values
-        std::string filename_h0 = "output/" + folder_name + "/initial_state_h.txt";
+        std::string filename_h0 = folder_path + "/initial_state_h.txt";
         std::ofstream txt_file_h0(filename_h0);
         if (!txt_file_h0.is_open())
         {
@@ -933,12 +933,12 @@ namespace Bgk
     }
 
     template <typename T>
-    void SolverFV<T>::write_phys_instant(const std::string &folder_name, size_t iter) const
+    void SolverFV<T>::write_phys_instant(const std::string &folder_path, size_t iter) const
     {
-        std::filesystem::create_directories("output/" + folder_name);
+        std::filesystem::create_directories(folder_path);
 
         // Write temperature at current instant
-        std::string filename_phys = "output/" + folder_name + "/phys_iter_" + std::to_string(iter) + ".txt";
+        std::string filename_phys = folder_path + "/phys_iter_" + std::to_string(iter) + ".txt";
         std::ofstream txt_file_phys(filename_phys);
         if (!txt_file_phys.is_open())
         {
@@ -959,12 +959,12 @@ namespace Bgk
     }
 
     template <typename T>
-    void SolverFV<T>::write_all(const std::string &folder_name) const
+    void SolverFV<T>::write_all(const std::string &folder_path) const
     {
-        write_sol_txt(folder_name);
-        write_phys_txt(folder_name);
-        write_meshes_txt(folder_name);
-        write_space_mesh_vtk(folder_name);
+        write_sol_txt(folder_path);
+        write_phys_txt(folder_path);
+        write_meshes_txt(folder_path);
+        write_space_mesh_vtk(folder_path);
         return;
     }
 }
