@@ -36,7 +36,7 @@ namespace Bgk
      * @tparam Container A container type for storing mesh points.
      * @tparam Nature The nature of the mesh, either SPACE or VELOCITY.
      */
-    template <FloatingPoint T, MeshContainer1D<T> Container = std::vector<T>, MeshNature Nature = MeshNature::SPACE>
+    template <typename T, MeshContainer1D<T> Container = std::vector<T>, MeshNature Nature = MeshNature::SPACE>
     class BaseMesh1D
     {
     protected:

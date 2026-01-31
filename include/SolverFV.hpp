@@ -21,6 +21,7 @@
 #include "SpaceMeshFV.hpp"
 #include "VelocityMesh.hpp"
 #include "metrics_utils.hpp"
+#include "utilities.hpp"
 
 #include "Eigen/Sparse"
 #include "math.h"
@@ -54,9 +55,9 @@ namespace Bgk
         // -----------------------------------------------------------------------------------------------
 
         /// Grid of g distribution function values
-        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> g;
+        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> g;
         /// Grid of h distribution function values
-        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> h;
+        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> h;
 
         /// Macroscopic normalized density vector
         Eigen::Vector<T, Eigen::Dynamic> density;
@@ -314,6 +315,7 @@ namespace Bgk
          * @param vec_norm_type Type of vector norm to use for convergence checking (e.g., L2, L∞).
          * @param agg_type Type of aggregation method to use for convergence checking (e.g., max, average).
          */
+        template <PlotStrategy Strategy>
         void solve(const metrics::VectorNormType vec_norm_type,
                    const metrics::RowAggregateType agg_type);
 

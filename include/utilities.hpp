@@ -28,8 +28,8 @@
  * These utilities are essential for ensuring type safety and providing common functionality across different mesh implementations.
  */
 
-#ifndef UTILITIES_F9FED3EC_E850_404A_8753_23CF1EDC3674
-#define UTILITIES_F9FED3EC_E850_404A_8753_23CF1EDC3674
+#ifndef UTILITIES_D1960633_B6A3_4A73_81CA_EEFCDE02F6EE
+#define UTILITIES_D1960633_B6A3_4A73_81CA_EEFCDE02F6EE
 
 #include <concepts>
 #include <ranges>
@@ -188,8 +188,22 @@ namespace Bgk
         { func(arg) } -> std::convertible_to<T>;
     };
 
+    /**
+     * @brief Strategy for plotting during the solve process.
+     *
+     * This enum class defines the strategy for plotting the solution during the solve process.
+     * It can either plot at every step or only at the end of the simulation.
+     */
+    enum class PlotStrategy
+    {
+        /// Plot at every step.
+        EACHSTEP,
+        /// Plot at the end only.
+        ONLYEND
+    };
+
 }
 
 #include "impl/utilities.tpp"
 
-#endif /* UTILITIES_F9FED3EC_E850_404A_8753_23CF1EDC3674 */
+#endif /* UTILITIES_D1960633_B6A3_4A73_81CA_EEFCDE02F6EE */

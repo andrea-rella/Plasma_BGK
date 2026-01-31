@@ -75,7 +75,7 @@ int main(int argc, char *argv[])
               << std::endl;
 
     solver.initialize();
-    solver.solve(Bgk::metrics::VectorNormType::L2, Bgk::metrics::RowAggregateType::Max);
+    solver.solve<Bgk::PlotStrategy::EACHSTEP>(Bgk::metrics::VectorNormType::L2, Bgk::metrics::RowAggregateType::Max);
     solver.write_all(Data.get_saving_folder_name());
 
     return 0;

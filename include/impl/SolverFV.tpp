@@ -38,8 +38,8 @@ namespace Bgk
         R = Eigen::Vector<T, Eigen::Dynamic>::Zero(Space_mesh.get_N() + 1);
 
         // solution matrices
-        g = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>::Zero(2 * Velocity_mesh.get_N() + 1, Space_mesh.get_N() + 1);
-        h = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>::Zero(2 * Velocity_mesh.get_N() + 1, Space_mesh.get_N() + 1);
+        g = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>::Zero(2 * Velocity_mesh.get_N() + 1, Space_mesh.get_N() + 1);
+        h = Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>::Zero(2 * Velocity_mesh.get_N() + 1, Space_mesh.get_N() + 1);
 
         // density, mean velocity and temperature vectors
         density = Eigen::Vector<T, Eigen::Dynamic>::Zero(Space_mesh.get_N() + 1);
@@ -282,6 +282,7 @@ namespace Bgk
 
         A.setFromTriplets(triplets.begin(), triplets.end());
 
+        A.makeCompressed();
         return;
     }
 
@@ -374,6 +375,8 @@ namespace Bgk
         }
 
         B.setFromTriplets(triplets.begin(), triplets.end());
+
+        B.makeCompressed();
 
         return;
     }
@@ -521,82 +524,102 @@ namespace Bgk
         const size_t Space_N = Space_mesh.get_N();
         const T dt = Data.get_dt();
 
-        // Positive velocities are indices Velocity_N+1 .. 2*Velocity_N
+        // Positive velocities indices
         const size_t j_begin = Velocity_N + 1;
-        const size_t j_end = 2 * Velocity_N; // inclusive
+        const size_t j_end = 2 * Velocity_N;
 
+        // Pre-calculate coefficients once
         const std::pair<T, T> a1 = numerics::QUICKcoefficients_p_at<T>(Space_mesh, 1);
         const std::pair<T, T> a2 = numerics::QUICKcoefficients_p_at<T>(Space_mesh, 2);
         const T omega1 = -a2.second - T{1} + a1.first - a1.second;
 
-        // Build diagonal (R part) once
-        Eigen::Vector<T, Eigen::Dynamic> R_loc = R.tail(Space_N);
+        // --- Optimization 1: Pre-compute diagonal offsets ---
+        // This maps where the diagonal elements live in the raw value array.
+        // Complexity: One-time O(NNZ), saves O(N log k) per timestep.
+        std::vector<ptrdiff_t> diag_offsets(Space_N);
 
-        // Ensure every diagonal entry exists (so adding identity is fast & pattern stable)
-        // for (Eigen::Index i = 0; i < C.rows(); ++i)
-        //  C.coeffRef(i, i) += T{0};
-        // C.makeCompressed();
+        // Ensure A is compressed to guarantee valuePtr safety
+        // (Assuming A is already built; if not, call A.makeCompressed())
+        if (!A.isCompressed())
+            A.makeCompressed();
 
+        for (int k = 0; k < A.outerSize(); ++k)
+        {
+            for (typename Eigen::SparseMatrix<T>::InnerIterator it(A, k); it; ++it)
+            {
+                if (it.row() == it.col())
+                {
+                    // Store the offset from the beginning of the value array
+                    diag_offsets[it.row()] = &it.value() - A.valuePtr();
+                }
+            }
+        }
+
+        // --- Optimization 2: Structure Reuse ---
+        // Initialize M with A's pattern ONCE. We never change the pattern, only values.
+        Eigen::SparseMatrix<T> M = A;
+
+        // Analyze pattern once (Symbolic Factorization)
         Eigen::SparseLU<Eigen::SparseMatrix<T>, Eigen::NaturalOrdering<int>> solver;
         solver.analyzePattern(A);
 
-        // Reusable buffers
+        // Buffers
         Eigen::Vector<T, Eigen::Dynamic> U(Space_N);
         Eigen::Vector<T, Eigen::Dynamic> W(Space_N);
-        Eigen::Vector<T, Eigen::Dynamic> rhs_g(Space_N);
-        Eigen::Vector<T, Eigen::Dynamic> rhs_h(Space_N);
-        Eigen::SparseMatrix<T> M; // will hold I + alpha * C each iteration
+        Eigen::Vector<T, Eigen::Dynamic> rhs(Space_N); // Reused for both g and h
+
+        // Pre-fetch constant vector parts
+        const Eigen::Vector<T, Eigen::Dynamic> R_loc = R.tail(Space_N);
+        const T *A_vals = A.valuePtr(); // Read-only source
+        T *M_vals = M.valuePtr();       // Write target
+        const Eigen::Index nnz = A.nonZeros();
 
         for (size_t j = j_begin; j <= j_end; ++j)
         {
-            U = assemble_U_pos(j, a1.second, a2.second, omega1);
-            W = assemble_W_pos(j, a1.second, a2.second, omega1);
+            // 1. Matrix Assembly: M = (v_j * dt) * A + (I + dt * R)
+            const T v_dt = Velocity_mesh[j] * dt;
 
-            Eigen::Vector<T, Eigen::Dynamic> g_j = g.row(j).tail(Space_N).transpose();
-            Eigen::Vector<T, Eigen::Dynamic> h_j = h.row(j).tail(Space_N).transpose();
+            // Step A: Reset M values by scaling A (Vectorized copy)
+            // This is much faster than M = A (which copies indices too) followed by M *= scalar
+            for (Eigen::Index k = 0; k < nnz; ++k)
+            {
+                M_vals[k] = A_vals[k] * v_dt;
+            }
 
-            // Rebuild numeric values of M: M = v_j*dt*A + dt*diag(R_loc) + I
-            M = A;                        // copy A pattern & values
-            M *= (Velocity_mesh[j] * dt); // scale A
-            // Add dt*R and identity on diagonal
-            for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(Space_N); ++i)
-                M.coeffRef(i, i) += dt * R_loc[i] + T{1}; //  You can avoid a pattern merge and one temporary by doing in‑place operations.
-            // M.coeffRef(i, i) += T{1};
-            // (C already compressed; coeffRef keeps pattern stable)
-            /**
-             * @note Doing this for loop (modifying in place) is more efficient than summing directly the
-             *       identity iff every diagonal entry already exists (which it does by contruction). Infact:
-             *
-             *       - Expression I + alpha*C triggers a sparse addition: it allocates a fresh matrix, merges
-             *         two patterns (even if Identity is trivial), and copies all nnz.
-             *
-             *       - In‑place: copy C -> M (already compressed), scale (single pass over nnz), then increment
-             *         N diagonal scalars. No pattern merge.
-             *
-             *       Caveat: Using coeffRef(i,i) does a (cheap) binary search per column; if the diagonal entry
-             *       does NOT exist it INSERTS (costly, breaks pattern reuse). So ensure diagonal entries exist beforehand
-             *       (e.g. once: C.coeffRef(i,i) += 0; C.makeCompressed()).
-             */
+            // Step B: Update diagonal (Direct access via offsets)
+            for (size_t i = 0; i < Space_N; ++i)
+            {
+                M_vals[diag_offsets[i]] += (dt * R_loc[i] + T{1});
+            }
 
+            // 2. Numerical Factorization
             solver.factorize(M);
             if (solver.info() != Eigen::Success)
                 throw std::runtime_error("LU factorization failed in solve_timestep_pos");
 
-            rhs_g = g_j + dt * U;
-            rhs_h = h_j + dt * W;
+            // 3. Assemble RHS vectors
+            U = assemble_U_pos(j, a1.second, a2.second, omega1);
+            W = assemble_W_pos(j, a1.second, a2.second, omega1);
 
-            auto x = solver.solve(rhs_g);
-            if (solver.info() != Eigen::Success)
-                throw std::runtime_error("Solve (g) failed in solve_timestep_pos");
-            auto y = solver.solve(rhs_h);
-            if (solver.info() != Eigen::Success)
-                throw std::runtime_error("Solve (h) failed in solve_timestep_pos");
+            // 4. Solve for g
+            // rhs = g_j + dt * U (Avoiding extra allocations)
+            rhs = g.row(j).tail(Space_N).transpose();
+            rhs += dt * U;
 
+            auto x = solver.solve(rhs);
+            if (solver.info() != Eigen::Success)
+                throw std::runtime_error("Solve (g) failed");
             g.row(j).tail(Space_N) = x.transpose();
+
+            // 5. Solve for h
+            rhs = h.row(j).tail(Space_N).transpose();
+            rhs += dt * W;
+
+            auto y = solver.solve(rhs);
+            if (solver.info() != Eigen::Success)
+                throw std::runtime_error("Solve (h) failed");
             h.row(j).tail(Space_N) = y.transpose();
         }
-
-        return;
     }
 
     template <typename T>
@@ -614,8 +637,28 @@ namespace Bgk
         const std::pair<T, T> bNm1 = numerics::QUICKcoefficients_n_at<T>(Space_mesh, Space_N - 1);
         const T sigmaNm1 = T{1} - bN.first + bN.second + bNm1.second;
 
-        // Precompute constant part C = A + R_mat
-        Eigen::Vector<T, Eigen::Dynamic> R_loc = R.head(Space_N);
+        // --- Optimization 1: Pre-compute diagonal offsets for B ---
+        std::vector<ptrdiff_t> diag_offsets(Space_N);
+
+        // Ensure B is compressed to guarantee valuePtr safety
+        if (!B.isCompressed())
+            B.makeCompressed();
+
+        for (int k = 0; k < B.outerSize(); ++k)
+        {
+            for (typename Eigen::SparseMatrix<T>::InnerIterator it(B, k); it; ++it)
+            {
+                if (it.row() == it.col())
+                {
+                    // Correct syntax: address of value reference
+                    diag_offsets[it.row()] = &it.value() - B.valuePtr();
+                }
+            }
+        }
+
+        // --- Optimization 2: Structure Reuse ---
+        // Initialize M with B's pattern ONCE.
+        Eigen::SparseMatrix<T> M = B;
 
         Eigen::SparseLU<Eigen::SparseMatrix<T>, Eigen::NaturalOrdering<int>> solver;
         solver.analyzePattern(B);
@@ -623,40 +666,57 @@ namespace Bgk
         // Reusable buffers
         Eigen::Vector<T, Eigen::Dynamic> U(Space_N);
         Eigen::Vector<T, Eigen::Dynamic> W(Space_N);
-        Eigen::Vector<T, Eigen::Dynamic> rhs_g(Space_N);
-        Eigen::Vector<T, Eigen::Dynamic> rhs_h(Space_N);
-        Eigen::SparseMatrix<T> M; // will hold I + alpha * C each iteration
+        Eigen::Vector<T, Eigen::Dynamic> rhs(Space_N); // Reused for both g and h
+
+        // Pre-fetch constant vector parts and pointers
+        const Eigen::Vector<T, Eigen::Dynamic> R_loc = R.head(Space_N);
+        const T *B_vals = B.valuePtr(); // Read-only source
+        T *M_vals = M.valuePtr();       // Write target
+        const Eigen::Index nnz = B.nonZeros();
 
         for (size_t j = j_begin; j <= j_end; ++j)
         {
+            // 1. Matrix Assembly: M = (v_j * dt) * B + (I + dt * R)
+            const T v_dt = Velocity_mesh[j] * dt;
+
+            // Step A: Reset M values by scaling B (Vectorized copy)
+            for (Eigen::Index k = 0; k < nnz; ++k)
+            {
+                M_vals[k] = B_vals[k] * v_dt;
+            }
+
+            // Step B: Update diagonal (Direct access via offsets)
+            for (size_t i = 0; i < Space_N; ++i)
+            {
+                M_vals[diag_offsets[i]] += (dt * R_loc[i] + T{1});
+            }
+
+            // 2. Numerical Factorization
+            solver.factorize(M);
+            if (solver.info() != Eigen::Success)
+                throw std::runtime_error("LU factorization failed in solve_timestep_neg");
+
+            // 3. Assemble RHS vectors
             U = assemble_U_neg(j, bN.second, bNm1.second, sigmaNm1);
             W = assemble_W_neg(j, bN.second, bNm1.second, sigmaNm1);
 
-            Eigen::Vector<T, Eigen::Dynamic> g_j = g.row(j).head(Space_N).transpose();
-            Eigen::Vector<T, Eigen::Dynamic> h_j = h.row(j).head(Space_N).transpose();
+            // 4. Solve for g
+            // rhs = g_j + dt * U (Avoiding extra allocations)
+            rhs = g.row(j).head(Space_N).transpose();
+            rhs += dt * U;
 
-            M = B;                        // copy B pattern & values
-            M *= (Velocity_mesh[j] * dt); // scale B
-            // Add dt*R and identity on diagonal
-            for (Eigen::Index i = 0; i < static_cast<Eigen::Index>(Space_N); ++i)
-                M.coeffRef(i, i) += dt * R_loc[i] + T{1};
-            // M.coeffRef(i, i) += T{1};
-
-            solver.factorize(M);
+            auto x = solver.solve(rhs);
             if (solver.info() != Eigen::Success)
-                throw std::runtime_error("LU factorization failed in solve_timestep_pos");
-
-            rhs_g = g_j + dt * U;
-            rhs_h = h_j + dt * W;
-
-            auto x = solver.solve(rhs_g);
-            if (solver.info() != Eigen::Success)
-                throw std::runtime_error("Solve (g) failed in solve_timestep_pos");
-            auto y = solver.solve(rhs_h);
-            if (solver.info() != Eigen::Success)
-                throw std::runtime_error("Solve (h) failed in solve_timestep_pos");
-
+                throw std::runtime_error("Solve (g) failed in solve_timestep_neg");
             g.row(j).head(Space_N) = x.transpose();
+
+            // 5. Solve for h
+            rhs = h.row(j).head(Space_N).transpose();
+            rhs += dt * W;
+
+            auto y = solver.solve(rhs);
+            if (solver.info() != Eigen::Success)
+                throw std::runtime_error("Solve (h) failed in solve_timestep_neg");
             h.row(j).head(Space_N) = y.transpose();
         }
     }
@@ -668,57 +728,61 @@ namespace Bgk
         const size_t Space_N = Space_mesh.get_N();
         const T dt = Data.get_dt();
 
-        // Assemble sources
-        Eigen::Vector<T, Eigen::Dynamic> U = assemble_U_zero(); // size = Space_N
-        Eigen::Vector<T, Eigen::Dynamic> W = assemble_W_zero(); // size = Space_N
+        // 1. Assemble sources
+        // (Ideally, refactor assemble_* to accept a reference to 'U' to avoid this allocation too)
+        Eigen::Vector<T, Eigen::Dynamic> U = assemble_U_zero();
+        Eigen::Vector<T, Eigen::Dynamic> W = assemble_W_zero();
 
-        Eigen::Vector<T, Eigen::Dynamic> g_j = g.row(Velocity_N).head(Space_N).transpose();
-        Eigen::Vector<T, Eigen::Dynamic> h_j = h.row(Velocity_N).head(Space_N).transpose();
+        // 2. Pre-calculate Inverse Denominator
+        // Original: denom = 1 + dt * R; x = rhs / denom;
+        // Optimized: inv_denom = 1 / (1 + dt * R); x = rhs * inv_denom;
+        // Benefit: 1 Division + 2 Multiplications is faster than 2 Divisions.
+        // We use .head(Space_N) directly to avoid copying R into R_loc.
+        Eigen::Vector<T, Eigen::Dynamic> inv_denom =
+            (Eigen::Vector<T, Eigen::Dynamic>::Ones(Space_N) + dt * R.head(Space_N)).cwiseInverse();
 
-        Eigen::Vector<T, Eigen::Dynamic> rhs_g = g_j + dt * U;
-        Eigen::Vector<T, Eigen::Dynamic> rhs_h = h_j + dt * W;
+        // 3. Update 'g' in-place (No intermediate allocations)
+        // Logic: g_new = (g_old + dt * U) * inv_denom
+        // Note: g.row() is 1xN, U is Nx1. We transpose the row to match U,
+        // perform the op, then transpose back to write.
+        g.row(Velocity_N).head(Space_N) = (g.row(Velocity_N).head(Space_N).transpose() + dt * U)
+                                              .cwiseProduct(inv_denom)
+                                              .transpose();
 
-        Eigen::Vector<T, Eigen::Dynamic> R_loc = R.head(Space_N);
-
-        // Diagonal solve: (I + dt * R) x = rhs
-        // R has size Space_N + 1 (matches zero-velocity row length)
-        Eigen::Vector<T, Eigen::Dynamic> denom = Eigen::Vector<T, Eigen::Dynamic>::Ones(Space_N);
-        denom.noalias() += dt * R_loc; // element-wise: 1 + dt*R_i
-
-        Eigen::Vector<T, Eigen::Dynamic> x = rhs_g.cwiseQuotient(denom);
-        Eigen::Vector<T, Eigen::Dynamic> y = rhs_h.cwiseQuotient(denom);
-
-        g.row(Velocity_N).head(Space_N) = x.transpose();
-        h.row(Velocity_N).head(Space_N) = y.transpose();
+        // 4. Update 'h' in-place
+        h.row(Velocity_N).head(Space_N) = (h.row(Velocity_N).head(Space_N).transpose() + dt * W)
+                                              .cwiseProduct(inv_denom)
+                                              .transpose();
     }
 
     // ------ SOLVE  ---------------------------------------------------------------------------------
     // -----------------------------------------------------------------------------------------------
 
     template <typename T>
+    template <PlotStrategy Strategy> // Add this template parameter
     void SolverFV<T>::solve(const metrics::VectorNormType vec_norm_type,
                             const metrics::RowAggregateType agg_type)
     {
-
         if (!is_initialized)
             initialize();
 
         size_t max_iter = Data.get_max_iter();
         size_t k = 0;
-        size_t plot_every_k_steps = Data.get_plot_every_k_steps();
-        std::cout << "Plotting every " << plot_every_k_steps << " steps." << std::endl;
-
         T tol = Data.get_tol();
         T rel_err = std::numeric_limits<T>::max();
 
+        // Only fetch/print if we are actually plotting frequently
+        size_t plot_every_k_steps = 0;
+        if constexpr (Strategy == PlotStrategy::EACHSTEP)
+        {
+            plot_every_k_steps = Data.get_plot_every_k_steps();
+            std::cout << "Plotting every " << plot_every_k_steps << " steps." << std::endl;
+            write_phys_instant(Data.get_saving_folder_name(), 0);
+        }
+
         auto mat_norm = metrics::MatrixNormFactory<T>::create(vec_norm_type, agg_type);
+        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> g_old, h_old;
 
-        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> g_old, h_old;
-
-        write_phys_instant(Data.get_saving_folder_name(), 0);
-        //write_sol_instant_txt(Data.get_saving_folder_name(), 0);
-
-        std::cout << "Starting solver..." << std::endl;
         while (k < max_iter && rel_err > tol)
         {
             g_old = g;
@@ -729,21 +793,28 @@ namespace Bgk
             solve_timestep_pos();
 
             set_physical_quantities();
-
             assemble_R();
 
+            // Error calculation logic...
             rel_err = std::sqrt(std::pow(mat_norm->compute(g, g_old, Space_mesh.get_volume_sizes()), T{2}) +
                                 std::pow(mat_norm->compute(h, h_old, Space_mesh.get_volume_sizes()), T{2}));
             ++k;
 
-            if (k % plot_every_k_steps == 0 || k == 1 || k == 20 || k == 40 || k == 60 || k == 80 || k == 100)
+            // Compile-time branching: Zero overhead if Strategy is OnlyEnd
+            if constexpr (Strategy == PlotStrategy::EACHSTEP)
             {
-                write_phys_instant(Data.get_saving_folder_name(), k);
-                //write_sol_instant_txt(Data.get_saving_folder_name(), k);
+                if (k % plot_every_k_steps == 0 || k == 1 /* ... other conditions ... */)
+                {
+                    write_phys_instant(Data.get_saving_folder_name(), k);
+                }
             }
         }
 
+        // Always plot at the end regardless of strategy
+        write_phys_txt(Data.get_saving_folder_name());
+
         std::cout << "Solver finished after " << k << " iterations with relative error " << rel_err << std::endl;
+
         return;
     }
 

@@ -27,7 +27,7 @@ namespace Bgk
         // ----------------------------------------------------------------------------------------------
 
         template <typename T, typename JacobianFunc>
-        Eigen::Vector<T, Eigen::Dynamic> compute_density(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
+        Eigen::Vector<T, Eigen::Dynamic> compute_density(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> &g,
                                                          const VelocityMesh<T> &velocity_mesh,
                                                          T wall_g_val,
                                                          JacobianFunc get_jacobian)
@@ -96,7 +96,7 @@ namespace Bgk
         }
 
         template <typename T, typename JacobianFunc>
-        T compute_density_at(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
+        T compute_density_at(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> &g,
                              const VelocityMesh<T> &velocity_mesh,
                              const Eigen::Index i,
                              T wall_g_val,
@@ -143,7 +143,7 @@ namespace Bgk
         // ----------------------------------------------------------------------------------------------
 
         template <typename T, typename JacobianFunc>
-        Eigen::Vector<T, Eigen::Dynamic> compute_meanGasVelocity(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
+        Eigen::Vector<T, Eigen::Dynamic> compute_meanGasVelocity(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> &g,
                                                                  const VelocityMesh<T> &velocity_mesh,
                                                                  const Eigen::Vector<T, Eigen::Dynamic> &densities,
                                                                  T wall_g_val, // Value of g at wall for zeta=0+
@@ -213,7 +213,7 @@ namespace Bgk
         }
 
         template <typename T, typename JacobianFunc>
-        Eigen::Vector<T, Eigen::Dynamic> compute_meanGasVelocity(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
+        Eigen::Vector<T, Eigen::Dynamic> compute_meanGasVelocity(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> &g,
                                                                  const VelocityMesh<T> &velocity_mesh,
                                                                  T wall_g_val, // For velocity
                                                                  JacobianFunc get_jacobian)
@@ -288,7 +288,7 @@ namespace Bgk
         }
 
         template <typename T, typename JacobianFunc>
-        T compute_meanGasVelocity_at(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
+        T compute_meanGasVelocity_at(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> &g,
                                      const VelocityMesh<T> &velocity_mesh,
                                      const Eigen::Index i,
                                      T wall_g_val, // For velocity calc
@@ -338,7 +338,7 @@ namespace Bgk
         }
 
         template <typename T, typename JacobianFunc>
-        T compute_meanGasVelocity_at(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
+        T compute_meanGasVelocity_at(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> &g,
                                      const VelocityMesh<T> &velocity_mesh,
                                      const Eigen::Index i,
                                      const T density_i, // Pre-computed
@@ -389,8 +389,8 @@ namespace Bgk
         // ----------------------------------------------------------------------------------------------
 
         template <typename T, typename JacobianFunc>
-        Eigen::Vector<T, Eigen::Dynamic> compute_temperature(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
-                                                             const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &h,
+        Eigen::Vector<T, Eigen::Dynamic> compute_temperature(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> &g,
+                                                             const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> &h,
                                                              const VelocityMesh<T> &velocity_mesh,
                                                              const Eigen::Vector<T, Eigen::Dynamic> &densities,
                                                              const Eigen::Vector<T, Eigen::Dynamic> &mean_velocities,
@@ -473,8 +473,8 @@ namespace Bgk
         }
 
         template <typename T, typename JacobianFunc>
-        Eigen::Vector<T, Eigen::Dynamic> compute_temperature(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
-                                                             const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &h,
+        Eigen::Vector<T, Eigen::Dynamic> compute_temperature(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> &g,
+                                                             const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> &h,
                                                              const VelocityMesh<T> &velocity_mesh,
                                                              T wall_g_val, // For velocity & temp
                                                              T wall_h_val, // For temp
@@ -567,8 +567,8 @@ namespace Bgk
         //----------------------------------------------------------------------------
 
         template <typename T, typename JacobianFunc>
-        T compute_temperature_at(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
-                                 const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &h,
+        T compute_temperature_at(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> &g,
+                                 const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> &h,
                                  const VelocityMesh<T> &velocity_mesh,
                                  const Eigen::Index i,
                                  T wall_g_val, // For internal velocity & temp
@@ -625,8 +625,8 @@ namespace Bgk
         }
 
         template <typename T, typename JacobianFunc>
-        T compute_temperature_at(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &g,
-                                 const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &h,
+        T compute_temperature_at(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> &g,
+                                 const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> &h,
                                  const VelocityMesh<T> &velocity_mesh,
                                  const Eigen::Index i,
                                  const T density_i,       // Pre-computed
