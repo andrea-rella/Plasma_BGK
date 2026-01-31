@@ -12,8 +12,8 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef SOLVERFV_F66A3485_5010_4DE1_B7F3_331C796FA6A0
-#define SOLVERFV_F66A3485_5010_4DE1_B7F3_331C796FA6A0
+#ifndef SOLVERFV_D40F499B_8A08_4D5A_BE64_129510A6708B
+#define SOLVERFV_D40F499B_8A08_4D5A_BE64_129510A6708B
 
 #include "../SolverFV.hpp"
 #include "phys_utils.hpp"
@@ -403,30 +403,6 @@ namespace Bgk
         std::cout << "Numerical matrices assembled." << std::endl;
         std::cout << "Assembly complete." << std::endl;
 
-        // Eigen::Vector<T, Eigen::Dynamic> Ones = Eigen::Vector<T, Eigen::Dynamic>::Ones(Space_mesh.get_N());
-        //
-        // std::cout << "B*1: \n"
-        //          << (B * Ones).transpose() << std::endl;
-        //
-        // const size_t Space_N = Space_mesh.get_N();
-        // const std::pair<T, T> bN = numerics::QUICKcoefficients_n_at<T>(Space_mesh, Space_N);
-        // const std::pair<T, T> bNm1 = numerics::QUICKcoefficients_n_at<T>(Space_mesh, Space_N - 1);
-        // const T sigmaNm1 = T{1} - bN.first + bN.second + bNm1.second;
-        // const std::vector<T> &vol_sizes = Space_mesh.get_volume_sizes();
-        //
-        // std::cout << "Correction N-1: " << (T{1} / vol_sizes[Space_N - 1]) * (bN.second - sigmaNm1) << std::endl;
-        // std::cout << "Correction N-2: " << (T{1} / vol_sizes[Space_N - 2]) * bNm1.second << std::endl;
-        //
-        // std::cout << "A*1: \n"
-        //          << (A * Ones).transpose() << std::endl;
-        //
-        // const std::pair<T, T> a1 = numerics::QUICKcoefficients_p_at<T>(Space_mesh, 1);
-        // const std::pair<T, T> a2 = numerics::QUICKcoefficients_p_at<T>(Space_mesh, 2);
-        // const T omega1 = -a2.second - T{1} + a1.first - a1.second;
-        //
-        // std::cout << "Correction 1: " << -(T{1} / vol_sizes[1]) * (a1.second + omega1) << std::endl;
-        // std::cout << "Correction 2: " << -(T{1} / vol_sizes[2]) * a2.second << std::endl;
-
         is_initialized = true;
     }
 
@@ -740,6 +716,7 @@ namespace Bgk
         Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> g_old, h_old;
 
         write_phys_instant(Data.get_saving_folder_name(), 0);
+        //write_sol_instant_txt(Data.get_saving_folder_name(), 0);
 
         std::cout << "Starting solver..." << std::endl;
         while (k < max_iter && rel_err > tol)
@@ -762,6 +739,7 @@ namespace Bgk
             if (k % plot_every_k_steps == 0 || k == 1 || k == 20 || k == 40 || k == 60 || k == 80 || k == 100)
             {
                 write_phys_instant(Data.get_saving_folder_name(), k);
+                //write_sol_instant_txt(Data.get_saving_folder_name(), k);
             }
         }
 
@@ -810,6 +788,60 @@ namespace Bgk
         }
 
         txt_file_h << "h solution in the phase space:\n";
+        txt_file_h << "Rows: Velocity (j)  |  Columns Space (i)  |  h(j, i)\n";
+        txt_file_h << "Dimensions: " << h.rows() << " x " << h.cols() << "\n";
+        txt_file_h << "--------------------------------------------------------\n";
+
+        for (Eigen::Index j = 0; j < h.rows(); ++j)
+        {
+            for (Eigen::Index i = 0; i < h.cols(); ++i)
+            {
+                txt_file_h << h(j, i) << "  ";
+            }
+            txt_file_h << "\n";
+        }
+
+        return;
+    }
+
+    template <typename T>
+    void SolverFV<T>::write_sol_instant_txt(const std::string &folder_path, size_t iter) const
+    {
+        std::filesystem::create_directories(folder_path);
+
+        // Write g solution snapshot
+        std::string filename_g = folder_path + "/g_iter_" + std::to_string(iter) + ".txt";
+        std::ofstream txt_file_g(filename_g);
+        if (!txt_file_g.is_open())
+        {
+            std::cerr << "Failed to open file for writing: " << filename_g << std::endl;
+            return;
+        }
+
+        txt_file_g << "g solution in the phase space (iteration " << iter << "):\n";
+        txt_file_g << "Rows: Velocity (j)  |  Columns Space (i)  |  g(j, i)\n";
+        txt_file_g << "Dimensions: " << g.rows() << " x " << g.cols() << "\n";
+        txt_file_g << "--------------------------------------------------------\n";
+
+        for (Eigen::Index j = 0; j < g.rows(); ++j)
+        {
+            for (Eigen::Index i = 0; i < g.cols(); ++i)
+            {
+                txt_file_g << g(j, i) << "  ";
+            }
+            txt_file_g << "\n";
+        }
+
+        // Write h solution snapshot
+        std::string filename_h = folder_path + "/h_iter_" + std::to_string(iter) + ".txt";
+        std::ofstream txt_file_h(filename_h);
+        if (!txt_file_h.is_open())
+        {
+            std::cerr << "Failed to open file for writing: " << filename_h << std::endl;
+            return;
+        }
+
+        txt_file_h << "h solution in the phase space (iteration " << iter << "):\n";
         txt_file_h << "Rows: Velocity (j)  |  Columns Space (i)  |  h(j, i)\n";
         txt_file_h << "Dimensions: " << h.rows() << " x " << h.cols() << "\n";
         txt_file_h << "--------------------------------------------------------\n";
@@ -969,4 +1001,4 @@ namespace Bgk
     }
 }
 
-#endif /* SOLVERFV_F66A3485_5010_4DE1_B7F3_331C796FA6A0 */
+#endif /* SOLVERFV_D40F499B_8A08_4D5A_BE64_129510A6708B */

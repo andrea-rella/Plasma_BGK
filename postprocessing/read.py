@@ -1,3 +1,4 @@
+from os import name
 import numpy as np
 
 
@@ -67,7 +68,7 @@ def read_physical_quantity(path):
 # -------------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------------
 
-def read_space_mesh(path):
+def read_mesh(path):
     """
     Read a 'space_mesh.txt'-style file ('Computational Points (index - x_comp):')
     and return only x_comp as a NumPy 1D array.
@@ -94,3 +95,49 @@ def read_space_mesh(path):
 # -------------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------------
 
+def read_solution_matrices(path):
+    """
+    Read a matrix-style solution file with header lines followed by rows of numeric data.
+    Starts reading at the first line where all tokens are numeric (floats or ints).
+
+    Args:
+        path (str): Path to the solution matrix file.
+
+    Returns:
+        np.ndarray: 2D NumPy array containing the solution matrix.
+    """
+    # Determine how many header rows to skip (until the first fully-numeric row)
+    skip = 0
+    with open(path, 'r') as f:
+        for line in f:
+            stripped = line.strip()
+            if not stripped:
+                skip += 1
+                continue
+            parts = stripped.split()
+            # Check if every token is numeric (float() accepts ints and scientific notation)
+            is_numeric_row = True
+            for tok in parts:
+                try:
+                    float(tok)
+                except ValueError:
+                    is_numeric_row = False
+                    break
+            if is_numeric_row:
+                break
+            else:
+                skip += 1
+
+    data = np.loadtxt(path, skiprows=skip)
+    if data.ndim == 1:
+        # Single data row case: ensure 2D shape
+        data = data[None, :]
+    return data
+
+# -------------------------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------------------------
+
+
+if __name__ == "__main__":
+    g = read_solution_matrices('./output/evap2_data/solution_g.txt')
+    print("g matrix shape: ", g.shape)

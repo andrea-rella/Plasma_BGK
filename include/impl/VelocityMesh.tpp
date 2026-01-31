@@ -67,9 +67,6 @@ namespace Bgk
     template <SpacingFunction<T> Spacing>
     void VelocityMesh<T>::initialize_with_custom_spacing(Spacing &&spacing_func)
     {
-        if (!this->is_constructed)
-            throw std::runtime_error(error_message(
-                "Velocity Mesh object not constructed. Call the constructor with ConfigData first."));
 
         if (this->is_initialized)
         {

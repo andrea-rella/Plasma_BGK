@@ -35,9 +35,6 @@ namespace Bgk
 	template <SpacingFunction<T> Spacing>
 	void SpaceMeshFV<T>::initialize_with_custom_spacing(Spacing &&spacing_func)
 	{
-		if (!this->is_constructed)
-			throw std::runtime_error(error_message(
-				"SpaceMesh object not constructed. Call the constructor with ConfigData first."));
 
 		if (this->is_initialized)
 		{
@@ -126,8 +123,8 @@ namespace Bgk
 		constexpr T BLOCK_HEIGHT = 0.3;
 		constexpr int VTK_QUAD_TYPE = 9;
 
-		std::filesystem::create_directories(folder);
-		const std::string filename = folder + "/space_mesh.vtk";
+		std::filesystem::create_directories(folder_path);
+		const std::string filename = folder_path + "/space_mesh.vtk";
 		std::ofstream vtk_file(filename);
 
 		if (!vtk_file)

@@ -45,8 +45,6 @@ namespace Bgk
         /// @brief Container for computational points of the mesh.
         Container x_comp;
 
-        /// @brief Flag indicating whether the mesh has been constructed.
-        bool is_constructed = false;
         /// @brief Flags indicating whether the mesh container(s) have been filled.
         bool is_initialized = false;
 
@@ -58,7 +56,7 @@ namespace Bgk
         BaseMesh1D() = default;
 
         /// @brief Constructor based on configuration data.
-        BaseMesh1D(ConfigData<T> config) : is_initialized(false), is_constructed(true)
+        BaseMesh1D(ConfigData<T> config) : is_initialized(false)
         {
             if constexpr (Nature == MeshNature::SPACE)
                 N = config.get_N();
@@ -109,9 +107,6 @@ namespace Bgk
 
         /// @brief  Returns boolean indicating whether the mesh is initialized.
         bool isInitialized() const { return is_initialized; }
-
-        /// @brief  Returns boolean indicating whether the mesh is constructed.
-        bool isConstructed() const { return is_constructed; }
 
         // ------ GETTERS FOR MESH PARAMETERS ------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------

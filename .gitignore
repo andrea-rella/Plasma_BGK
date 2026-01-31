@@ -43,6 +43,7 @@ output/
 # Personal Files for plotting
 postprocessing/images.py
 postprocessing/images_evap.py
+postprocessing/gh_disco.py
 
 # PyCache
 __pycache__/

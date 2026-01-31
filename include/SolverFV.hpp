@@ -330,6 +330,15 @@ namespace Bgk
          *
          */
         void write_sol_txt(const std::string &folder_path) const;
+        /** @brief Writes the instantaneous distribution functions g and h at a specific iteration to text files
+         *
+         * Outputs the full g and h matrices snapshot at a given iteration
+         * into two files in the specified folder path.
+         *
+         * @param folder_path Path to the folder where the text files will be saved.
+         * @param iter Current iteration number
+         */
+        void write_sol_instant_txt(const std::string &folder_path, size_t iter) const;
         /** @brief Writes the physical quantities to text files
          *
          * This method outputs the current state of the physical quantities

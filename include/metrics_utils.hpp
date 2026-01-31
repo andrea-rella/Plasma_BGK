@@ -168,7 +168,7 @@ namespace Bgk
                 // member function being called on a template-dependent type
                 return v.template lpNorm<Eigen::Infinity>();
             }
-            T compute(const Eigen::Vector<T, Eigen::Dynamic> &, const std::vector<T> &weights) const override
+            T compute(const Eigen::Vector<T, Eigen::Dynamic> &v, const std::vector<T> &weights) const override
             {
                 if (static_cast<size_t>(v.size()) != weights.size())
                     throw std::invalid_argument(error_message("Incompatible vector and weights sizes"));
@@ -344,11 +344,11 @@ namespace Bgk
          * @tparam T The scalar type (e.g., double, float).
          */
         template <typename T>
-        class MatrixNorm
+        class MatrixErrorNorm
         {
         public:
             /// @brief Virtual destructor.
-            virtual ~MatrixNorm() = default;
+            virtual ~MatrixErrorNorm() = default;
 
             /** @brief Computes the norm of the difference between two matrices.
              * @param current The current Eigen matrix.
@@ -394,12 +394,12 @@ namespace Bgk
          * @endcode
          */
         template <typename T>
-        class RowWiseMatrixNorm : public MatrixNorm<T>
+        class RowWiseMatrixErrorNorm : public MatrixErrorNorm<T>
         {
         public:
             /// @brief Constructor that initializes the vector norm and row aggregator.
-            RowWiseMatrixNorm(std::unique_ptr<VectorNorm<T>> vec_norm,
-                              std::unique_ptr<RowAggregator<T>> aggregator)
+            RowWiseMatrixErrorNorm(std::unique_ptr<VectorNorm<T>> vec_norm,
+                                   std::unique_ptr<RowAggregator<T>> aggregator)
                 : vec_norm_(std::move(vec_norm)), aggregator_(std::move(aggregator)) {}
 
             T compute(const Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> &current,
@@ -470,12 +470,12 @@ namespace Bgk
              * @param agg_type The type of row aggregator to use (Average, Max).
              * @return std::unique_ptr<MatrixNorm<T>> A unique pointer to the created MatrixNorm instance.
              */
-            static std::unique_ptr<MatrixNorm<T>> create(VectorNormType vec_norm_type,
-                                                         RowAggregateType agg_type)
+            static std::unique_ptr<MatrixErrorNorm<T>> create(VectorNormType vec_norm_type,
+                                                              RowAggregateType agg_type)
             {
                 auto vec_norm = VectorNormFactory<T>::create(vec_norm_type);
                 auto aggregator = RowAggregatorFactory<T>::create(agg_type);
-                return std::make_unique<RowWiseMatrixNorm<T>>(std::move(vec_norm), std::move(aggregator));
+                return std::make_unique<RowWiseMatrixErrorNorm<T>>(std::move(vec_norm), std::move(aggregator));
             }
         };
 
