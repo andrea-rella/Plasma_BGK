@@ -3,6 +3,7 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include <nlohmann/json.hpp>
+#include "omp.h"
 
 #include "ConfigData.hpp"
 #include "SpaceMeshFV.hpp"
@@ -21,12 +22,12 @@ int main(int argc, char *argv[])
 
     std::string configPath = "data/"; // default path
 
-    if (argc > 1)
-        configPath += std::string(argv[1]);
-    else
-        throw std::runtime_error("No config file specified. Please provide a config file name as a command line argument.");
+    // if (argc > 1)
+    //     configPath += std::string(argv[1]);
+    // else
+    //     throw std::runtime_error("No config file specified. Please provide a config file name as a command line argument.");
 
-    Bgk::ConfigData<double> Data(configPath);
+    // Bgk::ConfigData<double> Data(configPath);
 
     //-------------------------- USAGE OF SPACE MESH ---------------------------
     // -------------------------------------------------------------------------
@@ -70,13 +71,23 @@ int main(int argc, char *argv[])
 
     //--------------------------- USAGE OF SOLVER ------------------------------
     // -------------------------------------------------------------------------
-    Bgk::SolverFV<double> solver(configPath);
-    std::cout << "Solver initialized with config: " << configPath << "\n"
-              << std::endl;
+    // Bgk::SolverFV<double> solver(configPath);
+    // std::cout << "Solver initialized with config: " << configPath << "\n"
+    //          << std::endl;
+    //
+    // solver.initialize();
+    // solver.solve<Bgk::PlotStrategy::EACHSTEP>(Bgk::metrics::VectorNormType::L2, Bgk::metrics::RowAggregateType::Max);
+    // solver.write_all(Data.get_saving_folder_name());
 
-    solver.initialize();
-    solver.solve<Bgk::PlotStrategy::EACHSTEP>(Bgk::metrics::VectorNormType::L2, Bgk::metrics::RowAggregateType::Max);
-    solver.write_all(Data.get_saving_folder_name());
+    //--------------------------- TEST OPENMP ------------------------------
+    // -------------------------------------------------------------------------
+
+    omp_set_num_threads(8);
+
+#pragma omp parallel
+    {
+        printf("Hello from thread %d\n", omp_get_thread_num());
+    }
 
     return 0;
 }

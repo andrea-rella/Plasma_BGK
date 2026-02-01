@@ -533,7 +533,7 @@ namespace Bgk
         const std::pair<T, T> a2 = numerics::QUICKcoefficients_p_at<T>(Space_mesh, 2);
         const T omega1 = -a2.second - T{1} + a1.first - a1.second;
 
-        // --- Optimization 1: Pre-compute diagonal offsets ---
+        // --- Pre-compute diagonal offsets ---
         // This maps where the diagonal elements live in the raw value array.
         // Complexity: One-time O(NNZ), saves O(N log k) per timestep.
         std::vector<ptrdiff_t> diag_offsets(Space_N);
@@ -555,7 +555,7 @@ namespace Bgk
             }
         }
 
-        // --- Optimization 2: Structure Reuse ---
+        // --- Structure Reuse ---
         // Initialize M with A's pattern ONCE. We never change the pattern, only values.
         Eigen::SparseMatrix<T> M = A;
 
@@ -602,7 +602,6 @@ namespace Bgk
             W = assemble_W_pos(j, a1.second, a2.second, omega1);
 
             // 4. Solve for g
-            // rhs = g_j + dt * U (Avoiding extra allocations)
             rhs = g.row(j).tail(Space_N).transpose();
             rhs += dt * U;
 
@@ -729,22 +728,14 @@ namespace Bgk
         const T dt = Data.get_dt();
 
         // 1. Assemble sources
-        // (Ideally, refactor assemble_* to accept a reference to 'U' to avoid this allocation too)
         Eigen::Vector<T, Eigen::Dynamic> U = assemble_U_zero();
         Eigen::Vector<T, Eigen::Dynamic> W = assemble_W_zero();
 
         // 2. Pre-calculate Inverse Denominator
-        // Original: denom = 1 + dt * R; x = rhs / denom;
-        // Optimized: inv_denom = 1 / (1 + dt * R); x = rhs * inv_denom;
-        // Benefit: 1 Division + 2 Multiplications is faster than 2 Divisions.
-        // We use .head(Space_N) directly to avoid copying R into R_loc.
         Eigen::Vector<T, Eigen::Dynamic> inv_denom =
             (Eigen::Vector<T, Eigen::Dynamic>::Ones(Space_N) + dt * R.head(Space_N)).cwiseInverse();
 
         // 3. Update 'g' in-place (No intermediate allocations)
-        // Logic: g_new = (g_old + dt * U) * inv_denom
-        // Note: g.row() is 1xN, U is Nx1. We transpose the row to match U,
-        // perform the op, then transpose back to write.
         g.row(Velocity_N).head(Space_N) = (g.row(Velocity_N).head(Space_N).transpose() + dt * U)
                                               .cwiseProduct(inv_denom)
                                               .transpose();
@@ -759,7 +750,7 @@ namespace Bgk
     // -----------------------------------------------------------------------------------------------
 
     template <typename T>
-    template <PlotStrategy Strategy> // Add this template parameter
+    template <PlotStrategy Strategy>
     void SolverFV<T>::solve(const metrics::VectorNormType vec_norm_type,
                             const metrics::RowAggregateType agg_type)
     {
@@ -771,7 +762,6 @@ namespace Bgk
         T tol = Data.get_tol();
         T rel_err = std::numeric_limits<T>::max();
 
-        // Only fetch/print if we are actually plotting frequently
         size_t plot_every_k_steps = 0;
         if constexpr (Strategy == PlotStrategy::EACHSTEP)
         {
@@ -795,7 +785,7 @@ namespace Bgk
             set_physical_quantities();
             assemble_R();
 
-            // Error calculation logic...
+            // Error calculation logic
             rel_err = std::sqrt(std::pow(mat_norm->compute(g, g_old, Space_mesh.get_volume_sizes()), T{2}) +
                                 std::pow(mat_norm->compute(h, h_old, Space_mesh.get_volume_sizes()), T{2}));
             ++k;

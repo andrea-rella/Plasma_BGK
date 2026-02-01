@@ -1,7 +1,7 @@
 # Compiler and flags
 CXX      = g++-15
 
-CXXFLAGS = -std=c++20 -Wall -Wextra
+CXXFLAGS = -fopenmp -std=c++20 -Wall -Wextra
 
 CPPFLAGS = -O3 \
     		-I/usr/local/Cellar/nlohmann-json/3.12.0/include \
