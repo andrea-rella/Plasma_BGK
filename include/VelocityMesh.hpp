@@ -38,6 +38,8 @@ namespace Bgk
         // Spacing parameter
         T a2;
 
+        std::function<T(size_t)> jacobian_func;
+
     public:
         // ----- CONSTRUCTORS AND DESTRUCTORS ------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
@@ -53,6 +55,26 @@ namespace Bgk
 
         /// @brief Virtual destructor.
         ~VelocityMesh() = default;
+
+        // ------ SETTERS --------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
+
+        /** @brief Sets the jacobian function associated with the mesh.
+         *
+         * @param jacobian A callable object that defines the jacobian function (see SpacingFunction concept).
+         *
+         * @note This method relies on universal references to allow for flexibility in the type
+         *       of jacobian function provided.
+         */
+        template <SpacingFunction<T> Jacobian>
+        void set_jacobian_function(Jacobian &&jacobian);
+
+        // ------ GETTERS --------------------------------------------------------------------------------
+        // -----------------------------------------------------------------------------------------------
+
+        /// @brief Returns the jacobian function associated with the mesh.
+        /// @return The jacobian function. (std::function<T(size_t)>)
+        std::function<T(size_t)> get_jacobian_function() const { return jacobian_func; }
 
         // ------ OPERATORS ------------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------

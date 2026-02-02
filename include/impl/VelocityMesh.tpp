@@ -25,7 +25,28 @@ namespace Bgk
 {
     template <typename T>
     VelocityMesh<T>::VelocityMesh(const ConfigData<T> &config) : BaseMesh1D<T, std::vector<T>, MeshNature::VELOCITY>(config),
-                                                                 a1(config.get_a1()), a2(config.get_a2()){};
+                                                                 a1(config.get_a1()), a2(config.get_a2())
+    {
+
+        auto get_jacobian = [&](size_t k) -> T
+        {
+            // Cast to signed integer to handle negative relative indices correctly
+            long long j_signed = static_cast<long long>(k) - static_cast<long long>(this->N);
+            return config.get_a1() + 3.0 * config.get_a2() * (static_cast<T>(j_signed) * static_cast<T>(j_signed));
+        };
+
+        jacobian_func = get_jacobian;
+    };
+
+    // ------ SETTERS --------------------------------------------------------------------------------
+    // -----------------------------------------------------------------------------------------------
+
+    template <typename T>
+    template <SpacingFunction<T> Jacobian>
+    void VelocityMesh<T>::set_jacobian_function(Jacobian &&jacobian)
+    {
+        jacobian_func = std::forward<Jacobian>(jacobian);
+    }
 
     // ------ OPERATORS ------------------------------------------------------------------------------
     // -----------------------------------------------------------------------------------------------

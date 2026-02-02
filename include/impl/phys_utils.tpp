@@ -12,8 +12,8 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef PHYS_UTILS_FB91EE41_406D_4600_A84B_EB367B78C2CB
-#define PHYS_UTILS_FB91EE41_406D_4600_A84B_EB367B78C2CB
+#ifndef PHYS_UTILS_A1C5173C_53C3_4263_BE9F_A4FD5AF185B6
+#define PHYS_UTILS_A1C5173C_53C3_4263_BE9F_A4FD5AF185B6
 
 #include "../phys_utils.hpp"
 #include "../utilities.hpp"
@@ -683,4 +683,4 @@ namespace Bgk
 
 };
 
-#endif /* PHYS_UTILS_FB91EE41_406D_4600_A84B_EB367B78C2CB */
+#endif /* PHYS_UTILS_A1C5173C_53C3_4263_BE9F_A4FD5AF185B6 */

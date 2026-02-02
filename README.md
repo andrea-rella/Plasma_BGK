@@ -1,8 +1,20 @@
-# `Plasma_BGK`: A BGK kinetic model for the study of gas - condensed-phase interaction
+# `Plasma_BGK`: A BGK Kinetic Model for the study of Gas - Condensed-Phase Interaction
 
-**Plasma BGK** is a 1D Finite Volume solver for the Bhatnagar-Gross-Krook (BGK) kinetic equation. Developed at **Politecnico di Milano**, this project focuses on simulating rarefied gas dynamics and plasma flows, specifically targeting problems involving evaporation, condensation, and boundary layer discontinuities.
+`Plasma_BGK` is a 1D Finite Volume solver for the Bhatnagar-Gross-Krook (BGK) kinetic equation. Developed at **Politecnico di Milano**, this project focuses on simulating rarefied gas dynamics, specifically targeting problems involving evaporation, condensation, and boundary layer discontinuities. The problem setting is the one described as:
 
-The solver utilizes a velocity grid approach and is configurable via JSON files, with a dedicated Python suite for post-processing and visualization.
+<p align="center">
+  <img src="docs/images/problem_setting.png" alt="Problem Setting" width="700"/>
+</p>
+
+$$
+\frac{\partial f}{\partial t} + \xi_1 \frac{\partial f}{\partial X_1} = A_c \rho (f^{(0)} - f)
+$$
+
+$$
+f^{(0)} = \frac{\rho}{(2\pi R T)^{3/2}} \exp \left( -\frac{(\xi_1 - v_1)^2 + \xi_2^2 + \xi_3^2}{2RT} \right)
+$$
+
+Intially adressed with a finite difference method in [[1](#ref-1)] and [[2](#ref-2)]; here we propose a finite volume (Q.U.I.C.K.) approach integrated with the fast `Eigen` library. For a full theoretical description and implementation details please refer to the project report in the [`docs/`](docs/) folder.
 
 ## Table of Contents
 
@@ -20,14 +32,17 @@ To build and run the C++ solver, you will need:
 
 - **C++ Compiler**: A compiler supporting **C++20**.
 - **Make**: GNU Make build system.
-- **Eigen3**: A template library for linear algebra.
-- **nlohmann/json**: A library for parsing JSON configuration files.
+- [**Eigen3**](https://libeigen.gitlab.io): A template library for linear algebra.
+- [**nlohmann/json**](https://github.com/nlohmann/json): A library for parsing JSON configuration files.
+- [**OpenMP**](https://www.openmp.org): For parallel solver execution. (_Optional_)
 
 To run the post-processing scripts, you will need **Python 3.x** and the following packages:
 
 - `numpy`
 - `matplotlib`
 - `scipy` (optional, depending on specific analysis scripts)
+
+If needed a virtual enviroment called `Bgk-venv` with all the necessary packages is provided in the projects's [Google Drive Folder](https://drive.google.com/drive/folders/14fjwMq2cQmRHNADEw7G7EoBn30CHxR80?usp=sharing)
 
 ## Installation
 
@@ -130,3 +145,9 @@ python3 postprocessing/plot.py
 ## Authors
 
 - **Andrea Rella** - _Politecnico di Milano_
+
+## References
+
+<a id="ref-1"></a>[1] Aoki, Kazuo and Sone, Yoshio and Yamada, Tatsuo "Numerical analysis of gas flows condensing on its plane condensed phase on the basis of kinetic theory" Physics of Fluids A: Fluid Dynamics, 1990, American Institute of Physics.
+
+<a id="ref-2"></a>[2] Sone, Yoshio and Sugimoto, Hiroshi "Strong evaporation from a plane condensed phase" Shinku, 1988, The Vacuum Society of Japan.

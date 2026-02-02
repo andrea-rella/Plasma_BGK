@@ -12,8 +12,8 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef SOLVERFV_E0E66268_B084_4775_9396_92BB528BD61E
-#define SOLVERFV_E0E66268_B084_4775_9396_92BB528BD61E
+#ifndef SOLVERFV_AAC01BDF_5A9F_4BC5_8BC4_24A8DA4A8B9D
+#define SOLVERFV_AAC01BDF_5A9F_4BC5_8BC4_24A8DA4A8B9D
 
 #include "../SolverFV.hpp"
 #include "phys_utils.hpp"
@@ -124,12 +124,7 @@ namespace Bgk
     template <typename T>
     void SolverFV<T>::set_physical_quantities()
     {
-        auto get_jacobian = [&](size_t k) -> T
-        {
-            // Cast to signed integer to handle negative relative indices correctly
-            long long j_signed = static_cast<long long>(k) - static_cast<long long>(Velocity_mesh.get_N());
-            return Data.get_a1() + 3.0 * Data.get_a2() * (static_cast<T>(j_signed) * static_cast<T>(j_signed));
-        };
+        auto get_jacobian = Velocity_mesh.get_jacobian_function();
 
         density = phys::compute_density(g, Velocity_mesh, g0(0), get_jacobian);
         mean_velocity = phys::compute_meanGasVelocity(g, Velocity_mesh, density, g0(0), get_jacobian);
@@ -1395,4 +1390,4 @@ namespace Bgk
     }
 }
 
-#endif /* SOLVERFV_E0E66268_B084_4775_9396_92BB528BD61E */
+#endif /* SOLVERFV_AAC01BDF_5A9F_4BC5_8BC4_24A8DA4A8B9D */
