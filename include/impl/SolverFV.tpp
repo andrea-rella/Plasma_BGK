@@ -12,8 +12,8 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef SOLVERFV_D40F499B_8A08_4D5A_BE64_129510A6708B
-#define SOLVERFV_D40F499B_8A08_4D5A_BE64_129510A6708B
+#ifndef SOLVERFV_E0E66268_B084_4775_9396_92BB528BD61E
+#define SOLVERFV_E0E66268_B084_4775_9396_92BB528BD61E
 
 #include "../SolverFV.hpp"
 #include "phys_utils.hpp"
@@ -21,6 +21,13 @@
 #include <numbers>
 #include <cmath>
 #include <Eigen/SparseLU>
+#include <time.h>
+
+#ifdef _OPENMP
+#include <omp.h>
+#else
+#warning "OpenMP is not enabled. The parallel solver (if called) will run sequentially."
+#endif
 
 namespace Bgk
 {
@@ -96,6 +103,7 @@ namespace Bgk
         {
             return T{1} / std::sqrt(std::numbers::pi_v<T>) * rho * std::sqrt(Temp) * std::exp(-((z - v) * (z - v)) / Temp);
         };
+        return;
     }
 
     template <typename T>
@@ -404,7 +412,8 @@ namespace Bgk
         assemble_B();
         assemble_R();
         std::cout << "Numerical matrices assembled." << std::endl;
-        std::cout << "Assembly complete." << std::endl;
+        std::cout << "Assembly complete. \n"
+                  << std::endl;
 
         is_initialized = true;
     }
@@ -746,6 +755,266 @@ namespace Bgk
                                               .transpose();
     }
 
+    // ---- PARALLEL -----
+    template <typename T>
+    void SolverFV<T>::solve_timestep_pos_parallel()
+    {
+        const size_t Velocity_N = Velocity_mesh.get_N();
+        const size_t Space_N = Space_mesh.get_N();
+        const T dt = Data.get_dt();
+
+        // Positive velocities indices
+        const size_t j_begin = Velocity_N + 1;
+        const size_t j_end = 2 * Velocity_N;
+
+        // Pre-calculate coefficients once (Shared)
+        const std::pair<T, T> a1 = numerics::QUICKcoefficients_p_at<T>(Space_mesh, 1);
+        const std::pair<T, T> a2 = numerics::QUICKcoefficients_p_at<T>(Space_mesh, 2);
+        const T omega1 = -a2.second - T{1} + a1.first - a1.second;
+
+        // Ensure A is compressed for raw pointer access
+        if (!A.isCompressed())
+            A.makeCompressed();
+
+        // --- Pre-compute diagonal offsets (Shared) ---
+        // This map is valid for any matrix with A's pattern (including thread-local M)
+        std::vector<ptrdiff_t> diag_offsets(Space_N);
+        const T *A_global_ptr = A.valuePtr(); // Pointer to shared A values
+
+        for (int k = 0; k < A.outerSize(); ++k)
+        {
+            for (typename Eigen::SparseMatrix<T>::InnerIterator it(A, k); it; ++it)
+            {
+                if (it.row() == it.col())
+                {
+                    diag_offsets[it.row()] = &it.value() - A_global_ptr;
+                }
+            }
+        }
+
+        // Shared pointers/refs for loop access
+        const Eigen::Vector<T, Eigen::Dynamic> &R_ref = R;
+        const Eigen::Index nnz = A.nonZeros();
+
+        // Exception capture for OpenMP
+        std::atomic<bool> error_occurred{false};
+
+// --- Parallel Region ---
+// Note: We create thread-local resources HERE, outside the loop
+#pragma omp parallel
+        {
+            // 1. Thread-Local Allocations
+            Eigen::SparseMatrix<T> M_loc = A;
+
+            // Solver instance for this thread
+            Eigen::SparseLU<Eigen::SparseMatrix<T>, Eigen::NaturalOrdering<int>> solver_loc;
+            solver_loc.analyzePattern(A); // Analyze pattern ONCE per thread
+
+            // Thread-local Buffers
+            Eigen::Vector<T, Eigen::Dynamic> U_loc(Space_N);
+            Eigen::Vector<T, Eigen::Dynamic> W_loc(Space_N);
+            Eigen::Vector<T, Eigen::Dynamic> rhs_loc(Space_N);
+
+            // Pointers for fast access
+            T *M_vals = M_loc.valuePtr();
+            const Eigen::Vector<T, Eigen::Dynamic> R_loc = R_ref.tail(Space_N);
+
+// 2. Parallel Loop
+// schedule(dynamic) is usually better if solve times vary,
+// otherwise schedule(static) has lower overhead.
+#pragma omp for schedule(static)
+            for (size_t j = j_begin; j <= j_end; ++j)
+            {
+                if (error_occurred)
+                    continue; // Skip work if another thread failed
+
+                try
+                {
+                    // --- Matrix Assembly ---
+                    const T v_dt = Velocity_mesh[j] * dt;
+
+                    // Step A: Vectorized reset using raw pointers
+                    // We use A_global_ptr (Shared read-only) to reset M_vals (Thread-local)
+                    for (Eigen::Index k = 0; k < nnz; ++k)
+                    {
+                        M_vals[k] = A_global_ptr[k] * v_dt;
+                    }
+
+                    // Step B: Update diagonal using pre-calc offsets
+                    for (size_t i = 0; i < Space_N; ++i)
+                    {
+                        M_vals[diag_offsets[i]] += (dt * R_loc[i] + T{1});
+                    }
+
+                    // --- Factorization ---
+                    solver_loc.factorize(M_loc);
+                    if (solver_loc.info() != Eigen::Success)
+                        throw std::runtime_error("LU factorization failed");
+
+                    // --- RHS Assembly ---
+                    U_loc = assemble_U_pos(j, a1.second, a2.second, omega1);
+                    W_loc = assemble_W_pos(j, a1.second, a2.second, omega1);
+
+                    // --- Solve for g ---
+                    // @note: .row(j) write is thread-safe as j is unique per thread
+                    rhs_loc = g.row(j).tail(Space_N).transpose();
+                    rhs_loc += dt * U_loc;
+
+                    auto x = solver_loc.solve(rhs_loc);
+                    if (solver_loc.info() != Eigen::Success)
+                        throw std::runtime_error("Solve g failed");
+                    g.row(j).tail(Space_N) = x.transpose();
+
+                    // --- Solve for h ---
+                    rhs_loc = h.row(j).tail(Space_N).transpose();
+                    rhs_loc += dt * W_loc;
+
+                    auto y = solver_loc.solve(rhs_loc);
+                    if (solver_loc.info() != Eigen::Success)
+                        throw std::runtime_error("Solve h failed");
+                    h.row(j).tail(Space_N) = y.transpose();
+                }
+                catch (...)
+                {
+                    error_occurred = true;
+                }
+            }
+        } // End of parallel region
+
+        if (error_occurred)
+            throw std::runtime_error(error_message("An error occurred during parallel execution of solve_timestep_pos."));
+
+        return;
+    }
+
+    template <typename T>
+    void SolverFV<T>::solve_timestep_neg_parallel()
+    {
+        // Implementation for negative velocity timestep
+        const size_t Velocity_N = Velocity_mesh.get_N();
+        const size_t Space_N = Space_mesh.get_N();
+        const T dt = Data.get_dt();
+
+        const size_t j_begin = 0;
+        const size_t j_end = Velocity_N - 1; // inclusive
+
+        // Pre-calculate coefficients once (Shared)
+        // This map is valid for any matrix with A's pattern (including thread-local M)
+        const std::pair<T, T> bN = numerics::QUICKcoefficients_n_at<T>(Space_mesh, Space_N);
+        const std::pair<T, T> bNm1 = numerics::QUICKcoefficients_n_at<T>(Space_mesh, Space_N - 1);
+        const T sigmaNm1 = T{1} - bN.first + bN.second + bNm1.second;
+
+        // Ensure B is compressed to guarantee valuePtr safety
+        if (!B.isCompressed())
+            B.makeCompressed();
+
+        // --- Pre-compute diagonal offsets for B (Shared) ---
+        std::vector<ptrdiff_t> diag_offsets(Space_N);
+        const T *B_global_ptr = B.valuePtr(); // Pointer to shared B values
+
+        for (int k = 0; k < B.outerSize(); ++k)
+        {
+            for (typename Eigen::SparseMatrix<T>::InnerIterator it(B, k); it; ++it)
+            {
+                if (it.row() == it.col())
+                {
+                    diag_offsets[it.row()] = &it.value() - B_global_ptr;
+                }
+            }
+        }
+
+        // Shared references for loop access
+        const Eigen::Vector<T, Eigen::Dynamic> &R_ref = R;
+        const Eigen::Index nnz = B.nonZeros();
+
+        // Exception capture for OpenMP
+        std::atomic<bool> error_occurred{false};
+
+// --- Parallel Region ---
+// Allocating heavy resources (Matrix copy, Solver, Buffers) ONCE per thread
+#pragma omp parallel
+        {
+            // 1. Thread-Local Allocations
+            Eigen::SparseMatrix<T> M_loc = B;
+
+            // Solver instance for this thread
+            Eigen::SparseLU<Eigen::SparseMatrix<T>, Eigen::NaturalOrdering<int>> solver_loc;
+            solver_loc.analyzePattern(B); // Analyze pattern ONCE per thread
+
+            // Thread-local Buffers
+            Eigen::Vector<T, Eigen::Dynamic> U_loc(Space_N);
+            Eigen::Vector<T, Eigen::Dynamic> W_loc(Space_N);
+            Eigen::Vector<T, Eigen::Dynamic> rhs_loc(Space_N);
+
+            // Pointers for fast access
+            T *M_vals = M_loc.valuePtr();                                       // Thread-local write target
+            const Eigen::Vector<T, Eigen::Dynamic> R_loc = R_ref.head(Space_N); // Pre-fetch R head
+
+// 2. Parallel Loop
+#pragma omp for schedule(static)
+            for (size_t j = j_begin; j <= j_end; ++j)
+            {
+                if (error_occurred)
+                    continue;
+
+                try
+                {
+                    // --- Matrix Assembly: M = (v_j * dt) * B + (I + dt * R) ---
+                    const T v_dt = Velocity_mesh[j] * dt;
+
+                    // Step A: Reset M values by scaling B (Vectorized copy using shared source)
+                    for (Eigen::Index k = 0; k < nnz; ++k)
+                    {
+                        M_vals[k] = B_global_ptr[k] * v_dt;
+                    }
+
+                    // Step B: Update diagonal (Direct access via shared offsets)
+                    for (size_t i = 0; i < Space_N; ++i)
+                    {
+                        M_vals[diag_offsets[i]] += (dt * R_loc[i] + T{1});
+                    }
+
+                    // --- Numerical Factorization ---
+                    solver_loc.factorize(M_loc);
+                    if (solver_loc.info() != Eigen::Success)
+                        throw std::runtime_error("LU factorization failed in solve_timestep_neg");
+
+                    // --- Assemble RHS vectors ---
+                    U_loc = assemble_U_neg(j, bN.second, bNm1.second, sigmaNm1);
+                    W_loc = assemble_W_neg(j, bN.second, bNm1.second, sigmaNm1);
+
+                    // --- Solve for g ---
+                    // rhs = g_j + dt * U
+                    rhs_loc = g.row(j).head(Space_N).transpose();
+                    rhs_loc += dt * U_loc;
+
+                    auto x = solver_loc.solve(rhs_loc);
+                    if (solver_loc.info() != Eigen::Success)
+                        throw std::runtime_error("Solve (g) failed in solve_timestep_neg");
+                    g.row(j).head(Space_N) = x.transpose();
+
+                    // --- Solve for h ---
+                    rhs_loc = h.row(j).head(Space_N).transpose();
+                    rhs_loc += dt * W_loc;
+
+                    auto y = solver_loc.solve(rhs_loc);
+                    if (solver_loc.info() != Eigen::Success)
+                        throw std::runtime_error("Solve (h) failed in solve_timestep_neg");
+                    h.row(j).head(Space_N) = y.transpose();
+                }
+                catch (...)
+                {
+                    error_occurred = true;
+                }
+            }
+        } // End of parallel region
+
+        if (error_occurred)
+            throw std::runtime_error(error_message("An error occurred during parallel execution of solve_timestep_neg."));
+
+        return;
+    }
+
     // ------ SOLVE  ---------------------------------------------------------------------------------
     // -----------------------------------------------------------------------------------------------
 
@@ -793,7 +1062,7 @@ namespace Bgk
             // Compile-time branching: Zero overhead if Strategy is OnlyEnd
             if constexpr (Strategy == PlotStrategy::EACHSTEP)
             {
-                if (k % plot_every_k_steps == 0 || k == 1 /* ... other conditions ... */)
+                if (k % plot_every_k_steps == 0 || k == 1 || k == 20 || k == 40 || k == 60 || k == 80 || k == 100)
                 {
                     write_phys_instant(Data.get_saving_folder_name(), k);
                 }
@@ -808,6 +1077,70 @@ namespace Bgk
         return;
     }
 
+    template <typename T>
+    template <PlotStrategy Strategy>
+    void SolverFV<T>::solve_parallel(const metrics::VectorNormType vec_norm_type,
+                                     const metrics::RowAggregateType agg_type)
+    {
+        if (!is_initialized)
+            initialize();
+
+        size_t max_iter = Data.get_max_iter();
+        size_t k = 0;
+        T tol = Data.get_tol();
+        T rel_err = std::numeric_limits<T>::max();
+
+        size_t plot_every_k_steps = 0;
+        if constexpr (Strategy == PlotStrategy::EACHSTEP)
+        {
+            plot_every_k_steps = Data.get_plot_every_k_steps();
+            std::cout << "Plotting every " << plot_every_k_steps << " steps." << std::endl;
+            write_phys_instant(Data.get_saving_folder_name(), 0);
+        }
+
+        auto mat_norm = metrics::MatrixNormFactory<T>::create(vec_norm_type, agg_type);
+        Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> g_old, h_old;
+
+        auto start_time = std::chrono::high_resolution_clock::now();
+
+        while (k < max_iter && rel_err > tol)
+        {
+            g_old = g;
+            h_old = h;
+
+            solve_timestep_neg_parallel();
+            solve_timestep_zero();
+            solve_timestep_pos_parallel();
+
+            set_physical_quantities();
+            assemble_R();
+
+            // Error calculation logic
+            rel_err = std::sqrt(std::pow(mat_norm->compute(g, g_old, Space_mesh.get_volume_sizes()), T{2}) +
+                                std::pow(mat_norm->compute(h, h_old, Space_mesh.get_volume_sizes()), T{2}));
+            ++k;
+
+            // Compile-time branching: Zero overhead if Strategy is OnlyEnd
+            if constexpr (Strategy == PlotStrategy::EACHSTEP)
+            {
+                if (k % plot_every_k_steps == 0 || k == 1 || k == 20 || k == 40 || k == 60 || k == 80 || k == 100)
+                {
+                    write_phys_instant(Data.get_saving_folder_name(), k);
+                }
+            }
+        }
+        auto end_time = std::chrono::high_resolution_clock::now();
+
+        // Always plot at the end regardless of strategy
+        write_phys_txt(Data.get_saving_folder_name());
+
+        std::cout << "Solver finished after " << k << " iterations with relative error " << rel_err << std::endl;
+
+        std::chrono::duration<double> elapsed = end_time - start_time;
+        std::cout << "Total elapsed time: " << elapsed.count() << " seconds." << std::endl;
+
+        return;
+    }
     // ------ OUTPUT ---------------------------------------------------------------------------------
     // -----------------------------------------------------------------------------------------------
 
@@ -1062,4 +1395,4 @@ namespace Bgk
     }
 }
 
-#endif /* SOLVERFV_D40F499B_8A08_4D5A_BE64_129510A6708B */
+#endif /* SOLVERFV_E0E66268_B084_4775_9396_92BB528BD61E */

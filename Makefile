@@ -1,12 +1,21 @@
 # Compiler and flags
 CXX      = g++-15
 
-CXXFLAGS = -fopenmp -std=c++20 -Wall -Wextra
+# Flags
+OMPFLAGS = -fopenmp
+CXXSTD   = -std=c++20
+WARNINGS = -Wall -Wextra
+OPTFLAGS = -O2 -g -march=native
+DEFINES = 
 
-CPPFLAGS = -O3 \
-    		-I/usr/local/Cellar/nlohmann-json/3.12.0/include \
-            -I/usr/local/Cellar/eigen/3.4.0_1/include/eigen3 \
-			-Iinclude
+# Includes
+INCLUDES = -Iinclude \
+           -I/usr/local/Cellar/nlohmann-json/3.12.0/include \
+           -I/usr/local/Cellar/eigen/3.4.0_1/include/eigen3
+
+CXXFLAGS = $(OMPFLAGS) $(CXXSTD) $(WARNINGS) $(OPTFLAGS)
+
+CPPFLAGS = -DNDEBUG $(INCLUDES) $(DEFINES)
 
 
 # Targets

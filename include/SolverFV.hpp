@@ -188,6 +188,9 @@ namespace Bgk
          */
         void solve_timestep_zero();
 
+        void solve_timestep_pos_parallel();
+        void solve_timestep_neg_parallel();
+
     public:
         // ------ CONSTRUCTORS AND DESTRUCTORS -----------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
@@ -318,6 +321,10 @@ namespace Bgk
         template <PlotStrategy Strategy>
         void solve(const metrics::VectorNormType vec_norm_type,
                    const metrics::RowAggregateType agg_type);
+
+        template <PlotStrategy Strategy>
+        void solve_parallel(const metrics::VectorNormType vec_norm_type,
+                            const metrics::RowAggregateType agg_type);
 
         // ------ OUTPUT ---------------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------

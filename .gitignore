@@ -39,6 +39,7 @@
 # Outputs and Data
 data/
 output/
+scalability/
 
 # Personal Files for plotting
 postprocessing/images.py
