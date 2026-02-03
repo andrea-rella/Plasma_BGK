@@ -38,7 +38,7 @@ namespace Bgk
 
 		if (this->is_initialized)
 		{
-			std::cerr << "SpaceMesh already initialized. Skipping initialization." << std::endl;
+			std::cout << "SpaceMesh already initialized. Skipping initialization." << std::endl;
 			return;
 		}
 
@@ -69,6 +69,12 @@ namespace Bgk
 	template <typename T>
 	void SpaceMeshFV<T>::initialize_mesh()
 	{
+		if (this->is_initialized)
+		{
+			std::cout << "SpaceMesh already initialized. Skipping initialization." << std::endl;
+			return;
+		}
+
 		auto default_spacing = [this](size_t i) -> T
 		{
 			if (this->N <= N0)

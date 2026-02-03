@@ -70,7 +70,7 @@ namespace Bgk
         /// Maximum number of iterations
         size_t max_iter;
         /// Plot every k steps
-        size_t plot_every_k_steps;
+        size_t save_every_k_steps;
 
         // ------ SAVING PARAMETERS ---------------------------------------------------------------------
         // ----------------------------------------------------------------------------------------------
@@ -107,7 +107,7 @@ namespace Bgk
         T get_dt() const { return dt; }
         T get_tol() const { return tol; }
         size_t get_max_iter() const { return max_iter; }
-        size_t get_plot_every_k_steps() const { return plot_every_k_steps; }
+        size_t get_save_every_k_steps() const { return save_every_k_steps; }
         std::string get_saving_folder_name() const { return saving_folder_name; }
     };
 

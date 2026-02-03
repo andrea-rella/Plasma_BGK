@@ -52,7 +52,7 @@ namespace Bgk
         dt = data["simulation"].value("time_step", static_cast<T>(0.01));
         tol = data["simulation"].value("tolerance", static_cast<T>(1e-6));
         max_iter = data["simulation"].value("max_iterations", static_cast<size_t>(1000));
-        plot_every_k_steps = data["simulation"].value("plot_every_k_steps", static_cast<size_t>(10));
+        save_every_k_steps = data["simulation"].value("save_every_k_steps", static_cast<size_t>(10));
 
         // ---- General ----
         saving_folder_name = data["general"].value("saving_folder_name", std::string("results"));

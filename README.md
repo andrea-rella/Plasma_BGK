@@ -42,7 +42,7 @@ To run the post-processing scripts, you will need **Python 3.x** and the followi
 - `matplotlib`
 - `scipy` (optional, depending on specific analysis scripts)
 
-If needed a virtual enviroment called `Bgk-venv` with all the necessary packages is provided in the projects's [Google Drive Folder](https://drive.google.com/drive/folders/14fjwMq2cQmRHNADEw7G7EoBn30CHxR80?usp=sharing)
+If needed a virtual enviroment called `Bgk-venv` with all the necessary packages is provided in the projects's [**Google Drive Folder**](https://drive.google.com/drive/folders/14fjwMq2cQmRHNADEw7G7EoBn30CHxR80?usp=sharing)
 
 ## Installation
 
@@ -81,14 +81,68 @@ make distclean
 - **Numerical Method**: Finite Volume Method (FVM) for spatial discretization with specific support for velocity grid meshes (`SpaceMeshFV`, `VelocityMesh`).
 - **Configuration**: Full simulation control via JSON input files (time steps, grid size, physical parameters, output settings).
 - **Boundary Conditions**: Supports specific boundary conditions for evaporation/condensation problems and discontinuities.
-- **Post-Processing**: Includes Python scripts (`postprocessing/`) for plotting density profiles, temperature, velocity, and comparing results with theoretical models (e.g., Ytrehus model).
+- **Post-Processing**: Includes Python scripts (📁 [`postprocessing/`](postprocessing/)) for plotting density profiles, temperature, velocity, and comparing results with theoretical models (e.g., Ytrehus model).
 - **Documentation**: Integrated Doxygen documentation support.
 
 ## Usage & Examples
 
-### Running the Solver
+In the following a brief and simple pipeline for running the solver is presented. For more details please refer to the documentation and the dedicated _"How to run the solver"_ in the project report (📁 [`docs/`](docs/)).
 
-The main executable requires a path to a valid JSON configuration file.
+### 1. Configuration (JSON)
+
+The simulation parameters need to be stored in a `.json` configuration file of the following format:
+
+```json
+{
+  "mesh": {
+    "space_points": 397, // Number of space points (N)
+    "N0": 399, // Number of non unformed spaced points (N_0)
+    "velocity_points": 60, // Number of half-velocity space points (\bar{N})
+    "d1": 5e-4, // Space mesh spacing parameter
+    "d2": 0.1, // Space mesh spacing parameter
+    "a1": 1e-2, // Velocity mesh spacing parameter
+    "a2": 2.5e-5 // Velocity mesh spacing parameter
+  },
+
+  "physical": {
+    "T_infty_w": 1.0, // T_infty / T_w
+    "p_infty_w": 17.0, // p_infty / p_w
+    "M_infty": -1.2 // M_infty
+  },
+
+  "simulation": {
+    "time_step": 0.05, // dt
+    "tolerance": 1e-7, // relative tolerance
+    "max_iterations": 1500, // maximum number of iterations
+    "saving_every_k_steps": 50 // frequency of saving physical solution
+  },
+
+  "general": {
+    "saving_folder_name": "./output/Cond/type1_data" // path where to save the output
+  }
+}
+```
+
+The configuration files used for the report are found in the [Google Drive Folder](https://drive.google.com/drive/folders/14fjwMq2cQmRHNADEw7G7EoBn30CHxR80?usp=sharing)
+
+### 2. Running the Solver
+
+The main executable requires a path to a valid JSON configuration file. Supposing a standard `main.cpp` like:
+
+```cpp
+    std::string configPath = ""; // default path
+    configPath += std::string(argv[1]);
+
+    Bgk::ConfigData<double> Data(configPath);
+    Bgk::SolverFV<double> solver(Data);
+
+    solver.initialize();
+
+    solver.solve_parallel<Bgk::PlotStrategy::ONLYEND>(Bgk::metrics::VectorNormType::L2,
+                                                      Bgk::metrics::RowAggregateType::Max);
+
+    solver.write_all(Data.get_saving_folder_name());
+```
 
 **Basic Syntax:**
 
@@ -103,44 +157,22 @@ To run a simulation using the data in `data/speed.json`:
 ./main.exe data/speed.json
 ```
 
-### Configuration (JSON)
+### 3. Post-Processing
 
-Input files (located in `data/`) control the simulation. An example structure includes:
+After the simulation finishes, results are stored in the folder specified in the JSON (e.g., `output/`). You can visualize them using the Python functions provided in the [`postprocessing/BGK_plot.py`](postprocessing/BGK_plot.py) file.
 
-```json
-{
-  "physical": {
-    "p_infty_w": 3,
-    "M_infty": 4.0
-  },
-  "simulation": {
-    "time_step": 0.01,
-    "max_iterations": 1000,
-    "plot_every_k_steps": 10
-  },
-  "general": {
-    "saving_folder_name": "output/results"
-  }
-}
-```
-
-### Post-Processing
-
-After the simulation finishes, results are stored in the folder specified in the JSON (e.g., `output/`). You can visualize them using the Python scripts:
+**Example**:
 
 ```bash
-# Example: Plotting results
-python3 postprocessing/plot.py
+source <path_to_venv>/Bgk-venv/bin/activate
+python -m postprocessing/my_plot.py
 ```
 
 ## Project Structure
 
-- 📁 [`src/`](src/): Source files (`.cpp`).
 - 📁 [`include/`](include/): Header files (`.hpp`) and template implementations (`impl/`).
-- 📁 [`data/`](data/): JSON configuration files for different test cases.
 - 📁 [`docs/`](docs/): Doxygen documentation configuration and output.
 - 📁 [`postprocessing/`](postprocessing/): Python scripts for data analysis and plotting.
-- 📁 [`output/`](output/): Directory where simulation results are generated.
 
 ## Authors
 

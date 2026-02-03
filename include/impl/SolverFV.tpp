@@ -1026,11 +1026,11 @@ namespace Bgk
         T tol = Data.get_tol();
         T rel_err = std::numeric_limits<T>::max();
 
-        size_t plot_every_k_steps = 0;
+        size_t save_every_k_steps = 0;
         if constexpr (Strategy == PlotStrategy::EACHSTEP)
         {
-            plot_every_k_steps = Data.get_plot_every_k_steps();
-            std::cout << "Plotting every " << plot_every_k_steps << " steps." << std::endl;
+            save_every_k_steps = Data.get_save_every_k_steps();
+            std::cout << "Plotting every " << save_every_k_steps << " steps." << std::endl;
             write_phys_instant(Data.get_saving_folder_name(), 0);
         }
 
@@ -1057,7 +1057,7 @@ namespace Bgk
             // Compile-time branching: Zero overhead if Strategy is OnlyEnd
             if constexpr (Strategy == PlotStrategy::EACHSTEP)
             {
-                if (k % plot_every_k_steps == 0 || k == 1 || k == 20 || k == 40 || k == 60 || k == 80 || k == 100)
+                if (k % save_every_k_steps == 0 || k == 1 || k == 20 || k == 40 || k == 60 || k == 80 || k == 100)
                 {
                     write_phys_instant(Data.get_saving_folder_name(), k);
                 }
@@ -1085,11 +1085,11 @@ namespace Bgk
         T tol = Data.get_tol();
         T rel_err = std::numeric_limits<T>::max();
 
-        size_t plot_every_k_steps = 0;
+        size_t save_every_k_steps = 0;
         if constexpr (Strategy == PlotStrategy::EACHSTEP)
         {
-            plot_every_k_steps = Data.get_plot_every_k_steps();
-            std::cout << "Plotting every " << plot_every_k_steps << " steps." << std::endl;
+            save_every_k_steps = Data.get_save_every_k_steps();
+            std::cout << "Plotting every " << save_every_k_steps << " steps." << std::endl;
             write_phys_instant(Data.get_saving_folder_name(), 0);
         }
 
@@ -1118,7 +1118,7 @@ namespace Bgk
             // Compile-time branching: Zero overhead if Strategy is OnlyEnd
             if constexpr (Strategy == PlotStrategy::EACHSTEP)
             {
-                if (k % plot_every_k_steps == 0 || k == 1 || k == 20 || k == 40 || k == 60 || k == 80 || k == 100)
+                if (k % save_every_k_steps == 0 || k == 1 || k == 20 || k == 40 || k == 60 || k == 80 || k == 100)
                 {
                     write_phys_instant(Data.get_saving_folder_name(), k);
                 }
