@@ -146,6 +146,15 @@ def compute_equilibrium_phys(M_inf):
     
 def plot_ytrehus_3d(x_limit, show = False, save_path = None):
     
+    """
+    Plots the 3D Ytrehus relations between S_inf, T_inf / T_w, and p_inf / p_w.
+    
+    Args:
+        x_limit (float): Upper limit for S_inf axis.
+        show (bool): Whether to display the plot.
+        save_path (str, optional): Path to save the plot image. 
+    """
+    
     from scipy.special import erf
     
     # 1. Coordinate Setup
@@ -437,7 +446,7 @@ def compare_ytrehus_numerical(x_mesh,
 
 if __name__ == "__main__":
     
-    from postprocessing.read import read_mesh, read_physical_quantities
+    from postprocessing.BGK_read import read_mesh, read_physical_quantities
     import json 
     
     with open("data/Evap/type1.json", "r", encoding="utf-8") as f:
@@ -472,33 +481,3 @@ if __name__ == "__main__":
     print(f"phi2: {phi2}")  
     print("--------------------------------------------")
     
-    #evap2
-    #x_lim_knu = (0, 100)
-    #pressure_lim_knu = (0.15, 0.7)
-    #temperature_lim_knu = (0.65, 1.1)
-    
-    #evap5
-    #x_lim_knu = (0, 150)
-    #pressure_lim_knu = (0.8, 0.88)#(0.83, 0.88)
-    #temperature_lim_knu = (0.958, 0.97)#(0.963, 0.97)
-    
-    #evap6
-    #x_lim_knu = (0,240) #(0, 16)
-    #density_lim_knu = (0.3, 0.9) #(0.92, 1.02)
-    #pressure_lim_knu = (0.3, 0.65) #(0.40, 0.85) #(0.40, 0.62)
-    #temperature_lim_knu = (0.75, 0.9) #(0.8, 1.3) #(0.8, 0.88)
-    
-    #evap7
-    x_lim_knu = (0, 130) 
-    density_lim_knu = (0.3, 0.9)
-    pressure_lim_knu = (0.1, 0.7)
-    temperature_lim_knu = (0.65, 0.95)
-    
-    #evap8
-    #x_lim_knu = (0, 100)
-    #pressure_lim_knu = (0.6, 1.1)
-    #temperature_lim_knu = (0.8, 1.1)
-    
-    #compute_physical_quantities(M_inf, x, output_path=folder + "ytrehus/")
-    #compute_gh(M_inf, x, zeta, output_path=folder + "ytrehus/")
-    #compare_ytrehus_numerical(x, x_lim_knu, density_lim_knu, pressure_lim_knu, temperature_lim_knu, output_path=folder)

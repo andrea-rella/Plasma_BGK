@@ -55,7 +55,7 @@ cd Plasma_BGK
 
 ## Building the Project
 
-The project uses a standard `Makefile`. Before building, ensure the generic include paths in the Makefile match your system's library locations (specifically for Eigen and nlohmann-json).
+The project uses a standard `Makefile`. Before building, ensure the generic include paths in the Makefile match your system's library locations (specifically for Eigen and nlohmann-json) and set the preferred flags.
 
 To compile the executables:
 
@@ -74,6 +74,8 @@ To clean everything:
 ```bash
 make distclean
 ```
+
+To have a more easily accessible documentation a [`Doxyfile`](https://www.doxygen.nl) file is provided in the [`docs/`](docs/) folder.
 
 ## Main Features
 
@@ -123,11 +125,11 @@ The simulation parameters need to be stored in a `.json` configuration file of t
 }
 ```
 
-The configuration files used for the report are found in the [Google Drive Folder](https://drive.google.com/drive/folders/14fjwMq2cQmRHNADEw7G7EoBn30CHxR80?usp=sharing)
+The configuration files used for the project report are found in the [**Google Drive Folder**](https://drive.google.com/drive/folders/14fjwMq2cQmRHNADEw7G7EoBn30CHxR80?usp=sharing) and can be used for testing the code on your machine.
 
 ### 2. Running the Solver
 
-The main executable requires a path to a valid JSON configuration file. Supposing a standard `main.cpp` like:
+The main executable requires a path to a valid JSON configuration file. Supposing a standard `main.cpp` (like the one provided in the present repo) like:
 
 ```cpp
     std::string configPath = ""; // default path
@@ -138,8 +140,8 @@ The main executable requires a path to a valid JSON configuration file. Supposin
 
     solver.initialize();
 
-    solver.solve_parallel<Bgk::PlotStrategy::ONLYEND>(Bgk::metrics::VectorNormType::L2,
-                                                      Bgk::metrics::RowAggregateType::Max);
+    solver.solve<Bgk::PlotStrategy::ONLYEND>(Bgk::metrics::VectorNormType::L2,
+                                             Bgk::metrics::RowAggregateType::Max);
 
     solver.write_all(Data.get_saving_folder_name());
 ```
@@ -165,7 +167,7 @@ After the simulation finishes, results are stored in the folder specified in the
 
 ```bash
 source <path_to_venv>/Bgk-venv/bin/activate
-python -m postprocessing/my_plot.py
+python -m postprocessing.my_plot
 ```
 
 ## Project Structure

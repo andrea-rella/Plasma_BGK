@@ -6,7 +6,7 @@ OMPFLAGS = -fopenmp
 CXXSTD   = -std=c++20
 WARNINGS = -Wall -Wextra
 OPTFLAGS = -O2 -g -march=native
-DEFINES = 
+DEFINES = -DNDEBUG
 
 # Includes
 INCLUDES = -Iinclude \
@@ -15,7 +15,7 @@ INCLUDES = -Iinclude \
 
 CXXFLAGS = $(OMPFLAGS) $(CXXSTD) $(WARNINGS) $(OPTFLAGS)
 
-CPPFLAGS = -DNDEBUG $(INCLUDES) $(DEFINES)
+CPPFLAGS = $(INCLUDES) $(DEFINES)
 
 
 # Targets

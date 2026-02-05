@@ -6,7 +6,7 @@ from cycler import cycler
 from scipy.constants import gas_constant
 from scipy.interpolate import interp1d
 
-from postprocessing.read import read_physical_quantities, read_mesh, read_physical_quantity, read_solution_matrices
+from postprocessing.BGK_read import read_physical_quantities, read_mesh, read_physical_quantity, read_solution_matrices
 
 
 colors = list(plt.cm.tab10.colors)
@@ -19,28 +19,6 @@ custom_cycler = (
     cycler(color=colors) 
 )
 
-# ==================================================================================================
-# UTILITY FUNCTIONS
-# ==================================================================================================
-
-def get_wave_properties(x_grid, Mach_profile, Temp_profile, target_M_values):
-    """
-    Interpolates to find the position x and Temperature T 
-    where the flow reaches specific target Mach numbers.
-    """
-    # Ensure the Mach profile is sorted for interpolation (required by interp1d)
-    # We sort by Mach number to handle the function x = f(M)
-    sort_idx = np.argsort(Mach_profile)
-    M_sorted = Mach_profile[sort_idx]
-    x_sorted = x_grid[sort_idx]
-    T_sorted = Temp_profile[sort_idx]
-
-    # Create interpolators
-    # bounds_error=False returns NaN if the Mach number isn't found in this step
-    f_x = interp1d(M_sorted, x_sorted, kind='linear', bounds_error=False, fill_value=np.nan)
-    f_T = interp1d(M_sorted, T_sorted, kind='linear', bounds_error=False, fill_value=np.nan)
-
-    return f_x(target_M_values), f_T(target_M_values)
 
 # ==================================================================================================
 # SINGLE PROFILES
@@ -48,11 +26,20 @@ def get_wave_properties(x_grid, Mach_profile, Temp_profile, target_M_values):
 
 def draw_density_profile(x, folder, xlims = None, ylims = None, horizontal_line=None, save_path=None, show=False):
     """
-    Draw the density profile using Matplotlib.
-    If save_path is provided, save the figure as a PNG there.
+    Draw the density profile using Matplotlib. If save_path is provided, save the figure as a PNG there.
+    (supposes in the folder there is a file "physical_quantities.txt" with density, velocity, temperature columns)
+    
+    Args:
+        x (array-like): The spatial grid points (X1/lw).
+        folder (str): Path to the folder containing the output files (e.g., "output/test1").
+        xlims (tuple, optional): (min, max) limits for the x-axis.
+        ylims (tuple, optional): (min, max) limits for the y-axis.
+        horizontal_line (float, optional): y-value at which to draw a horizontal reference line.
+        save_path (str, optional): Full path including filename to save the figure (e.g., "output/test1/density_profile.png").
+        show (bool, default False): If True, calls plt.show(). If False, closes the figure to free memory.
     """
     
-    density, _, _ = read_physical_quantities(folder + "physical_quantities.txt")
+    density, _, _ = read_physical_quantities(folder + "/physical_quantities.txt")
     
     fig, ax = plt.subplots()
     ax.plot(x, density, label='Density')
@@ -85,11 +72,22 @@ def draw_density_profile(x, folder, xlims = None, ylims = None, horizontal_line=
 
 def draw_velocity_profile(x, folder, T_infty_w, xlims = None, ylims = None, horizontal_line=None, save_path=None, show=False):
     """
-    Draw the velocity profile using Matplotlib.
-    If save_path is provided, save the figure as a PNG there.
+    Draw the velocity profile normalized by the sound speed at infinity using Matplotlib. If save_path is provided, 
+    save the figure as a PNG there. (supposes in the folder there is a file "physical_quantities.txt" with density, 
+    velocity, temperature columns)
+    
+    Args:
+        x (array-like): The spatial grid points (X1/lw).
+        folder (str): Path to the folder containing the output files (e.g., "output/test1").
+        T_infty_w (float): The reference temperature for normalization.
+        xlims (tuple, optional): (min, max) limits for the x-axis.
+        ylims (tuple, optional): (min, max) limits for the y-axis.
+        horizontal_line (float, optional): y-value at which to draw a horizontal reference line.
+        save_path (str, optional): Full path including filename to save the figure (e.g., "output/test1/velocity_profile.png").
+        show (bool, default False): If True, calls plt.show(). If False, closes the figure to free memory.
     """
     
-    _, velocity, _ = read_physical_quantities(folder + "physical_quantities.txt")
+    _, velocity, _ = read_physical_quantities(folder + "/physical_quantities.txt")
     
     fig, ax = plt.subplots()
     ax.plot(x, - velocity * (1 / sqrt((5.0 / 6.0) * T_infty_w)), label='Velocity')
@@ -119,11 +117,22 @@ def draw_velocity_profile(x, folder, T_infty_w, xlims = None, ylims = None, hori
 
 def draw_velocity_profile2(x, folder, T_infty_w, xlims = None, ylims = None, horizontal_line=None, save_path=None, show=False):
     """
-    Draw the velocity profile using Matplotlib.
-    If save_path is provided, save the figure as a PNG there.
+    Draw the velocity profile normalized by the local sound speed at wall temperature using Matplotlib. If save_path is provided, 
+    save the figure as a PNG there. (supposes in the folder there is a file "physical_quantities.txt" with density, 
+    velocity, temperature columns)
+    
+    Args:
+        x (array-like): The spatial grid points (X1/lw).
+        folder (str): Path to the folder containing the output files (e.g., "output/test1").
+        T_infty_w (float): The reference temperature for normalization.
+        xlims (tuple, optional): (min, max) limits for the x-axis.
+        ylims (tuple, optional): (min, max) limits for the y-axis.
+        horizontal_line (float, optional): y-value at which to draw a horizontal reference line.
+        save_path (str, optional): Full path including filename to save the figure (e.g., "output/test1/velocity_profile.png").
+        show (bool, default False): If True, calls plt.show(). If False, closes the figure to free memory.
     """
     
-    _, velocity, _ = read_physical_quantities(folder + "physical_quantities.txt")
+    _, velocity, _ = read_physical_quantities(folder + "/physical_quantities.txt")
     
     fig, ax = plt.subplots()
     ax.plot(x, velocity, label='Velocity')
@@ -156,11 +165,20 @@ def draw_velocity_profile2(x, folder, T_infty_w, xlims = None, ylims = None, hor
 
 def draw_temperature_profile(x, folder, xlims = None, ylims = None, horizontal_line=None, save_path=None, show=False):
     """
-    Draw the temperature profile using Matplotlib.
-    If save_path is provided, save the figure as a PNG there.
+    Draw the normalized temperature profile using Matplotlib. If save_path is provided, save the figure as a PNG there.
+    (supposes in the folder there is a file "physical_quantities.txt" with density, velocity, temperature columns)
+    
+    Args:
+        x (array-like): The spatial grid points (X1/lw).
+        folder (str): Path to the folder containing the output files (e.g., "output/test1").
+        xlims (tuple, optional): (min, max) limits for the x-axis.
+        ylims (tuple, optional): (min, max) limits for the y-axis.
+        horizontal_line (float, optional): y-value at which to draw a horizontal reference line.
+        save_path (str, optional): Full path including filename to save the figure (e.g., "output/test1/temperature_profile.png").
+        show (bool, default False): If True, calls plt.show(). If False, closes the figure to free memory.
     """
     
-    _, _, temperature = read_physical_quantities(folder + "physical_quantities.txt")
+    _, _, temperature = read_physical_quantities(folder + "/physical_quantities.txt")
     
     fig, ax = plt.subplots()
     ax.plot(x, temperature, label='Temperature')
@@ -193,11 +211,20 @@ def draw_temperature_profile(x, folder, xlims = None, ylims = None, horizontal_l
 
 def draw_pressure_profile(x, folder, xlims = None, ylims = None, horizontal_line=None, save_path=None, show=False):
     """
-    Draw the pressure profile using Matplotlib.
-    If save_path is provided, save the figure as a PNG there.
+    Draw the normalized pressure profile using Matplotlib. If save_path is provided, save the figure as a PNG there.
+    (supposes in the folder there is a file "physical_quantities.txt" with density, velocity, temperature columns)
+    
+    Args:
+        x (array-like): The spatial grid points (X1/lw).
+        folder (str): Path to the folder containing the output files (e.g., "output/test1").
+        xlims (tuple, optional): (min, max) limits for the x-axis.
+        ylims (tuple, optional): (min, max) limits for the y-axis.
+        horizontal_line (float, optional): y-value at which to draw a horizontal reference line.
+        save_path (str, optional): Full path including filename to save the figure (e.g., "output/test1/pressure_profile.png").
+        show (bool, default False): If True, calls plt.show(). If False, closes the figure to free memory.
     """
     
-    density, _, temperature = read_physical_quantities(folder + "physical_quantities.txt")
+    density, _, temperature = read_physical_quantities(folder + "/physical_quantities.txt")
     
     fig, ax = plt.subplots()
     ax.plot(x, density * temperature, label='Pressure')
@@ -231,8 +258,18 @@ def draw_pressure_profile(x, folder, xlims = None, ylims = None, horizontal_line
 
 def draw_density_evolution(x, timesteps, dt, folder, xlims = None, ylims = None, save_path=None, show=False):
     """
-    Draw the density evolution over time using Matplotlib.
-    If save_path is provided, save the figure as a PNG there.
+    Draw the density evolution over time using Matplotlib. If save_path is provided, save the figure as a PNG there.
+    (supposes in the folder there are files "phys_iter_#.txt" with density, velocity, temperature columns)
+    
+    Args:
+        x (array-like) : The spatial grid points (X1/lw).
+        timesteps (list of int) : The iteration numbers corresponding to the files to be read (e.g. [0, 500, 1000]).
+        dt (float): The time step size (delta t) used to compute the physical time label.
+        folder (str): Path to the folder containing the output files (e.g., "output/test1").
+        xlims (tuple, optional): (min, max) limits for the x-axis.
+        ylims (tuple, optional): (min, max) limits for the y-axis.
+        save_path (str, optional): Full path including filename to save the figure (e.g., "output/test1/density_evolution.png").
+        show (bool, default False): If True, calls plt.show(). If False, closes the figure to free memory.
     """
     plt.rcParams['axes.prop_cycle'] = custom_cycler
     fig, ax = plt.subplots()
@@ -265,8 +302,18 @@ def draw_density_evolution(x, timesteps, dt, folder, xlims = None, ylims = None,
 
 def draw_temperature_evolution(x, timesteps, dt, folder, xlims = None, ylims = None, save_path=None, show=False):
     """
-    Draw the temperature evolution over time using Matplotlib.
-    If save_path is provided, save the figure as a PNG there.
+    Draw the temperature evolution over time using Matplotlib. If save_path is provided, save the figure as a PNG there.
+    (supposes in the folder there are files "phys_iter_#.txt" with density, velocity, temperature columns)
+    
+    Args:
+        x (array-like) : The spatial grid points (X1/lw).
+        timesteps (list of int) : The iteration numbers corresponding to the files to be read (e.g. [0, 500, 1000]).
+        dt (float): The time step size (delta t) used to compute the physical time label.
+        folder (str): Path to the folder containing the output files (e.g., "output/test1").
+        xlims (tuple, optional): (min, max) limits for the x-axis.
+        ylims (tuple, optional): (min, max) limits for the y-axis.
+        save_path (str, optional): Full path including filename to save the figure (e.g., "output/test1/temperature_evolution.png").
+        show (bool, default False): If True, calls plt.show(). If False, closes the figure to free memory.
     """
     plt.rcParams['axes.prop_cycle'] = custom_cycler
     fig, ax = plt.subplots()
@@ -299,8 +346,20 @@ def draw_temperature_evolution(x, timesteps, dt, folder, xlims = None, ylims = N
 
 def draw_velocity_evolution(x, timesteps, T_infty_w, dt, folder, xlims = None, ylims = None, save_path=None, show=False):
     """
-    Draw the velocity evolution over time using Matplotlib.
-    If save_path is provided, save the figure as a PNG there.
+    Draw the velocity normalized by the sound speed at infinity over time using Matplotlib. If save_path is provided, 
+    save the figure as a PNG there. (supposes in the folder there are files "phys_iter_#.txt" with density, velocity, 
+    temperature columns)
+    
+    Args:
+        x (array-like) : The spatial grid points (X1/lw).
+        timesteps (list of int) : The iteration numbers corresponding to the files to be read (e.g. [0, 500, 1000]).
+        T_infty_w (float): The reference temperature for normalization.
+        dt (float): The time step size (delta t) used to compute the physical time label.
+        folder (str): Path to the folder containing the output files (e.g., "output/test1").
+        xlims (tuple, optional): (min, max) limits for the x-axis.
+        ylims (tuple, optional): (min, max) limits for the y-axis.
+        save_path (str, optional): Full path including filename to save the figure (e.g., "output/test1/velocity_evolution.png").
+        show (bool, default False): If True, calls plt.show(). If False, closes the figure to free memory.
     """
     plt.rcParams['axes.prop_cycle'] = custom_cycler
     fig, ax = plt.subplots()
@@ -331,8 +390,20 @@ def draw_velocity_evolution(x, timesteps, T_infty_w, dt, folder, xlims = None, y
         
 def draw_velocity_evolution2(x, timesteps, T_infty_w, dt, folder, xlims = None, ylims = None, save_path=None, show=False):
     """
-    Draw the velocity evolution over time using Matplotlib.
-    If save_path is provided, save the figure as a PNG there.
+    Draw the velocity evolution normalized by the local sound speed at the wall over time using Matplotlib. 
+    If save_path is provided, save the figure as a PNG there. (supposes in the folder there are files 
+    "phys_iter_#.txt" with density, velocity, temperature columns)
+    
+    Args:
+        x (array-like) : The spatial grid points (X1/lw).
+        timesteps (list of int) : The iteration numbers corresponding to the files to be read (e.g. [0, 500, 1000]).
+        T_infty_w (float): The reference temperature for normalization.
+        dt (float): The time step size (delta t) used to compute the physical time label.
+        folder (str): Path to the folder containing the output files (e.g., "output/test1").
+        xlims (tuple, optional): (min, max) limits for the x-axis.
+        ylims (tuple, optional): (min, max) limits for the y-axis.
+        save_path (str, optional): Full path including filename to save the figure (e.g., "output/test1/velocity_evolution.png").
+        show (bool, default False): If True, calls plt.show(). If False, closes the figure to free memory.
     """
     plt.rcParams['axes.prop_cycle'] = custom_cycler
     fig, ax = plt.subplots()
@@ -365,8 +436,18 @@ def draw_velocity_evolution2(x, timesteps, T_infty_w, dt, folder, xlims = None, 
 
 def draw_pressure_evolution(x, timesteps, dt, folder, xlims = None, ylims = None, save_path=None, show=False):
     """
-    Draw the pressure evolution over time using Matplotlib.
-    If save_path is provided, save the figure as a PNG there.
+    Draw the normalized pressure evolution over time using Matplotlib. If save_path is provided, save the figure 
+    as a PNG there. (supposes in the folder there are files "phys_iter_#.txt" with density, velocity, temperature columns)
+    
+    Args:
+        x (array-like) : The spatial grid points (X1/lw).
+        timesteps (list of int) : The iteration numbers corresponding to the files to be read (e.g. [0, 500, 1000]).
+        dt (float): The time step size (delta t) used to compute the physical time label.
+        folder (str): Path to the folder containing the output files (e.g., "output/test1").
+        xlims (tuple, optional): (min, max) limits for the x-axis.
+        ylims (tuple, optional): (min, max) limits for the y-axis.
+        save_path (str, optional): Full path including filename to save the figure (e.g., "output/test1/pressure_evolution.png").  
+        show (bool, default False): If True, calls plt.show(). If False, closes the figure to free memory.
     """
     plt.rcParams['axes.prop_cycle'] = custom_cycler
     fig, ax = plt.subplots()
@@ -399,8 +480,8 @@ def draw_pressure_evolution(x, timesteps, dt, folder, xlims = None, ylims = None
 
 def draw_solution_discontinuity_evolution(x, zeta, x_indices, timesteps, dt, zeta_lim, folder, save_path=None, show=False):
     """ 
-    Produces N plots (one per timestep). Each plot shows the distribution 
-    over zeta for all specified spatial indices (x_indices).
+    Produces N plots (one per timestep). Each plot shows the distribution over zeta for all specified spatial 
+    indices (x_indices). (Supposes in the folder there are files "g_iter_#.txt" and "h_iter_#.txt" with solution matrices)
     
     Args:
         x (array-like) : The spatial grid points (X1/lw).
@@ -467,7 +548,8 @@ def draw_solution_discontinuity_evolution(x, zeta, x_indices, timesteps, dt, zet
 
 def draw_MachNumber_evolution(x, timesteps, dt, folder, xlims = None, ylims = None, save_path=None, show=False):
     """
-    Draws the spatial evolution of the Mach number over specified time steps.
+    Draws the spatial evolution of the Mach number over specified time steps. 
+    (supposes in the folder there are files "phys_iter_#.txt" with density, velocity, temperature columns)
 
     Args:
         x (array-like) : The spatial grid points (X1/lw).
@@ -510,101 +592,8 @@ def draw_MachNumber_evolution(x, timesteps, dt, folder, xlims = None, ylims = No
 # -------------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------------
 
-def draw_Vp_star_evolution(x, timesteps, m, dt, folder, target_Machs=np.linspace(0.98, 1.02, 100), xlims=None, ylims=None, save_path=None, show=False):
-    """
-    Calculates and plots $V_p^*$ against Mach number.
-    
-    Args:
-        x (array-like) : The spatial grid points (X1/lw).
-        timesteps (list of int) : The specific time steps (iterations) you want to visualize (plot).
-        m (int) : The step lag used for the finite difference derivative. 
-                  Approximation: dx/dt ~ (x(t) - x(t-m)) / (m * dt)
-        dt (float) : Physical time per iteration step.
-        folder (str) : Path to the folder containing the output files (e.g., "data").
-        target_Machs (array-like) : Mach numbers at which to evaluate Vp*.
-        xlims (tuple, optional) : (min, max) limits for the x-axis.
-        ylims (tuple, optional) : (min, max) limits for the y-axis.
-        save_path (str, optional) : Full path including filename to save the figure (e.g., "plots/Vp_star_evolution.png").
-        show (bool, default False) : If True, calls plt.show(). If False, closes the figure to free memory.
-    """
-    folder_path = Path(folder)
-    plt.rcParams['axes.prop_cycle'] = custom_cycler
-    
-    fig, ax = plt.subplots(figsize=(10, 6))
-    
-    for t_curr in timesteps:
-        t_prev = t_curr - m
-        
-        # Sanity check: We can't look back before step 0
-        if t_prev < 0:
-            print(f"Skipping t={t_curr}: Lagged step {t_prev} is negative.")
-            continue
-            
-        # 1. Define Paths
-        path_curr = folder_path / f"phys_iter_{t_curr}.txt"
-        path_prev = folder_path / f"phys_iter_{t_prev}.txt"
-        
-        # 2. Read Data
-        _, v_curr, T_curr = read_physical_quantities(path_curr)
-        _, v_prev, T_prev = read_physical_quantities(path_prev)
-        
-        if v_curr is None or v_prev is None:
-            print(f"Skipping t={t_curr}: Missing file (checked {t_curr} and {t_prev}).")
-            continue
 
-        # 3. Calculate Mach Profiles
-        c_curr = np.sqrt((6.0 / 5.0) / T_curr)
-        c_prev = np.sqrt((6.0 / 5.0) / T_prev)
-        
-        M_curr = np.abs(v_curr) * c_curr
-        M_prev = np.abs(v_prev) * c_prev
-        
-        # 4. Interpolate x(M) and T(M)
-        x_locs_curr, T_locs_curr = get_wave_properties(x, M_curr, T_curr, target_Machs)
-        x_locs_prev, _           = get_wave_properties(x, M_prev, T_prev, target_Machs)
-        
-        # 5. Compute Derivative and V_p*
-        # Physical time interval = m * dt
-        delta_t_phys = m * dt
-        
-        # Wave speed = (x_curr - x_prev) / delta_t
-        wave_speed = (x_locs_curr - x_locs_prev) / delta_t_phys
-        
-        # Normalize: V_p* = sqrt(6/5) * (1/sqrt(T)) * wave_speed
-        normalization = np.sqrt(6.0 / 5.0) * (1.0 / np.sqrt(T_locs_curr))
-        V_p_star = normalization * wave_speed
-        
-        # 6. Plot
-        valid = ~np.isnan(V_p_star)
-        label_str = rf'$\overline{{t}} = {t_curr * dt:.0f}$'
-        ax.plot(target_Machs[valid], V_p_star[valid], label=label_str, linewidth=1.5)
 
-    # --- Reference Line: 1 - M ---
-    subsonic = target_Machs <= 1.0
-    ax.plot(target_Machs[subsonic], 1.0 - target_Machs[subsonic], 
-            color='black', linestyle='--', linewidth=2, label=r'$1-M$')
-
-    # --- Formatting ---
-    ax.set_xlabel('Mach Number ($M$)', fontsize=12)
-    ax.set_ylabel(r'$V_p^*(\overline{t}, M)$', fontsize=12)
-    ax.set_title(f'Normalized Wave Velocity (lag $m={m}$)', fontsize=14)
-    ax.legend(loc="center left", bbox_to_anchor=(1, 0.5), fontsize=10)
-    ax.grid(True, alpha=0.3, linestyle='--')
-    
-    if xlims:
-        ax.set_xlim(xlims)
-    if ylims:
-        ax.set_ylim(ylims)
-
-    if save_path:
-        p = Path(save_path)
-        p.parent.mkdir(parents=True, exist_ok=True)
-        fig.savefig(p, dpi=300, bbox_inches='tight')
-
-    if show:
-        plt.show()
-    else:
-        plt.close(fig)
 
 # -------------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------------
@@ -612,26 +601,67 @@ def draw_Vp_star_evolution(x, timesteps, m, dt, folder, target_Machs=np.linspace
 
 
 if __name__ == "__main__":
-    # Example usage
-    folder = "output/first_test/"
-    x = read_mesh(folder + "space_mesh.txt")
 
-#    density, velocity, temperature = read_physical_quantities(
-#        folder + "physical_quantities.txt")
-#
-#    draw_temperature_profile(
-#        x, temperature, save_path=folder + "temperature_profile.png")
-#
-#    draw_density_profile(
-#        x, density, save_path=folder + "density_profile.png")
-#
-#    draw_velocity_profile(
-#        x, velocity, save_path=folder + "velocity_profile.png")
+    import postprocessing.BGK_read as rd
+    import json
+    from math import sqrt
+    import numpy as np
 
-    timesteps = [1, 200, 400, 600, 800, 1000, 1200, 1400, 1600, 1800, 2000]
-    dt = 0.35
+    with open("data/Cond/type1.json", "r", encoding="utf-8") as f:
+        problem_data = json.load(f)
+
+    folder = problem_data["general"]["saving_folder_name"] + "/"
+
+    # ============== EVOLUTION ==============
+
+    # Type 1 
+    timesteps = [0, 20, 80, 200, 400,700]
+    dt = problem_data["simulation"]["time_step"]
+    xlim = (0, 1.2)
+    temp_y_lim = (0.98, 1.03)
+    velocity_y_lim = (1.16, 1.25)
+    pressure_y_lim = (16.2, 17.8)
+    density_y_lim = (16.2, 17.7)
+    
+    x = rd.read_mesh(folder + "space_mesh.txt")
+
     draw_temperature_evolution(
-        x, timesteps, dt, folder, save_path=folder + "temperature_evolution.png")
+        x, 
+        timesteps, 
+        dt, 
+        folder, 
+        xlims=xlim, 
+        ylims=temp_y_lim, 
+        save_path=folder + "temperature_evolution.png"
+        )
+
     draw_velocity_evolution(
-        x, timesteps, dt, folder, save_path=folder + "velocity_evolution.png")
-    print("Plots saved.")
+        x, 
+        timesteps, 
+        problem_data["physical"]["T_infty_w"], 
+        dt, 
+        folder, 
+        xlims=xlim, 
+        ylims=velocity_y_lim, 
+        save_path=folder + "velocity_evolution.png"
+        )
+
+    draw_pressure_evolution(
+        x, 
+        timesteps, 
+        dt, 
+        folder, 
+        xlims=xlim, 
+        ylims=pressure_y_lim, 
+        save_path=folder + "pressure_evolution.png"
+        )
+
+    draw_density_evolution(
+        x, 
+        timesteps, 
+        dt, 
+        folder, 
+        xlims=xlim, 
+        ylims=density_y_lim,
+        save_path=folder + "density_evolution.png"
+        )

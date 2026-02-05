@@ -59,8 +59,8 @@ namespace Bgk
          * @param g Eigen matrix containing the g quantity (rows -> velocity points, cols -> spatial points).
          * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
          * @param wall_g_val Value of g at wall for zeta=0+ (for density calc)
-         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
-         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k \in [0, 2*N]$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \f$ (should deal with the negative side internally).
          * @return Eigen::Vector<T, Eigen::Dynamic> The vector of normalised densities for all spatial points.
          */
         template <typename T, typename JacobianFunc>
@@ -88,8 +88,8 @@ namespace Bgk
          * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
          * @param i The spatial index at which to compute the density.
          * @param wall_g_val Value of g at wall for zeta=0+ (for density calc).
-         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
-         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k \in [0, 2*N]$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \f$ (should deal with the negative side internally).
          * @return T The computed density at the i-th spatial point.
          */
         template <typename T, typename JacobianFunc>
@@ -122,8 +122,8 @@ namespace Bgk
          * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
          * @param densities Pre-computed densities.
          * @param wall_g_val Value of g at wall for zeta=0+ (for velocity calc)
-         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
-         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k \in [0, 2*N]$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \f$ (should deal with the negative side internally).
          * @return Eigen::Vector<T, Eigen::Dynamic> The vector of normalised mean velocities for all spatial points.
          */
         template <typename T, typename JacobianFunc>
@@ -155,8 +155,8 @@ namespace Bgk
          * @param g Eigen matrix containing the g quantity (rows -> velocity points, cols -> spatial points).
          * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
          * @param wall_g_val Value of g at wall for zeta=0+ (for velocity calc)
-         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
-         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k \in [0, 2*N]$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \f$ (should deal with the negative side internally)..
          * @return Eigen::Vector<T, Eigen::Dynamic> The vector of normalised mean velocities for all spatial points.
          */
         template <typename T, typename JacobianFunc>
@@ -190,8 +190,8 @@ namespace Bgk
          * @param i The spatial index at which to compute the mean gas velocity.
          * @param density_i The pre-computed density at point i.
          * @param wall_g_val Value of g at wall for zeta=0+ (for velocity calc).
-         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
-         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k \in [0, 2*N]$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \f$ (should deal with the negative side internally).
          * @return T The computed mean gas velocity at the i-th spatial point.
          *
          */
@@ -227,8 +227,8 @@ namespace Bgk
          * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
          * @param i The spatial index at which to compute the mean gas velocity.
          * @param wall_g_val Value of g at wall for zeta=0+ (for velocity calc).
-         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
-         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k \in [0, 2*N]$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \f$ (should deal with the negative side internally).
          * @return T The computed mean gas velocity at the i-th spatial point.
          */
         template <typename T, typename JacobianFunc>
@@ -264,8 +264,8 @@ namespace Bgk
          * @param mean_velocities Pre-computed mean velocities.
          * @param wall_g_val Value of g at wall for zeta=0+ (for temperature calc).
          * @param wall_h_val Value of h at wall for zeta=0+ (for temperature calc)..
-         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
-         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k \in [0, 2*N]$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \f$ (should deal with the negative side internally).
          * @return Eigen::Vector<T, Eigen::Dynamic> The vector of normalised temperatures for all spatial points.
          */
         template <typename T, typename JacobianFunc>
@@ -302,8 +302,8 @@ namespace Bgk
          * @param velocity_mesh A VelocityMesh object providing the discrete velocity points and grid information.
          * @param wall_g_val Value of g at wall for zeta=0+ (for temperature calc).
          * @param wall_h_val Value of h at wall for zeta=0+ (for temperature calc).
-         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
-         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k \in [0, 2*N]$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \f$ (should deal with the negative side internally).
          * @return Eigen::Vector<T, Eigen::Dynamic> The vector of normalised temperatures for all spatial points.
          */
         template <typename T, typename JacobianFunc>
@@ -343,8 +343,8 @@ namespace Bgk
          * @param mean_velocity_i The pre-computed mean velocity at point i.
          * @param wall_g_val Value of g at wall for zeta=0+ (for temperature calc).
          * @param wall_h_val Value of h at wall for zeta=0+ (for temperature calc).
-         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
-         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k \in [0, 2*N]$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \f$ (should deal with the negative side internally).
          * @return T The computed mean gas temperature at the i-th spatial point.
          *
          */
@@ -386,8 +386,8 @@ namespace Bgk
          * @param i The spatial index at which to compute the mean gas temperature.
          * @param wall_g_val Value of g at wall for zeta=0+ (for temperature calc).
          * @param wall_h_val Value of h at wall for zeta=0+ (for temperature calc).
-         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k$ and returns the
-         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \cdot \Delta j \f$.
+         * @param get_jacobian A callable (function/lambda) that takes the velocity index $k \in [0, 2*N]$ and returns the
+         * Jacobian term \f$ J_k = \left| \frac{d\zeta}{dj} \right|_k \f$ (should deal with the negative side internally).
          * @return T The computed mean gas temperature at the i-th spatial point.
          */
         template <typename T, typename JacobianFunc>

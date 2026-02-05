@@ -122,6 +122,23 @@ namespace Bgk
     }
 
     template <typename T>
+    template <SpacingFunction<T> custom_spacing>
+    void SolverFV<T>::initialize_custom_spacemesh(custom_spacing &&custom_space_spacing)
+    {
+        Space_mesh.initialize_with_custom_spacing(custom_space_spacing);
+        return;
+    }
+
+    template <typename T>
+    template <SpacingFunction<T> custom_spacing, SpacingFunction<T> Jacobian>
+    void SolverFV<T>::initialize_custom_velocitymesh(custom_spacing &&custom_velocity_spacing, Jacobian &&jacobian)
+    {
+        Velocity_mesh.initialize_with_custom_spacing(custom_velocity_spacing);
+        Velocity_mesh.set_jacobian_function(jacobian);
+        return;
+    }
+
+    template <typename T>
     void SolverFV<T>::set_physical_quantities()
     {
         auto get_jacobian = Velocity_mesh.get_jacobian_function();
@@ -428,6 +445,7 @@ namespace Bgk
                      G(Velocity_mesh[j], density[i + 1], mean_velocity[i + 1], temperature[i + 1]);
         }
 
+        // boundary correction for the last two entries
         U_p[0] -= (Velocity_mesh[j] / vol_sizes[1]) * (a1_2 + omega1) * g0(Velocity_mesh[j]);
         U_p[1] -= (Velocity_mesh[j] / vol_sizes[2]) * a2_2 * g0(Velocity_mesh[j]);
 
@@ -611,7 +629,7 @@ namespace Bgk
 
             auto x = solver.solve(rhs);
             if (solver.info() != Eigen::Success)
-                throw std::runtime_error("Solve (g) failed");
+                throw std::runtime_error(error_message("Solve (g) failed in solve_timestep_pos"));
             g.row(j).tail(Space_N) = x.transpose();
 
             // 5. Solve for h
@@ -620,7 +638,7 @@ namespace Bgk
 
             auto y = solver.solve(rhs);
             if (solver.info() != Eigen::Success)
-                throw std::runtime_error("Solve (h) failed");
+                throw std::runtime_error(error_message("Solve (h) failed in solve_timestep_pos"));
             h.row(j).tail(Space_N) = y.transpose();
         }
     }
@@ -640,7 +658,7 @@ namespace Bgk
         const std::pair<T, T> bNm1 = numerics::QUICKcoefficients_n_at<T>(Space_mesh, Space_N - 1);
         const T sigmaNm1 = T{1} - bN.first + bN.second + bNm1.second;
 
-        // --- Optimization 1: Pre-compute diagonal offsets for B ---
+        // --- Pre-compute diagonal offsets for B ---
         std::vector<ptrdiff_t> diag_offsets(Space_N);
 
         // Ensure B is compressed to guarantee valuePtr safety
@@ -659,7 +677,7 @@ namespace Bgk
             }
         }
 
-        // --- Optimization 2: Structure Reuse ---
+        // --- Structure Reuse ---
         // Initialize M with B's pattern ONCE.
         Eigen::SparseMatrix<T> M = B;
 
@@ -710,7 +728,7 @@ namespace Bgk
 
             auto x = solver.solve(rhs);
             if (solver.info() != Eigen::Success)
-                throw std::runtime_error("Solve (g) failed in solve_timestep_neg");
+                throw std::runtime_error(error_message("Solve (g) failed in solve_timestep_neg"));
             g.row(j).head(Space_N) = x.transpose();
 
             // 5. Solve for h
@@ -719,7 +737,7 @@ namespace Bgk
 
             auto y = solver.solve(rhs);
             if (solver.info() != Eigen::Success)
-                throw std::runtime_error("Solve (h) failed in solve_timestep_neg");
+                throw std::runtime_error(error_message("Solve (h) failed in solve_timestep_neg"));
             h.row(j).head(Space_N) = y.transpose();
         }
     }
@@ -1034,7 +1052,7 @@ namespace Bgk
             write_phys_instant(Data.get_saving_folder_name(), 0);
         }
 
-        auto mat_norm = metrics::MatrixNormFactory<T>::create(vec_norm_type, agg_type);
+        auto mat_norm = metrics::MatrixErrorNormFactory<T>::create(vec_norm_type, agg_type);
         Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> g_old, h_old;
 
         while (k < max_iter && rel_err > tol)
@@ -1093,7 +1111,7 @@ namespace Bgk
             write_phys_instant(Data.get_saving_folder_name(), 0);
         }
 
-        auto mat_norm = metrics::MatrixNormFactory<T>::create(vec_norm_type, agg_type);
+        auto mat_norm = metrics::MatrixErrorNormFactory<T>::create(vec_norm_type, agg_type);
         Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor> g_old, h_old;
 
         auto start_time = std::chrono::high_resolution_clock::now();

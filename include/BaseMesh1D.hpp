@@ -96,7 +96,7 @@ namespace Bgk
          * This method clears the computational points and sets the initialization flag to false.
          * It can be used to reinitialize the mesh with new parameters or configurations.
          *
-         * @note - This method does not reset the mesh parameters and neither the constructed status.
+         * @note - This method does not reset the mesh parameters
          * @note - This method does not deallocate memory
          */
         virtual void reset_mesh()

@@ -336,9 +336,9 @@ namespace Bgk
         // ----- MATRIX NORMS ----------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        /** @brief Abstract base class for calculating matrix norms.
+        /** @brief Abstract base class for calculating matrix error norms.
          *
-         * Provides an interface for computing norms on Eigen matrices. Supports both standard
+         * Provides an interface for computing error norms on Eigen matrices. Supports both standard
          * and weighted norm calculations.
          *
          * @tparam T The scalar type (e.g., double, float).
@@ -377,7 +377,7 @@ namespace Bgk
         // -----------------------------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        /** @brief Implementation of a row-wise matrix norm.
+        /** @brief Implementation of a row-wise matrix error norm.
          *
          * Calculates the norm of the difference between two matrices on a row-wise basis,
          * normalizing each row's difference by the norm of the current row, and then
@@ -453,22 +453,22 @@ namespace Bgk
         // -----------------------------------------------------------------------------------------------
         // -----------------------------------------------------------------------------------------------
 
-        /** @brief Factory for creating MatrixNorm instances.
+        /** @brief Factory for creating MatrixErrorNorm instances.
          *
-         * Provides a static method to return a unique pointer to a MatrixNorm instance
+         * Provides a static method to return a unique pointer to a MatrixErrorNorm instance
          * based on the specified vector norm type and row aggregate type.
          *
          * @tparam T The scalar type (e.g., double, float).
          */
         template <typename T>
-        class MatrixNormFactory
+        class MatrixErrorNormFactory
         {
         public:
-            /** @brief Creates a MatrixNorm instance based on the specified types.
+            /** @brief Creates a MatrixErrorNorm instance based on the specified types.
              *
              * @param vec_norm_type The type of vector norm to use (L1, L2, Linf).
              * @param agg_type The type of row aggregator to use (Average, Max).
-             * @return std::unique_ptr<MatrixNorm<T>> A unique pointer to the created MatrixNorm instance.
+             * @return std::unique_ptr<MatrixErrorNorm<T>> A unique pointer to the created MatrixErrorNorm instance.
              */
             static std::unique_ptr<MatrixErrorNorm<T>> create(VectorNormType vec_norm_type,
                                                               RowAggregateType agg_type)

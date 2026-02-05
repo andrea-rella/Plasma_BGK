@@ -33,11 +33,13 @@ namespace Bgk
     class VelocityMesh : public BaseMesh1D<T, std::vector<T>, MeshNature::VELOCITY>
     {
     private:
-        // Spacing parameter
+        /// Spacing parameter
         T a1;
-        // Spacing parameter
+        /// Spacing parameter
         T a2;
 
+        /// @brief Jacobian function of the mesh spacing
+        /// @note It's supposed to take values in [0, 2*N] and deal with the negative side internally (see report)
         std::function<T(size_t)> jacobian_func;
 
     public:
@@ -84,7 +86,8 @@ namespace Bgk
          * The method is overridden w.r.t. BaseMesh1D to account for the specific size of the velocity mesh
          * which in this case, given the symmetry around zero, contains 2 * N + 1 points.
          *
-         * @param index The index of the computational point to access.
+         * @param index The index of the computational point to access in [0, 2*N]
+         *        it does not accept negative indices.
          * @return The computational point at the specified index.
          *
          * @pre index must be within the dimension of the mesh (<= 2 * N + 1).
@@ -96,7 +99,8 @@ namespace Bgk
          * The method is overridden w.r.t. BaseMesh1D to account for the specific size of the velocity mesh
          * which in this case, given the symmetry around zero, contains 2 * N + 1 points.
          *
-         * @param index The index of the computational point to access.
+         * @param index The index of the computational point to access in [0, 2*N]
+         *        it does not accept negative indices.
          * @return The computational point at the specified index.
          *
          * @pre index must be within the dimension of the mesh (<= 2 * N + 1).
@@ -110,7 +114,8 @@ namespace Bgk
          * The method is overridden w.r.t. BaseMesh1D to account for the specific size of the velocity mesh
          * which in this case, given the symmetry around zero, contains 2 * N + 1 points.
          *
-         * @param index The index of the computational point to access.
+         * @param index The index of the computational point to access in [0, 2*N]
+         *        it does not accept negative indices.
          * @return The computational point at the specified index.
          *
          * @throws std::out_of_range if index is greater than 2 * N + 1.
@@ -124,7 +129,8 @@ namespace Bgk
          * The method is overridden w.r.t. BaseMesh1D to account for the specific size of the velocity mesh
          * which in this case, given the symmetry around zero, contains 2 * N + 1 points.
          *
-         * @param index The index of the computational point to access.
+         * @param index The index of the computational point to access in [0, 2*N]
+         *        it does not accept negative indices.
          * @return Reference to the computational point at the specified index.
          *
          * @throws std::out_of_range if index is greater than 2 * N + 1.

@@ -12,22 +12,6 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-/**
- * @brief Storage of utility functions and concepts for the Plasma_BGK project.
- *
- * In this file, we define various utility functions and concepts that are used throughout the Plasma_BGK project.
- * These utilities include
- *
- * - @see MeshContainer concept to check if a type is a range and holds mesh components.
- * - @see FloatingPoint concept to check if a type is a floating point type.
- * - @see SpacingFunction concept to define a callable type for mesh spacing.
- * - @see MeshNature enum class to define the nature of a mesh (space or velocity).
- * - @see QUICK_coefficients_p Function to compute QUICK coefficients for finite volume meshes.
- * - @see QUICK_coefficients_n Function to compute QUICK coefficients for finite volume meshes.
- *
- * These utilities are essential for ensuring type safety and providing common functionality across different mesh implementations.
- */
-
 #ifndef UTILITIES_D1960633_B6A3_4A73_81CA_EEFCDE02F6EE
 #define UTILITIES_D1960633_B6A3_4A73_81CA_EEFCDE02F6EE
 

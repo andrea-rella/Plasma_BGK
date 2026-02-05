@@ -1,6 +1,4 @@
-from os import name
 import numpy as np
-
 
 
 def read_physical_quantities(path):
@@ -9,7 +7,7 @@ def read_physical_quantities(path):
     density, mean_velocity, temperature as NumPy 1D arrays.
 
     Args:
-        path (str): The file path to the 'physical_quantities.txt' file.
+        path (str): The file path to the 'physical_quantities.txt' file (e.g., "output/test1/physical_quantities.txt").
 
     Returns:
         tuple: A tuple containing three NumPy 1D arrays (density, mean_velocity, temperature).
@@ -43,9 +41,13 @@ def read_physical_quantities(path):
 # -------------------------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------------------------
 
-def read_physical_quantity(path):
+def read_physical_quantity(path, quantity_index):
     """
-    Read a 'physical_quantities.txt'-style file and return only density as a NumPy 1D array.
+    Read a 'physical_quantities.txt'-style file and return the selected quantity as a NumPy 1D array.
+    
+    Args:
+        path (str): The file path to the 'physical_quantities.txt' file (e.g., "output/test1/physical_quantities.txt").
+        quantity_index (int): The column index of the desired quantity (1 for density, 2 for mean_velocity, 3 for temperature).
     """
     # Determine how many header rows to skip (until the first numeric index line)
     skip = 0
@@ -62,7 +64,7 @@ def read_physical_quantity(path):
             except (ValueError, IndexError):
                 skip += 1
 
-    quantity = np.loadtxt(path, usecols=(1,), skiprows=skip)
+    quantity = np.loadtxt(path, usecols=(quantity_index,), skiprows=skip)
     return quantity
 
 # -------------------------------------------------------------------------------------------------
@@ -72,6 +74,9 @@ def read_mesh(path):
     """
     Read a 'space_mesh.txt'-style file ('Computational Points (index - x_comp):')
     and return only x_comp as a NumPy 1D array.
+    
+    Args:
+        path (str): The file path to the 'space_mesh.txt' file (e.g., "output/test1/space_mesh.txt").
     """
     # Find start of numeric data (first line with int index and float x)
     skip = 0
@@ -101,7 +106,7 @@ def read_solution_matrices(path):
     Starts reading at the first line where all tokens are numeric (floats or ints).
 
     Args:
-        path (str): Path to the solution matrix file.
+        path (str): Path to the solution matrix file (e.g., "output/test1/solution_g.txt").
 
     Returns:
         np.ndarray: 2D NumPy array containing the solution matrix.

@@ -12,8 +12,8 @@
 // Politecnico di Milano
 // https://github.com/andrea-rella/Plasma_BGK
 
-#ifndef VELOCITYMESH_IMPL_D96EB33E_0366_4848_A105_C24157A1D6BB
-#define VELOCITYMESH_IMPL_D96EB33E_0366_4848_A105_C24157A1D6BB
+#ifndef VELOCITYMESH_B8286DF7_B2F3_4B11_B6A5_3D867D038793
+#define VELOCITYMESH_B8286DF7_B2F3_4B11_B6A5_3D867D038793
 
 #include "../VelocityMesh.hpp"
 #include <ranges>
@@ -27,7 +27,7 @@ namespace Bgk
     VelocityMesh<T>::VelocityMesh(const ConfigData<T> &config) : BaseMesh1D<T, std::vector<T>, MeshNature::VELOCITY>(config),
                                                                  a1(config.get_a1()), a2(config.get_a2())
     {
-
+        // Define default jacobian function based on configuration parameters
         auto get_jacobian = [&](size_t k) -> T
         {
             // Cast to signed integer to handle negative relative indices correctly
@@ -45,6 +45,7 @@ namespace Bgk
     template <SpacingFunction<T> Jacobian>
     void VelocityMesh<T>::set_jacobian_function(Jacobian &&jacobian)
     {
+        // std::foward to preserve value category (lvalue/rvalue)
         jacobian_func = std::forward<Jacobian>(jacobian);
     }
 
@@ -127,4 +128,4 @@ namespace Bgk
     }
 }
 
-#endif /* VELOCITYMESH_IMPL_D96EB33E_0366_4848_A105_C24157A1D6BB */
+#endif /* VELOCITYMESH_B8286DF7_B2F3_4B11_B6A5_3D867D038793 */

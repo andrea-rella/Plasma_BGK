@@ -188,7 +188,27 @@ namespace Bgk
          */
         void solve_timestep_zero();
 
+        /** @brief Solve a single time step for positive velocities (parallel version)
+         *
+         * This function solves the discretized BGK Boltzmann equations of g and h for positive velocities
+         * for a single time step. It uses the pre-assembled QUICK advection matrix A, reaction matrix R and
+         * the reaction vectors following a semi-implicit time integration scheme. The computations are
+         * parallelized across the velocity grid points to improve performance using OpenMP.
+         *
+         * For more details on the numerical scheme and implementation, refer to the library report.
+         *
+         */
         void solve_timestep_pos_parallel();
+        /** @brief Solve a single time step for negative velocities (parallel version)
+         *
+         * This function solves the discretized BGK Boltzmann equations of g and h for negative velocities
+         * for a single time step. It uses the pre-assembled QUICK advection matrix B, reaction matrix R
+         * and the reaction vectors following a semi-implicit time integration scheme. The computations are
+         * parallelized across the velocity grid points to improve performance using OpenMP.
+         *
+         * For more details on the numerical scheme and implementation, refer to the library report.
+         *
+         */
         void solve_timestep_neg_parallel();
 
     public:
@@ -238,6 +258,29 @@ namespace Bgk
          *
          */
         void initializeMeshes();
+        /** @brief Initializes the space mesh using a custom spacing function
+         *
+         * This method sets up the spatial mesh using a user-provided custom spacing function. The custom
+         * spacing function should define how the spatial points are distributed across the domain.
+         *
+         * @param custom_space_spacing User-defined custom spacing function for the spatial mesh. Must
+         * satisfy the SpacingFunction concept.
+         */
+        template <SpacingFunction<T> custom_spacing>
+        void initialize_custom_spacemesh(custom_spacing &&custom_space_spacing);
+
+        /** @brief Initializes the velocity mesh using a custom spacing function
+         *
+         * This method sets up the velocity mesh using a user-provided custom spacing function. The custom
+         * spacing function should define how the velocity points are distributed across the velocity space.
+         *
+         * @param custom_velocity_spacing User-defined custom spacing function for the velocity mesh. Must
+         * satisfy the SpacingFunction concept.
+         */
+        template <SpacingFunction<T> custom_spacing, SpacingFunction<T> Jacobian>
+        void initialize_custom_velocitymesh(custom_spacing &&custom_velocity_spacing,
+                                            Jacobian &&jacobian);
+
         /** @brief Sets physical quantities and boundary conditions based on configuration data
          *
          * This method initializes the physical quantities such as density, mean velocity,

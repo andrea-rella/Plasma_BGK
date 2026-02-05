@@ -104,7 +104,6 @@ namespace Bgk
         {
             if (i < 0 || i >= g.cols())
             {
-                // This check from your old code is still good practice
                 throw std::out_of_range("Index out of bounds when computing the density");
             }
 
@@ -224,11 +223,9 @@ namespace Bgk
                 return velocities;
             }
 
-            // --- 1. COMPUTE DENSITIES (using vector function) ---
             Eigen::Vector<T, Eigen::Dynamic> densities =
                 compute_density(g, velocity_mesh, wall_g_val, get_jacobian);
 
-            // --- 2. COMPUTE MEAN VELOCITIES (full loop, using new logic) ---
             const size_t zero_idx = velocity_mesh.get_N();
             const size_t max_idx = velocity_mesh.size() - 1;
 
@@ -251,7 +248,6 @@ namespace Bgk
                 {
                     T weight = (k == zero_idx || k == max_idx) ? 1.0 : ((k - zero_idx) % 2 != 0 ? 4.0 : 2.0);
 
-                    // Apply the fix: use wall_g_val at k=zero_idx
                     T g_val = (k == zero_idx) ? wall_g_val : g(k, i);
 
                     integral_pos += weight * (g_val * velocity_mesh[k]) * get_jacobian(k);
@@ -299,13 +295,12 @@ namespace Bgk
                 throw std::out_of_range(error_message("Index out of bounds when computing the mean gas velocity"));
             }
 
-            // Call the "new" density function, which requires wall_maxwellian_val
             T density_i = compute_density_at(g, velocity_mesh, i, wall_g_val, get_jacobian);
 
             if (density_i == T{0})
             {
-                // Avoid division by zero, return 0 or throw
-                return T{0};
+                throw std::runtime_error(error_message(
+                    "Density is zero when computing the mean gas velocity at index " + std::to_string(i)));
             }
 
             const size_t zero_idx = velocity_mesh.get_N();
@@ -327,7 +322,6 @@ namespace Bgk
             {
                 T weight = (k == zero_idx || k == max_idx) ? 1.0 : ((k - zero_idx) % 2 != 0 ? 4.0 : 2.0);
 
-                // Apply the fix: use wall_g_val ONLY at i=0 and k=zero_idx
                 T g_val = (i == 0 && k == zero_idx) ? wall_g_val : g(k, i);
 
                 integral_pos += weight * (g_val * velocity_mesh[k]) * get_jacobian(k);
@@ -352,8 +346,8 @@ namespace Bgk
 
             if (density_i == T{0})
             {
-                // Avoid division by zero, return 0 or throw
-                return T{0};
+                throw std::runtime_error(error_message(
+                    "Density is zero when computing the mean gas velocity at index " + std::to_string(i)));
             }
 
             const size_t zero_idx = velocity_mesh.get_N();
@@ -375,7 +369,6 @@ namespace Bgk
             {
                 T weight = (k == zero_idx || k == max_idx) ? 1.0 : ((k - zero_idx) % 2 != 0 ? 4.0 : 2.0);
 
-                // Apply the fix: use wall_g_val ONLY at i=0 and k=zero_idx
                 T g_val = (i == 0 && k == zero_idx) ? wall_g_val : g(k, i);
 
                 integral_pos += weight * (g_val * velocity_mesh[k]) * get_jacobian(k);
@@ -486,15 +479,12 @@ namespace Bgk
                 return temperatures;
             }
 
-            // --- 1. COMPUTE DENSITIES (using vector function) ---
             Eigen::Vector<T, Eigen::Dynamic> densities =
                 compute_density(g, velocity_mesh, wall_g_val, get_jacobian);
 
-            // --- 2. COMPUTE MEAN VELOCITIES (using vector function) ---
             Eigen::Vector<T, Eigen::Dynamic> mean_velocities =
                 compute_meanGasVelocity(g, velocity_mesh, densities, wall_g_val, get_jacobian);
 
-            // --- 3. COMPUTE TEMPERATURES (full loop, using new logic) ---
             const size_t zero_idx = velocity_mesh.get_N();
             const size_t max_idx = velocity_mesh.size() - 1;
 
@@ -515,12 +505,11 @@ namespace Bgk
                 }
                 integral_neg *= (1.0 / 3.0);
 
-                // 2. Positive Velocity Integral (Outgoing) with discontinuity fix
+                // 2. Positive Velocity Integral (Outgoing)
                 for (size_t k = zero_idx; k <= max_idx; ++k)
                 {
                     T weight = (k == zero_idx || k == max_idx) ? 1.0 : ((k - zero_idx) % 2 != 0 ? 4.0 : 2.0);
 
-                    // Apply the fix: use wall values at k=zero_idx
                     T g_val = (k == zero_idx) ? wall_g_val : g(k, i);
                     T h_val = (k == zero_idx) ? wall_h_val : h(k, i);
 
@@ -580,13 +569,13 @@ namespace Bgk
                 throw std::out_of_range(error_message("Index out of bounds when computing the temperature"));
             }
 
-            // Call "new" helper functions
             T density_i = compute_density_at(g, velocity_mesh, i, wall_g_val, get_jacobian);
             T mean_velocity_i = compute_meanGasVelocity_at(g, velocity_mesh, i, density_i, wall_g_val, get_jacobian);
 
             if (density_i == T{0})
             {
-                return T{0}; // Avoid division by zero
+                throw std::runtime_error(error_message(
+                    "Density is zero when computing the temperature at index " + std::to_string(i)));
             }
 
             const size_t zero_idx = velocity_mesh.get_N();
@@ -642,7 +631,8 @@ namespace Bgk
 
             if (density_i == T{0})
             {
-                return T{0}; // Avoid division by zero
+                throw std::runtime_error(error_message(
+                    "Density is zero when computing the temperature at index " + std::to_string(i)));
             }
 
             const size_t zero_idx = velocity_mesh.get_N();
